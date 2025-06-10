@@ -51,7 +51,7 @@
     "id": 8,
     "title": "Finire la dashboard",
     "assignedTo": "Gianluca",
-    "status": "completato",
+    "status": "non iniziato",
     "date": "2025-06-10",
     "time": "15:00"
   },
@@ -67,7 +67,7 @@
     "id": 10,
     "title": "Prova 2",
     "assignedTo": "Simone",
-    "status": "in corso",
+    "status": "non iniziato",
     "date": "2025-06-10",
     "time": "05:00"
   }

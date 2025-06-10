@@ -237,7 +237,7 @@ export default function Dashboard() {
                                 second: "2-digit",
                             })}
                         </div>
-                        <div className="text-xs font-semibold text-gray-600">
+                        <div className="text-xs text-gray-600">
                             {currentTime.toLocaleDateString("it-IT", {
                                 weekday: "long",
                                 month: "long",
