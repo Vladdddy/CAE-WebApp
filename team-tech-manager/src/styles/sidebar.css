@@ -1,0 +1,31 @@
+.dashboard-icon {
+    width: 24px;
+    height: 24px;
+    stroke: #fff;
+}
+
+.active-link {
+    background-color: #4a5568 !important;
+    border-left: 3px solid #3b82f6;
+}
+
+.logout-btn {
+    color: #ff4d4d;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+
+    & svg {
+        stroke: #ff4d4d;
+    }
+
+    &:hover {
+        background-color: #ff4d4d40;
+    }
+}
+
+@media only screen and (max-width: 768px) {
+    .sidebar-pc {
+        display: none;
+    }
+}

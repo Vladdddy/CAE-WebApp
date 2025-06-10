@@ -1,0 +1,42 @@
+[
+  {
+    "text": "Analisi guasto segnale sensore temperatura.",
+    "author": "Luca",
+    "category": "troubleshooting",
+    "subcategory": "HW",
+    "extraDetail": "COMPUTER",
+    "date": "2025-05-01",
+    "time": "10:45",
+    "duration": "00:45"
+  },
+  {
+    "text": "Controllo interfacce utente e validazione I/O.",
+    "author": "Simone",
+    "category": "troubleshooting",
+    "subcategory": "SW",
+    "extraDetail": "INTERFACE",
+    "date": "2025-05-01",
+    "time": "14:00",
+    "duration": "00:30"
+  },
+  {
+    "text": "geometry",
+    "author": "Luca",
+    "category": "troubleshooting",
+    "subcategory": "HW",
+    "extraDetail": "VISUAL",
+    "date": "2025-04-30",
+    "time": "08:00",
+    "duration": ""
+  },
+  {
+    "text": "CIAO SIMONE",
+    "author": "Simone",
+    "category": "routine task",
+    "subcategory": "MR",
+    "extraDetail": "",
+    "date": "2025-04-30",
+    "time": "08:00",
+    "duration": ""
+  }
+]

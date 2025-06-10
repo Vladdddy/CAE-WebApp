@@ -1,0 +1,74 @@
+[
+  {
+    "id": 1,
+    "title": "Visual ",
+    "assignedTo": "Mario",
+    "status": "completato",
+    "date": "2025-04-11",
+    "time": "11:11"
+  },
+  {
+    "id": 2,
+    "title": "Test di una scheda grafica",
+    "assignedTo": "Mario",
+    "status": "completato",
+    "date": "2025-04-30",
+    "time": "08:00"
+  },
+  {
+    "id": 3,
+    "title": "STG su 139",
+    "assignedTo": "Simone",
+    "status": "non iniziato",
+    "date": "2025-04-30",
+    "time": "08:00"
+  },
+  {
+    "id": 4,
+    "title": "Chiusura JL",
+    "assignedTo": "Gianluca",
+    "status": "non iniziato",
+    "date": "2025-04-30",
+    "time": "08:00"
+  },
+  {
+    "id": 6,
+    "title": "motion ",
+    "assignedTo": "Gianluca",
+    "status": "non iniziato",
+    "date": "2025-06-09",
+    "time": "08:00"
+  },
+  {
+    "id": 7,
+    "title": "avionic",
+    "assignedTo": "Mario",
+    "status": "non iniziato",
+    "date": "2025-06-09",
+    "time": "08:00"
+  },
+  {
+    "id": 8,
+    "title": "Finire la dashboard",
+    "assignedTo": "Gianluca",
+    "status": "completato",
+    "date": "2025-06-10",
+    "time": "15:00"
+  },
+  {
+    "id": 9,
+    "title": "Prova 1",
+    "assignedTo": "Luca",
+    "status": "non iniziato",
+    "date": "2025-06-10",
+    "time": "08:00"
+  },
+  {
+    "id": 10,
+    "title": "Prova 2",
+    "assignedTo": "Simone",
+    "status": "in corso",
+    "date": "2025-06-10",
+    "time": "05:00"
+  }
+]
