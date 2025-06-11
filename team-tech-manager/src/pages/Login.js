@@ -1,14 +1,44 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Logo from "../assets/logo.png";
 
 export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
-
-    const handleSubmit = (e) => {
+    const [isLoading, setIsLoading] = useState(false);
+    const navigate = useNavigate();
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("Login attempt:", { email, password });
+        setIsLoading(true);
+
+        localStorage.setItem("userEmail", email);
+
+        try {
+            const response = await fetch(
+                "http://localhost:5000/api/auth/login",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ email, password }),
+                }
+            );
+            const data = await response.json();
+
+            if (response.ok && data.token) {
+                localStorage.setItem("authToken", data.token);
+                navigate("/");
+            } else {
+                alert(data.error || "Login fallito!");
+            }
+        } catch (err) {
+            console.error("Errore di login:", err);
+            alert("Errore di connessione. Riprova più tardi.");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -46,7 +76,6 @@ export default function Login() {
                                 onChange={(e) => setEmail(e.target.value)}
                             />
                         </div>
-
                         <div>
                             <label
                                 htmlFor="password"
@@ -112,14 +141,14 @@ export default function Login() {
                                     )}
                                 </button>
                             </div>
-                        </div>
-
+                        </div>{" "}
                         <div>
                             <button
                                 type="submit"
-                                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-800 hover:bg-gray-700 focus:outline-none transition-colors"
+                                disabled={isLoading}
+                                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-800 hover:bg-gray-700 focus:outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                Accedi
+                                {isLoading ? "Accedendo..." : "Accedi"}
                             </button>
                         </div>
                     </form>

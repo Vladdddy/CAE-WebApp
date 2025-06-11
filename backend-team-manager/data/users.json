@@ -1,0 +1,92 @@
+[
+    {
+        "id": 1,
+        "email": "admin@teamtech.com",
+        "password": "admin123",
+        "name": "Administrator",
+        "role": "admin",
+        "department": "IT",
+        "active": true
+    },
+    {
+        "id": 2,
+        "email": "marco.verdi@teamtech.com",
+        "password": "marco123",
+        "name": "Marco Verdi",
+        "role": "employee",
+        "department": "Operations",
+        "active": true
+    },
+    {
+        "id": 3,
+        "email": "luca.rossi@teamtech.com",
+        "password": "luca123",
+        "name": "Luca Rossi",
+        "role": "employee",
+        "department": "Operations",
+        "active": true
+    },
+    {
+        "id": 5,
+        "email": "andrea.bianchi@teamtech.com",
+        "password": "andrea123",
+        "name": "Andrea Bianchi",
+        "role": "employee",
+        "department": "Operations",
+        "active": true
+    },
+    {
+        "id": 6,
+        "email": "sara.gialli@teamtech.com",
+        "password": "sara123",
+        "name": "Sara Gialli",
+        "role": "employee",
+        "department": "Operations",
+        "active": true
+    },
+    {
+        "id": 7,
+        "email": "simone.neri@teamtech.com",
+        "password": "simone123",
+        "name": "Simone Neri",
+        "role": "employee",
+        "department": "Operations",
+        "active": true
+    },
+    {
+        "id": 8,
+        "email": "francesco.verde@teamtech.com",
+        "password": "francesco123",
+        "name": "Francesco Verde",
+        "role": "employee",
+        "department": "Operations",
+        "active": true
+    },
+    {
+        "id": 9,
+        "email": "manager@teamtech.com",
+        "password": "manager123",
+        "name": "Team Manager",
+        "role": "manager",
+        "department": "Management",
+        "active": true
+    },
+    {
+        "id": 10,
+        "email": "hr@teamtech.com",
+        "password": "hr123",
+        "name": "HR Department",
+        "role": "hr",
+        "department": "Human Resources",
+        "active": true
+    },
+    {
+        "id": 11,
+        "email": "gianluca@teamtech.com",
+        "password": "gianluca123",
+        "name": "Gianluca",
+        "role": "admin",
+        "department": "IT",
+        "active": true
+    }
+]

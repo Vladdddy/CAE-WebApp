@@ -1,8 +1,32 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import "../styles/sidebar.css";
 
 export default function Sidebar() {
     const location = useLocation();
+    const navigate = useNavigate();
+
+    const handleLogout = async () => {
+        try {
+            // Call the logout endpoint (optional - mainly for logging purposes)
+            const token = localStorage.getItem("authToken");
+            if (token) {
+                await fetch("http://localhost:5000/api/auth/logout", {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                });
+            }
+        } catch (error) {
+            console.error("Logout request failed:", error);
+        } finally {
+            // Remove token from localStorage regardless of API call success
+            localStorage.removeItem("authToken");
+            // Redirect to login page
+            navigate("/login");
+        }
+    };
 
     return (
         <div className="sidebar-pc flex flex-col w-64 h-screen bg-gray-800 text-white p-4 fixed">
@@ -168,11 +192,11 @@ export default function Sidebar() {
                         </svg>
                         <p className="text-l">Shifts</p>
                     </Link>
-                </li>
+                </li>{" "}
             </ul>
-            <Link
-                to="/"
-                className="flex align-items-center gap-2 p-2 rounded mt-auto logout-btn"
+            <button
+                onClick={handleLogout}
+                className="flex align-items-center gap-2 p-2 rounded mt-auto logout-btn hover:bg-gray-700 transition-colors text-left w-full"
             >
                 <svg
                     className="dashboard-icon"
@@ -198,7 +222,7 @@ export default function Sidebar() {
                     ></path>
                 </svg>
                 <p className="text-l">Logout</p>
-            </Link>
+            </button>
         </div>
     );
 }

@@ -8,6 +8,46 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(true);
     const API = process.env.REACT_APP_API_URL;
     const today = new Date().toISOString().split("T")[0];
+    let userEmail = (localStorage.getItem("userEmail") || "Utente").split(
+        "@"
+    )[0];
+    userEmail = userEmail.charAt(0).toUpperCase() + userEmail.slice(1);
+
+    // Get current user info from token
+    const getCurrentUser = () => {
+        const token = localStorage.getItem("authToken");
+        if (!token) return null;
+
+        try {
+            const payload = JSON.parse(atob(token.split(".")[1]));
+            return payload;
+        } catch (error) {
+            console.error("Error parsing token:", error);
+            return null;
+        }
+    };
+
+    const currentUser = getCurrentUser();
+
+    // Helper function to check if user can perform actions
+    const canDeleteTasks = () => {
+        return (
+            currentUser &&
+            ["admin", "manager", "supervisor"].includes(currentUser.role)
+        );
+    };
+
+    const canToggleTask = (task) => {
+        if (!currentUser) return false;
+        // Admins, managers, supervisors can toggle any task
+        if (["admin", "manager", "supervisor"].includes(currentUser.role))
+            return true;
+        // Employees can only toggle their own tasks
+        return (
+            currentUser.role === "employee" &&
+            task.assignedTo === currentUser.name
+        );
+    };
 
     // Aggiorna il tempo corrente ogni secondo
     useEffect(() => {
@@ -16,35 +56,83 @@ export default function Dashboard() {
         }, 1000);
 
         return () => clearInterval(timer);
-    }, []);
-
-    // Prende i task dal server
+    }, []); // Prende i task dal server
     useEffect(() => {
-        fetch(`${API}/api/tasks`)
+        const token = localStorage.getItem("authToken");
+        fetch(`${API}/api/tasks`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        })
             .then((res) => res.json())
             .then((data) => {
                 setTasks(data);
                 setLoading(false);
+            })
+            .catch((error) => {
+                console.error("Error fetching tasks:", error);
+                setLoading(false);
             });
-    }, []);
-
-    // Funzioni per gestire i task
+    }, []); // Funzioni per gestire i task
     const toggleTask = async (id) => {
-        const res = await fetch(`${API}/api/tasks/${id}/toggle`, {
-            method: "PATCH",
-        });
-        const updated = await res.json();
-        setTasks(tasks.map((t) => (t.id === id ? updated : t)));
-    };
+        const token = localStorage.getItem("authToken");
+        try {
+            const res = await fetch(`${API}/api/tasks/${id}/toggle`, {
+                method: "PATCH",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
 
-    // Funzione per eliminare un task
+            if (res.status === 403) {
+                const error = await res.json();
+                alert(
+                    error.message ||
+                        "Non hai i permessi per modificare questo task"
+                );
+                return;
+            }
+
+            if (res.ok) {
+                const updated = await res.json();
+                setTasks(tasks.map((t) => (t.id === id ? updated : t)));
+            } else {
+                console.error("Error toggling task:", await res.text());
+            }
+        } catch (error) {
+            console.error("Error toggling task:", error);
+            alert("Errore durante la modifica del task");
+        }
+    }; // Funzione per eliminare un task
     const deleteTask = async (id) => {
         if (!window.confirm("Confermi l'eliminazione del task?")) return;
-        const res = await fetch(`${API}/api/tasks/${id}`, {
-            method: "DELETE",
-        });
-        if (res.ok) {
-            setTasks(tasks.filter((t) => t.id !== id));
+        const token = localStorage.getItem("authToken");
+        try {
+            const res = await fetch(`${API}/api/tasks/${id}`, {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (res.status === 403) {
+                const error = await res.json();
+                alert(
+                    error.message ||
+                        "Non hai i permessi per eliminare questo task"
+                );
+                return;
+            }
+
+            if (res.ok) {
+                setTasks(tasks.filter((t) => t.id !== id));
+            } else {
+                console.error("Error deleting task:", await res.text());
+                alert("Errore durante l'eliminazione del task");
+            }
+        } catch (error) {
+            console.error("Error deleting task:", error);
+            alert("Errore durante l'eliminazione del task");
         }
     };
 
@@ -89,13 +177,7 @@ export default function Dashboard() {
     const getCurrentShiftEmployees = () => {
         const shift = getCurrentShift();
         const employees = {
-            O: [
-                "Marco Verdi",
-                "Luca Rossi",
-                "Andrea Bianchi",
-                "Giulia Neri",
-                "Sara Gialli",
-            ],
+            O: ["Marco Verdi", "Luca Rossi", "Andrea Bianchi", "Sara Gialli"],
             OP: [
                 "Simone Neri",
                 "Francesco Verde",
@@ -138,86 +220,90 @@ export default function Dashboard() {
                     <p className="text-gray-600 max-w-md font-semibold text-sm">
                         {task.title}
                     </p>
-                    <div className=" text-xs text-gray-500">
+                    <div className=" text-xs text-gray-500 capitalize">
                         {task.time} • {task.assignedTo} • {task.status}
                     </div>
-                </div>
+                </div>{" "}
                 <div className="buttons flex flex-row gap-2">
-                    <button
-                        onClick={() => toggleTask(task.id)}
-                        title="Cambia stato"
-                    >
-                        <svg
-                            className="finito-icon"
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            width="20"
-                            height="20"
-                            color={
-                                task.status === "completato"
-                                    ? "#139d54"
-                                    : task.status === "in corso"
-                                    ? "#f6ad10"
-                                    : "#6b7280"
-                            }
-                            fill="none"
+                    {canToggleTask(task) && (
+                        <button
+                            onClick={() => toggleTask(task.id)}
+                            title="Cambia stato"
                         >
-                            <path
-                                d="M10.2892 21.9614H9.39111C6.14261 21.9614 4.51836 21.9614 3.50918 20.9363C2.5 19.9111 2.5 18.2612 2.5 14.9614V9.96139C2.5 6.66156 2.5 5.01165 3.50918 3.98653C4.51836 2.9614 6.14261 2.9614 9.39111 2.9614H12.3444C15.5929 2.9614 17.4907 3.01658 18.5 4.04171C19.5092 5.06683 19.5 6.66156 19.5 9.96139V11.1478"
-                                stroke="currentColor"
-                                stroke-width="1.5"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                            ></path>
-                            <path
-                                d="M15.9453 2V4M10.9453 2V4M5.94531 2V4"
-                                stroke="currentColor"
-                                stroke-width="1.5"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                            ></path>
-                            <path
-                                d="M7 15H11M7 10H15"
-                                stroke="currentColor"
-                                stroke-width="1.5"
-                                stroke-linecap="round"
-                            ></path>
-                            <path
-                                opacity="0.93"
-                                d="M20.7598 14.8785C19.8544 13.8641 19.3112 13.9245 18.7076 14.1056C18.2851 14.166 16.8365 15.8568 16.2329 16.3952C15.2419 17.3743 14.2464 18.3823 14.1807 18.5138C13.9931 18.8188 13.8186 19.3592 13.7341 19.963C13.5771 20.8688 13.3507 21.8885 13.6375 21.9759C13.9242 22.0632 14.7239 21.8954 15.6293 21.7625C16.2329 21.6538 16.6554 21.533 16.9572 21.3519C17.3797 21.0983 18.1644 20.2046 19.5164 18.8761C20.3644 17.9833 21.1823 17.3664 21.4238 16.7626C21.6652 15.8568 21.3031 15.3737 20.7598 14.8785Z"
-                                stroke="currentColor"
-                                stroke-width="1.5"
-                            ></path>
-                        </svg>
-                    </button>
+                            <svg
+                                className="finito-icon"
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                width="20"
+                                height="20"
+                                color={
+                                    task.status === "completato"
+                                        ? "#139d54"
+                                        : task.status === "in corso"
+                                        ? "#f6ad10"
+                                        : "#6b7280"
+                                }
+                                fill="none"
+                            >
+                                <path
+                                    d="M10.2892 21.9614H9.39111C6.14261 21.9614 4.51836 21.9614 3.50918 20.9363C2.5 19.9111 2.5 18.2612 2.5 14.9614V9.96139C2.5 6.66156 2.5 5.01165 3.50918 3.98653C4.51836 2.9614 6.14261 2.9614 9.39111 2.9614H12.3444C15.5929 2.9614 17.4907 3.01658 18.5 4.04171C19.5092 5.06683 19.5 6.66156 19.5 9.96139V11.1478"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                ></path>
+                                <path
+                                    d="M15.9453 2V4M10.9453 2V4M5.94531 2V4"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                ></path>
+                                <path
+                                    d="M7 15H11M7 10H15"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                    stroke-linecap="round"
+                                ></path>
+                                <path
+                                    opacity="0.93"
+                                    d="M20.7598 14.8785C19.8544 13.8641 19.3112 13.9245 18.7076 14.1056C18.2851 14.166 16.8365 15.8568 16.2329 16.3952C15.2419 17.3743 14.2464 18.3823 14.1807 18.5138C13.9931 18.8188 13.8186 19.3592 13.7341 19.963C13.5771 20.8688 13.3507 21.8885 13.6375 21.9759C13.9242 22.0632 14.7239 21.8954 15.6293 21.7625C16.2329 21.6538 16.6554 21.533 16.9572 21.3519C17.3797 21.0983 18.1644 20.2046 19.5164 18.8761C20.3644 17.9833 21.1823 17.3664 21.4238 16.7626C21.6652 15.8568 21.3031 15.3737 20.7598 14.8785Z"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                ></path>
+                            </svg>
+                        </button>
+                    )}
 
-                    <button
-                        onClick={() => deleteTask(task.id)}
-                        title="Elimina task"
-                    >
-                        <svg
-                            className="elimina-icon"
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            width="20"
-                            height="20"
-                            color="#e53e3e"
-                            fill="none"
+                    {canDeleteTasks() && (
+                        <button
+                            onClick={() => deleteTask(task.id)}
+                            title="Elimina task"
                         >
-                            <path
-                                d="M19.5 5.5L18.8803 15.5251C18.7219 18.0864 18.6428 19.3671 18.0008 20.2879C17.6833 20.7431 17.2747 21.1273 16.8007 21.416C15.8421 22 14.559 22 11.9927 22C9.42312 22 8.1383 22 7.17905 21.4149C6.7048 21.1257 6.296 20.7408 5.97868 20.2848C5.33688 19.3626 5.25945 18.0801 5.10461 15.5152L4.5 5.5"
-                                stroke="currentColor"
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                            ></path>
-                            <path
-                                d="M3 5.5H21M16.0557 5.5L15.3731 4.09173C14.9196 3.15626 14.6928 2.68852 14.3017 2.39681C14.215 2.3321 14.1231 2.27454 14.027 2.2247C13.5939 2 13.0741 2 12.0345 2C10.9688 2 10.436 2 9.99568 2.23412C9.8981 2.28601 9.80498 2.3459 9.71729 2.41317C9.32164 2.7167 9.10063 3.20155 8.65861 4.17126L8.05292 5.5"
-                                stroke="currentColor"
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                            ></path>
-                        </svg>
-                    </button>
+                            <svg
+                                className="elimina-icon"
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                width="20"
+                                height="20"
+                                color="#e53e3e"
+                                fill="none"
+                            >
+                                <path
+                                    d="M19.5 5.5L18.8803 15.5251C18.7219 18.0864 18.6428 19.3671 18.0008 20.2879C17.6833 20.7431 17.2747 21.1273 16.8007 21.416C15.8421 22 14.559 22 11.9927 22C9.42312 22 8.1383 22 7.17905 21.4149C6.7048 21.1257 6.296 20.7408 5.97868 20.2848C5.33688 19.3626 5.25945 18.0801 5.10461 15.5152L4.5 5.5"
+                                    stroke="currentColor"
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                ></path>
+                                <path
+                                    d="M3 5.5H21M16.0557 5.5L15.3731 4.09173C14.9196 3.15626 14.6928 2.68852 14.3017 2.39681C14.215 2.3321 14.1231 2.27454 14.027 2.2247C13.5939 2 13.0741 2 12.0345 2C10.9688 2 10.436 2 9.99568 2.23412C9.8981 2.28601 9.80498 2.3459 9.71729 2.41317C9.32164 2.7167 9.10063 3.20155 8.65861 4.17126L8.05292 5.5"
+                                    stroke="currentColor"
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                ></path>
+                            </svg>
+                        </button>
+                    )}
                 </div>
             </div>
         ));
@@ -227,7 +313,36 @@ export default function Dashboard() {
         <>
             {" "}
             <div className="top-dashboard flex justify-between items-center p-4 text-gray-800">
-                <h1 className="text-2xl font-bold">Benvenuto User</h1>{" "}
+                <div>
+                    <h1 className="text-2xl font-bold">Ciao {userEmail}!</h1>
+                    {currentUser && (
+                        <div className="flex items-center gap-1 mt-1">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                width="16"
+                                height="16"
+                                color="oklch(44.6% 0.03 256.802)"
+                                fill="none"
+                            >
+                                <path
+                                    d="M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z"
+                                    stroke="currentColor"
+                                    stroke-width="1"
+                                />
+                                <path
+                                    d="M14 14H10C7.23858 14 5 16.2386 5 19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19C19 16.2386 16.7614 14 14 14Z"
+                                    stroke="currentColor"
+                                    stroke-width="1"
+                                    stroke-linejoin="round"
+                                />
+                            </svg>
+                            <p className="text-xs text-gray-400 capitalize">
+                                {currentUser.role}
+                            </p>
+                        </div>
+                    )}
+                </div>
                 <div className="date-time-display px-4 py-2">
                     <div className="flex flex-col justify-center items-center gap-1">
                         <div className="text-xl text-[#3b82f6] bg-[#3b82f620] py-2 px-4 rounded-md">
@@ -237,7 +352,7 @@ export default function Dashboard() {
                                 second: "2-digit",
                             })}
                         </div>
-                        <div className="text-xs text-gray-600">
+                        <div className="text-xs text-gray-600 capitalize">
                             {currentTime.toLocaleDateString("it-IT", {
                                 weekday: "long",
                                 month: "long",
