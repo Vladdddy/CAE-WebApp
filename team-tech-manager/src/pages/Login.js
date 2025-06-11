@@ -1,13 +1,34 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Logo from "../assets/logo.png";
+import Modal from "../components/Modal";
 
 export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [modal, setModal] = useState({
+        isOpen: false,
+        title: "",
+        message: "",
+        type: "error",
+    });
     const navigate = useNavigate();
+
+    const showModal = (title, message, type = "error") => {
+        setModal({
+            isOpen: true,
+            title,
+            message,
+            type,
+        });
+    };
+
+    const closeModal = () => {
+        setModal((prev) => ({ ...prev, isOpen: false }));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
@@ -26,16 +47,18 @@ export default function Login() {
                 }
             );
             const data = await response.json();
-
             if (response.ok && data.token) {
                 localStorage.setItem("authToken", data.token);
                 navigate("/");
             } else {
-                alert(data.error || "Login fallito!");
+                showModal("Errore di login", data.error || "Login fallito!");
             }
         } catch (err) {
             console.error("Errore di login:", err);
-            alert("Errore di connessione. Riprova più tardi.");
+            showModal(
+                "Errore di connessione",
+                "Errore di connessione. Riprova più tardi."
+            );
         } finally {
             setIsLoading(false);
         }
@@ -150,10 +173,18 @@ export default function Login() {
                             >
                                 {isLoading ? "Accedendo..." : "Accedi"}
                             </button>
-                        </div>
+                        </div>{" "}
                     </form>
                 </div>
             </div>
+
+            <Modal
+                isOpen={modal.isOpen}
+                onClose={closeModal}
+                title={modal.title}
+                message={modal.message}
+                type={modal.type}
+            />
         </div>
     );
 }

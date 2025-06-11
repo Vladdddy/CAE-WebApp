@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Modal from "../components/Modal";
 
 export default function Tasks() {
     const [tasks, setTasks] = useState([]);
@@ -12,6 +13,13 @@ export default function Tasks() {
     const [selectedDate, setSelectedDate] = useState(
         new Date().toISOString().split("T")[0]
     );
+    const [modal, setModal] = useState({
+        isOpen: false,
+        title: "",
+        message: "",
+        type: "info",
+        onConfirm: null,
+    });
     const API = process.env.REACT_APP_API_URL;
 
     // Get current user info from token
@@ -27,8 +35,22 @@ export default function Tasks() {
             return null;
         }
     };
-
     const currentUser = getCurrentUser();
+
+    // Helper functions for modal
+    const showModal = (title, message, type = "info", onConfirm = null) => {
+        setModal({
+            isOpen: true,
+            title,
+            message,
+            type,
+            onConfirm,
+        });
+    };
+
+    const closeModal = () => {
+        setModal((prev) => ({ ...prev, isOpen: false }));
+    };
 
     // Helper function to check if user can perform actions
     const canDeleteTasks = () => {
@@ -132,13 +154,15 @@ export default function Tasks() {
             } else {
                 const errorData = await res.json();
                 console.error("Error adding task:", errorData);
-                alert(
-                    errorData.message || "Errore durante l'aggiunta del task"
+                showModal(
+                    "Errore",
+                    errorData.message || "Errore durante l'aggiunta del task",
+                    "error"
                 );
             }
         } catch (error) {
             console.error("Error adding task:", error);
-            alert("Errore durante l'aggiunta del task");
+            showModal("Errore", "Errore durante l'aggiunta del task", "error");
         }
     };
     const toggleTask = async (id) => {
@@ -150,12 +174,13 @@ export default function Tasks() {
                     Authorization: `Bearer ${token}`,
                 },
             });
-
             if (res.status === 403) {
                 const error = await res.json();
-                alert(
+                showModal(
+                    "Accesso negato",
                     error.message ||
-                        "Non hai i permessi per modificare questo task"
+                        "Non hai i permessi per modificare questo task",
+                    "error"
                 );
                 return;
             }
@@ -165,43 +190,68 @@ export default function Tasks() {
                 setTasks(tasks.map((t) => (t.id === id ? updated : t)));
             } else {
                 console.error("Error toggling task:", await res.text());
-                alert("Errore durante la modifica del task");
+                showModal(
+                    "Errore",
+                    "Errore durante la modifica del task",
+                    "error"
+                );
             }
         } catch (error) {
             console.error("Error toggling task:", error);
-            alert("Errore durante la modifica del task");
+            showModal("Errore", "Errore durante la modifica del task", "error");
         }
     };
     const deleteTask = async (id) => {
-        if (!window.confirm("Confermi l'eliminazione del task?")) return;
-        const token = localStorage.getItem("authToken");
-        try {
-            const res = await fetch(`${API}/api/tasks/${id}`, {
-                method: "DELETE",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
+        showModal(
+            "Conferma eliminazione",
+            "Confermi l'eliminazione del task?",
+            "confirm",
+            async () => {
+                const token = localStorage.getItem("authToken");
+                try {
+                    const res = await fetch(`${API}/api/tasks/${id}`, {
+                        method: "DELETE",
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    });
 
-            if (res.status === 403) {
-                const error = await res.json();
-                alert(
-                    error.message ||
-                        "Non hai i permessi per eliminare questo task"
-                );
-                return;
-            }
+                    if (res.status === 403) {
+                        const error = await res.json();
+                        showModal(
+                            "Accesso negato",
+                            error.message ||
+                                "Non hai i permessi per eliminare questo task",
+                            "error"
+                        );
+                        return;
+                    }
 
-            if (res.ok) {
-                setTasks(tasks.filter((t) => t.id !== id));
-            } else {
-                console.error("Error deleting task:", await res.text());
-                alert("Errore durante l'eliminazione del task");
+                    if (res.ok) {
+                        setTasks(tasks.filter((t) => t.id !== id));
+                        showModal(
+                            "Successo",
+                            "Task eliminato con successo",
+                            "success"
+                        );
+                    } else {
+                        console.error("Error deleting task:", await res.text());
+                        showModal(
+                            "Errore",
+                            "Errore durante l'eliminazione del task",
+                            "error"
+                        );
+                    }
+                } catch (error) {
+                    console.error("Error deleting task:", error);
+                    showModal(
+                        "Errore",
+                        "Errore durante l'eliminazione del task",
+                        "error"
+                    );
+                }
             }
-        } catch (error) {
-            console.error("Error deleting task:", error);
-            alert("Errore durante l'eliminazione del task");
-        }
+        );
     };
 
     const handleChangeDay = (offset) => {
@@ -344,8 +394,17 @@ export default function Tasks() {
                             </button>
                         )}
                     </li>
-                ))}
+                ))}{" "}
             </ul>
+
+            <Modal
+                isOpen={modal.isOpen}
+                onClose={closeModal}
+                title={modal.title}
+                message={modal.message}
+                type={modal.type}
+                onConfirm={modal.onConfirm}
+            />
         </div>
     );
 }

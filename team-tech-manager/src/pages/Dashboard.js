@@ -1,11 +1,19 @@
 import "../styles/dashboard.css";
 import Logo from "../assets/logo.png";
+import Modal from "../components/Modal";
 import { useState, useEffect } from "react";
 
 export default function Dashboard() {
     const [currentTime, setCurrentTime] = useState(new Date());
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [modal, setModal] = useState({
+        isOpen: false,
+        title: "",
+        message: "",
+        type: "info",
+        onConfirm: null,
+    });
     const API = process.env.REACT_APP_API_URL;
     const today = new Date().toISOString().split("T")[0];
     let userEmail = (localStorage.getItem("userEmail") || "Utente").split(
@@ -28,6 +36,21 @@ export default function Dashboard() {
     };
 
     const currentUser = getCurrentUser();
+
+    // Helper functions for modal
+    const showModal = (title, message, type = "info", onConfirm = null) => {
+        setModal({
+            isOpen: true,
+            title,
+            message,
+            type,
+            onConfirm,
+        });
+    };
+
+    const closeModal = () => {
+        setModal((prev) => ({ ...prev, isOpen: false }));
+    };
 
     // Helper function to check if user can perform actions
     const canDeleteTasks = () => {
@@ -83,12 +106,13 @@ export default function Dashboard() {
                     Authorization: `Bearer ${token}`,
                 },
             });
-
             if (res.status === 403) {
                 const error = await res.json();
-                alert(
+                showModal(
+                    "Accesso negato",
                     error.message ||
-                        "Non hai i permessi per modificare questo task"
+                        "Non hai i permessi per modificare questo task",
+                    "error"
                 );
                 return;
             }
@@ -101,39 +125,60 @@ export default function Dashboard() {
             }
         } catch (error) {
             console.error("Error toggling task:", error);
-            alert("Errore durante la modifica del task");
+            showModal("Errore", "Errore durante la modifica del task", "error");
         }
     }; // Funzione per eliminare un task
     const deleteTask = async (id) => {
-        if (!window.confirm("Confermi l'eliminazione del task?")) return;
-        const token = localStorage.getItem("authToken");
-        try {
-            const res = await fetch(`${API}/api/tasks/${id}`, {
-                method: "DELETE",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
+        showModal(
+            "Conferma eliminazione",
+            "Confermi l'eliminazione del task?",
+            "confirm",
+            async () => {
+                const token = localStorage.getItem("authToken");
+                try {
+                    const res = await fetch(`${API}/api/tasks/${id}`, {
+                        method: "DELETE",
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    });
 
-            if (res.status === 403) {
-                const error = await res.json();
-                alert(
-                    error.message ||
-                        "Non hai i permessi per eliminare questo task"
-                );
-                return;
-            }
+                    if (res.status === 403) {
+                        const error = await res.json();
+                        showModal(
+                            "Accesso negato",
+                            error.message ||
+                                "Non hai i permessi per eliminare questo task",
+                            "error"
+                        );
+                        return;
+                    }
 
-            if (res.ok) {
-                setTasks(tasks.filter((t) => t.id !== id));
-            } else {
-                console.error("Error deleting task:", await res.text());
-                alert("Errore durante l'eliminazione del task");
+                    if (res.ok) {
+                        setTasks(tasks.filter((t) => t.id !== id));
+                        showModal(
+                            "Successo",
+                            "Task eliminato con successo",
+                            "success"
+                        );
+                    } else {
+                        console.error("Error deleting task:", await res.text());
+                        showModal(
+                            "Errore",
+                            "Errore durante l'eliminazione del task",
+                            "error"
+                        );
+                    }
+                } catch (error) {
+                    console.error("Error deleting task:", error);
+                    showModal(
+                        "Errore",
+                        "Errore durante l'eliminazione del task",
+                        "error"
+                    );
+                }
             }
-        } catch (error) {
-            console.error("Error deleting task:", error);
-            alert("Errore durante l'eliminazione del task");
-        }
+        );
     };
 
     const getBorderColor = (status) => {
@@ -312,7 +357,7 @@ export default function Dashboard() {
     return (
         <>
             {" "}
-            <div className="top-dashboard flex justify-between items-center p-4 text-gray-800">
+            <div className="top-dashboard flex justify-between items-center px-4 text-gray-800">
                 <div>
                     <h1 className="text-2xl font-bold">Ciao {userEmail}!</h1>
                     {currentUser && (
@@ -343,6 +388,13 @@ export default function Dashboard() {
                         </div>
                     )}
                 </div>
+                <div className="flex justify-center">
+                    <img
+                        src={Logo}
+                        alt="Company Logo"
+                        className="h-16 w-auto"
+                    />
+                </div>
                 <div className="date-time-display px-4 py-2">
                     <div className="flex flex-col justify-center items-center gap-1">
                         <div className="text-xl text-[#3b82f6] bg-[#3b82f620] py-2 px-4 rounded-md">
@@ -361,9 +413,6 @@ export default function Dashboard() {
                         </div>
                     </div>
                 </div>
-            </div>
-            <div className="flex justify-center">
-                <img src={Logo} alt="Company Logo" className="h-16 w-auto" />
             </div>
             <div className="dashboard-content flex justify-between gap-4 p-4 mt-16">
                 <div className="tasks border p-4 rounded-xl bg-white w-1/2 max-h-96 overflow-y-auto pb-4">
@@ -569,6 +618,14 @@ export default function Dashboard() {
                     ))}
                 </div>
             </div>
+            <Modal
+                isOpen={modal.isOpen}
+                onClose={closeModal}
+                title={modal.title}
+                message={modal.message}
+                type={modal.type}
+                onConfirm={modal.onConfirm}
+            />
         </>
     );
 }

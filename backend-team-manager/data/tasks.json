@@ -72,26 +72,10 @@
     "time": "05:00"
   },
   {
-    "id": 11,
-    "title": "Fare la login",
-    "assignedTo": "Gianluca",
-    "status": "non iniziato",
-    "date": "2025-06-11",
-    "time": "09:30"
-  },
-  {
-    "id": 15,
-    "title": "Prova",
-    "assignedTo": "Mario",
-    "status": "non iniziato",
-    "date": "2025-06-11",
-    "time": "03:00"
-  },
-  {
     "id": 16,
     "title": "Colloquio Stagisti",
     "assignedTo": "Sara Gialli",
-    "status": "in corso",
+    "status": "completato",
     "date": "2025-06-11",
     "time": "11:00"
   }
