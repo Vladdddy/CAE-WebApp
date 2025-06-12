@@ -5,6 +5,7 @@ const taskRoutes = require("./routes/tasks");
 const logbookRoutes = require("./routes/logbook");
 const shiftRoutes = require("./routes/shifts");
 const authRoutes = require("./routes/auth");
+const userRoutes = require("./routes/users");
 require("dotenv").config();
 
 const app = express();
@@ -15,6 +16,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/logbook", logbookRoutes);
 app.use("/api/shifts", shiftRoutes);
+app.use("/api/users", userRoutes);
 
 const port = process.env.PORT || 5000;
 app.listen(port, () => {

@@ -78,5 +78,13 @@
     "status": "completato",
     "date": "2025-06-11",
     "time": "11:00"
+  },
+  {
+    "id": 17,
+    "title": "Fare la pagina delle task",
+    "assignedTo": "Luca Rossi",
+    "status": "completato",
+    "date": "2025-06-12",
+    "time": "11:00"
   }
 ]

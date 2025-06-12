@@ -6,6 +6,8 @@ import { useState, useEffect } from "react";
 export default function Dashboard() {
     const [currentTime, setCurrentTime] = useState(new Date());
     const [tasks, setTasks] = useState([]);
+    const [users, setUsers] = useState([]);
+    const [shifts, setShifts] = useState({});
     const [loading, setLoading] = useState(true);
     const [modal, setModal] = useState({
         isOpen: false,
@@ -95,6 +97,50 @@ export default function Dashboard() {
             .catch((error) => {
                 console.error("Error fetching tasks:", error);
                 setLoading(false);
+            });
+    }, []); // Fetch users data
+    useEffect(() => {
+        const token = localStorage.getItem("authToken");
+        console.log("Fetching users with token:", token);
+        fetch(`${API}/api/users`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        })
+            .then((res) => {
+                console.log("Users response status:", res.status);
+                return res.json();
+            })
+            .then((data) => {
+                console.log("Users data received:", data);
+                setUsers(data);
+            })
+            .catch((error) => {
+                console.error("Error fetching users:", error);
+            });
+    }, []); // Fetch shifts data for current month
+    useEffect(() => {
+        const token = localStorage.getItem("authToken");
+        const currentDate = new Date();
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+
+        console.log("Fetching shifts for:", `${year}/${month}`);
+        fetch(`${API}/api/shifts/${year}/${month}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        })
+            .then((res) => {
+                console.log("Shifts response status:", res.status);
+                return res.json();
+            })
+            .then((data) => {
+                console.log("Shifts data received:", data);
+                setShifts(data);
+            })
+            .catch((error) => {
+                console.error("Error fetching shifts:", error);
             });
     }, []); // Funzioni per gestire i task
     const toggleTask = async (id) => {
@@ -218,20 +264,35 @@ export default function Dashboard() {
             return "ON";
         }
     };
-
     const getCurrentShiftEmployees = () => {
         const shift = getCurrentShift();
-        const employees = {
-            O: ["Marco Verdi", "Luca Rossi", "Andrea Bianchi", "Sara Gialli"],
-            OP: [
-                "Simone Neri",
-                "Francesco Verde",
-                "Alessandro Blu",
-                "Elena Rosa",
-            ],
-            ON: ["Matteo Giallo", "Lorenzo Viola", "Davide Arancio"],
-        };
-        return employees[shift] || [];
+        const today = new Date().toISOString().split("T")[0];
+
+        console.log("Current shift:", shift);
+        console.log("Today:", today);
+        console.log("Users:", users);
+        console.log("Shifts:", shifts);
+
+        if (shifts[today]) {
+            const todayShifts = shifts[today];
+            const employeesInShift = [];
+
+            console.log("Today's shifts:", todayShifts);
+
+            users.forEach((user) => {
+                const userShiftData = todayShifts[user.name];
+                console.log(`Checking user ${user.name}:`, userShiftData);
+                if (userShiftData && userShiftData.shift === shift) {
+                    employeesInShift.push(user.name);
+                }
+            });
+
+            console.log("Employees in current shift:", employeesInShift);
+            return employeesInShift;
+        }
+
+        console.log("No shift data for today");
+        return [];
     };
 
     const getShiftName = () => {
