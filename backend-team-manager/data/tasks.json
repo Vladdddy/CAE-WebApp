@@ -59,7 +59,7 @@
     "id": 9,
     "title": "Prova 1",
     "assignedTo": "Luca",
-    "status": "non iniziato",
+    "status": "completato",
     "date": "2025-06-10",
     "time": "08:00"
   },
@@ -80,11 +80,19 @@
     "time": "11:00"
   },
   {
-    "id": 17,
-    "title": "Fare la pagina delle task",
+    "id": 18,
+    "title": "Prova 2",
     "assignedTo": "Luca Rossi",
     "status": "completato",
     "date": "2025-06-12",
-    "time": "11:00"
+    "time": "08:00"
+  },
+  {
+    "id": 19,
+    "title": "pjfdvz",
+    "assignedTo": "Simone Neri",
+    "status": "non iniziato",
+    "date": "2025-06-12",
+    "time": "08:00"
   }
 ]
