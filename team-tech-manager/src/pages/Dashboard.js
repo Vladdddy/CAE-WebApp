@@ -476,7 +476,7 @@ export default function Dashboard() {
                 </div>
             </div>
             <div className="dashboard-content flex justify-between gap-4 p-4 mt-16">
-                <div className="tasks border p-4 rounded-xl bg-white w-1/2 max-h-96 overflow-y-auto pb-4">
+                <div className="tasks border p-4 rounded-xl bg-white w-1/2 max-w-[30vw] max-h-96 overflow-y-auto pb-4">
                     <div className="title flex flex-row items-center justify-between mb-4">
                         <div className="left-row title flex flex-row items-center gap-2 ">
                             <svg
