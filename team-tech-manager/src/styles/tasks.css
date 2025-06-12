@@ -6,7 +6,7 @@
 }
 
 .date-selector {
-    & button {
+    & .arroww {
         transition: all 0.2s;
 
         &:hover {

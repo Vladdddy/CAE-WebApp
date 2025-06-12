@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Modal from "../components/Modal";
+import html2pdf from "html2pdf.js";
 import "../styles/tasks.css";
 
 export default function Tasks() {
@@ -22,6 +23,7 @@ export default function Tasks() {
         onConfirm: null,
     });
     const API = process.env.REACT_APP_API_URL;
+    const tasksListRef = useRef();
 
     // Get current user info from token
     const getCurrentUser = () => {
@@ -261,6 +263,117 @@ export default function Tasks() {
         setSelectedDate(newDate);
         setDate(newDate);
     };
+    const handleExportPDF = () => {
+        try {
+            // Create a clean version of the content for PDF
+            const formattedDate = new Date(selectedDate).toLocaleDateString(
+                "it-IT",
+                {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                }
+            );
+
+            // Create a temporary div with clean styling for PDF
+            const pdfContent = document.createElement("div");
+            pdfContent.style.padding = "20px";
+            pdfContent.style.fontFamily = "Arial, sans-serif";
+            pdfContent.style.backgroundColor = "white";
+
+            // Add title
+            const title = document.createElement("h2");
+            title.textContent = `Task per il ${formattedDate}`;
+            title.style.marginBottom = "20px";
+            title.style.color = "#333";
+            title.style.borderBottom = "2px solid #3b82f6";
+            title.style.paddingBottom = "10px";
+            pdfContent.appendChild(title);
+
+            if (dailyTasks.length === 0) {
+                const noTasks = document.createElement("p");
+                noTasks.textContent = "Nessun task per questa data";
+                noTasks.style.color = "#666";
+                noTasks.style.fontStyle = "italic";
+                pdfContent.appendChild(noTasks);
+            } else {
+                dailyTasks.forEach((task, index) => {
+                    const taskDiv = document.createElement("div");
+                    taskDiv.style.marginBottom = "15px";
+                    taskDiv.style.padding = "15px";
+                    taskDiv.style.border = `2px solid ${getBorderColor(
+                        task.status
+                    )}`;
+                    taskDiv.style.borderRadius = "8px";
+                    taskDiv.style.backgroundColor = "#f9f9f9";
+
+                    const taskTitle = document.createElement("h4");
+                    taskTitle.textContent = `${index + 1}. ${task.title}`;
+                    taskTitle.style.margin = "0 0 8px 0";
+                    taskTitle.style.color = "#333";
+                    taskDiv.appendChild(taskTitle);
+
+                    const taskDetails = document.createElement("p");
+                    taskDetails.textContent = `Orario: ${task.time} • Assegnato a: ${task.assignedTo} • Status: ${task.status}`;
+                    taskDetails.style.margin = "0";
+                    taskDetails.style.color = "#666";
+                    taskDetails.style.fontSize = "14px";
+                    taskDiv.appendChild(taskDetails);
+
+                    pdfContent.appendChild(taskDiv);
+                });
+            }
+
+            // Temporarily add to body
+            document.body.appendChild(pdfContent);
+
+            const opt = {
+                margin: 0.5,
+                filename: `tasks-${formattedDate.replace(/\//g, "-")}.pdf`,
+                image: { type: "jpeg", quality: 0.98 },
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                },
+                jsPDF: {
+                    unit: "in",
+                    format: "a4",
+                    orientation: "portrait",
+                },
+            };
+
+            html2pdf()
+                .from(pdfContent)
+                .set(opt)
+                .save()
+                .then(() => {
+                    document.body.removeChild(pdfContent);
+                    closeModal();
+                    showModal(
+                        "Successo",
+                        "PDF esportato con successo!",
+                        "success"
+                    );
+                })
+                .catch((error) => {
+                    console.error("PDF Export Error:", error);
+                    document.body.removeChild(pdfContent);
+                    closeModal();
+                    showModal(
+                        "Errore",
+                        "Errore durante l'esportazione del PDF",
+                        "error"
+                    );
+                });
+        } catch (error) {
+            console.error("PDF Export Error:", error);
+            showModal(
+                "Errore",
+                "Errore durante l'esportazione del PDF",
+                "error"
+            );
+        }
+    };
 
     const getBorderColor = (status) => {
         switch (status) {
@@ -284,7 +397,7 @@ export default function Tasks() {
                     <div className="date-selector flex items-center justify-start mb-4 gap-8 flex-wrap">
                         <button
                             onClick={() => handleChangeDay(-1)}
-                            className="bg-[#3b82f620] p-2 rounded-md"
+                            className="arroww bg-[#3b82f620] p-2 rounded-md"
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -315,7 +428,7 @@ export default function Tasks() {
                         </p>
                         <button
                             onClick={() => handleChangeDay(1)}
-                            className="bg-[#3b82f620] p-2 rounded-md"
+                            className="arroww bg-[#3b82f620] p-2 rounded-md"
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -332,7 +445,36 @@ export default function Tasks() {
                                     stroke-linecap="round"
                                     stroke-linejoin="round"
                                 ></path>
+                            </svg>{" "}
+                        </button>
+                        <button
+                            onClick={handleExportPDF}
+                            className="aggiungi-btn flex items-center gap-2 col-span-1 sm:col-span-2 bg-blue-600 px-4 py-2 rounded"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                width="24"
+                                height="24"
+                                color="#fff"
+                                fill="none"
+                            >
+                                <path
+                                    d="M20 13V10.6569C20 9.83935 20 9.4306 19.8478 9.06306C19.6955 8.69552 19.4065 8.40649 18.8284 7.82843L14.0919 3.09188C13.593 2.593 13.3436 2.34355 13.0345 2.19575C12.9702 2.165 12.9044 2.13772 12.8372 2.11401C12.5141 2 12.1614 2 11.4558 2C8.21082 2 6.58831 2 5.48933 2.88607C5.26731 3.06508 5.06508 3.26731 4.88607 3.48933C4 4.58831 4 6.21082 4 9.45584V13M13 2.5V3C13 5.82843 13 7.24264 13.8787 8.12132C14.7574 9 16.1716 9 19 9H19.5"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                />
+                                <path
+                                    d="M19.75 16H17.25C16.6977 16 16.25 16.4477 16.25 17V19M16.25 19V22M16.25 19H19.25M4.25 22V19.5M4.25 19.5V16H6C6.9665 16 7.75 16.7835 7.75 17.75C7.75 18.7165 6.9665 19.5 6 19.5H4.25ZM10.25 16H11.75C12.8546 16 13.75 16.8954 13.75 18V20C13.75 21.1046 12.8546 22 11.75 22H10.25V16Z"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                />
                             </svg>
+                            <p className="text-white">Export PDF</p>
                         </button>
                     </div>
                     <div
@@ -442,8 +584,11 @@ export default function Tasks() {
                             </button>
                         </form>
                     </div>{" "}
-                </div>
-                <div className="tasks border p-4 rounded-xl bg-white mb-6 overflow-y-auto max-h-96 flex-1 max-w-xs">
+                </div>{" "}
+                <div
+                    ref={tasksListRef}
+                    className="tasks border p-4 rounded-xl bg-white mb-6 overflow-y-auto max-h-96 flex-1 max-w-xs"
+                >
                     <div className="title flex flex-row items-center gap-2 mb-4">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
