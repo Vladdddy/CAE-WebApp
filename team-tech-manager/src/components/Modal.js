@@ -7,6 +7,7 @@ export default function Modal({
     message,
     type = "info",
     onConfirm = null,
+    confirmText = "Conferma",
 }) {
     if (!isOpen) return null;
 
@@ -154,15 +155,15 @@ export default function Modal({
                                     className="px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
                                 >
                                     Annulla
-                                </button>
+                                </button>{" "}
                                 <button
                                     onClick={() => {
                                         onConfirm();
                                         onClose();
                                     }}
-                                    className="px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded-md transition-colors"
+                                    className="px-4 py-2 text-white bg-[#3b82f6] hover:bg-[#2563eb] rounded-md transition-colors"
                                 >
-                                    Conferma
+                                    {confirmText}
                                 </button>
                             </>
                         ) : (

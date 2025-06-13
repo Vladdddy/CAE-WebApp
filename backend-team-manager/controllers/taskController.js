@@ -124,7 +124,7 @@ exports.toggleTask = (req, res) => {
         "non iniziato": "in corso",
         "in corso": "completato",
         completato: "non completato",
-        "non completato": "non iniziato",
+        "non completato": "completato",
     };
 
     task.status = nextStatus[task.status] || "non iniziato";
@@ -154,18 +154,18 @@ exports.deleteTask = (req, res) => {
 
 // Add description and simulator to a task
 exports.updateTaskDescription = (req, res) => {
-    console.log('updateTaskDescription called with:', {
+    console.log("updateTaskDescription called with:", {
         id: req.params.id,
         body: req.body,
-        user: req.user
+        user: req.user,
     });
-    
+
     const id = parseInt(req.params.id);
     const { description, simulator } = req.body;
     const task = tasks.find((t) => t.id === id);
 
     if (!task) {
-        console.log('Task not found with id:', id);
+        console.log("Task not found with id:", id);
         return res.status(404).json({ message: "Task non trovato" });
     }
 
@@ -173,7 +173,12 @@ exports.updateTaskDescription = (req, res) => {
     if (req.user.role === "employee") {
         // Employees can only update descriptions for tasks assigned to them
         if (task.assignedTo !== req.user.name) {
-            console.log('Permission denied: task assigned to', task.assignedTo, 'but user is', req.user.name);
+            console.log(
+                "Permission denied: task assigned to",
+                task.assignedTo,
+                "but user is",
+                req.user.name
+            );
             return res.status(403).json({
                 message:
                     "Non hai i permessi per modificare questo task. Puoi modificare solo i task assegnati a te.",
@@ -181,11 +186,16 @@ exports.updateTaskDescription = (req, res) => {
         }
     }
 
-    console.log('Updating task with description:', description, 'and simulator:', simulator);
+    console.log(
+        "Updating task with description:",
+        description,
+        "and simulator:",
+        simulator
+    );
     task.description = description || "";
     task.simulator = simulator || "";
     saveTasksToFile();
-    console.log('Task updated successfully:', task);
+    console.log("Task updated successfully:", task);
     res.json(task);
 };
 

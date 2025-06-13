@@ -67,26 +67,36 @@
     "id": 16,
     "title": "Colloquio Stagisti",
     "assignedTo": "Sara Gialli",
-    "status": "completato",
+    "status": "non completato",
     "date": "2025-06-11",
-    "time": "11:00"
+    "time": "11:00",
+    "description": "dfhdfdf",
+    "simulator": "Boh"
   },
   {
     "id": 17,
     "title": "Importare task già esistenti",
     "assignedTo": "Andrea Bianchi",
-    "status": "in corso",
+    "status": "non completato",
     "date": "2025-06-12",
     "time": "20:00"
   },
   {
-    "id": 20,
-    "title": "vfdg",
-    "assignedTo": "Gianluca",
-    "status": "non completato",
+    "id": 18,
+    "title": "Prova task",
+    "assignedTo": "Mario",
+    "status": "completato",
     "date": "2025-06-13",
-    "time": "15:00",
-    "description": "Prova descrizione 2",
-    "simulator": "JSNN8q3q"
+    "time": "08:00",
+    "description": "Nulla, prova ",
+    "simulator": ""
+  },
+  {
+    "id": 19,
+    "title": "Sistemare il bug delle task incomplete",
+    "assignedTo": "Luca",
+    "status": "non iniziato",
+    "date": "2025-06-16",
+    "time": "08:00"
   }
 ]

@@ -16,6 +16,7 @@ export default function Dashboard() {
         message: "",
         type: "info",
         onConfirm: null,
+        confirmText: "Conferma",
     });
     const [descriptionModal, setDescriptionModal] = useState({
         isOpen: false,
@@ -44,16 +45,21 @@ export default function Dashboard() {
         }
     };
 
-    const currentUser = getCurrentUser();
-
-    // Helper functions for modal
-    const showModal = (title, message, type = "info", onConfirm = null) => {
+    const currentUser = getCurrentUser(); // Helper functions for modal
+    const showModal = (
+        title,
+        message,
+        type = "info",
+        onConfirm = null,
+        confirmText = "Conferma"
+    ) => {
         setModal({
             isOpen: true,
             title,
             message,
             type,
             onConfirm,
+            confirmText,
         });
     };
 
@@ -252,6 +258,22 @@ export default function Dashboard() {
         } catch (error) {
             showModal("Errore", "Errore durante la modifica del task", "error");
         }
+    }; // Nuova funzione per gestire il toggle con conferma per task incompleti
+    const toggleIncompleteTask = async (id) => {
+        const task = tasks.find((t) => t.id === id);
+        if (task && task.status === "non completato") {
+            showModal(
+                "Conferma completamento",
+                "Segnare task come completato?",
+                "confirm",
+                async () => {
+                    await toggleTask(id);
+                },
+                "Salva"
+            );
+        } else {
+            await toggleTask(id);
+        }
     }; // Funzione per eliminare un task
     const deleteTask = async (id) => {
         showModal(
@@ -315,7 +337,6 @@ export default function Dashboard() {
                 return "#e5e7eb40";
         }
     };
-
     const dailyTasks = tasks.filter((t) => t.date === today);
 
     // Filtra i task in base all'orario
@@ -326,6 +347,21 @@ export default function Dashboard() {
     });
 
     const nightTasks = dailyTasks.filter((task) => {
+        const taskTime = task.time;
+        const hour = parseInt(taskTime.split(":")[0]);
+        return hour >= 19 || hour < 7;
+    }); // Filtra i task incompleti per il secondo container (tutti i task incompleti, non solo quelli di oggi)
+    const incompleteTasks = tasks.filter(
+        (task) => task.status === "non completato"
+    );
+
+    const incompleteDayTasks = incompleteTasks.filter((task) => {
+        const taskTime = task.time;
+        const hour = parseInt(taskTime.split(":")[0]);
+        return hour >= 7 && hour < 19;
+    });
+
+    const incompleteNightTasks = incompleteTasks.filter((task) => {
         const taskTime = task.time;
         const hour = parseInt(taskTime.split(":")[0]);
         return hour >= 19 || hour < 7;
@@ -372,8 +408,12 @@ export default function Dashboard() {
         };
         return shiftNames[shift];
     };
-
-    const renderTaskList = (taskList, shiftType) => {
+    const renderTaskList = (
+        taskList,
+        shiftType,
+        showDates = false,
+        isIncompleteSection = false
+    ) => {
         if (taskList.length === 0) {
             return (
                 <div className="text-center py-2 text-gray-400 text-sm">
@@ -395,6 +435,14 @@ export default function Dashboard() {
                         {task.title}
                     </p>
                     <div className=" text-xs text-gray-500 capitalize">
+                        {showDates && task.date !== today && (
+                            <span>
+                                {new Date(task.date).toLocaleDateString(
+                                    "it-IT"
+                                )}{" "}
+                                •{" "}
+                            </span>
+                        )}
                         {task.time} • {task.assignedTo} • {task.status}
                     </div>
                 </div>{" "}
@@ -444,7 +492,11 @@ export default function Dashboard() {
                     )}
                     {canToggleTask(task) && (
                         <button
-                            onClick={() => toggleTask(task.id)}
+                            onClick={() =>
+                                isIncompleteSection
+                                    ? toggleIncompleteTask(task.id)
+                                    : toggleTask(task.id)
+                            }
                             title="Cambia stato"
                         >
                             <svg
@@ -531,7 +583,6 @@ export default function Dashboard() {
 
     return (
         <>
-            {" "}
             <div className="top-dashboard flex justify-between items-center px-4 text-gray-800">
                 <div>
                     <h1 className="text-2xl font-bold">Ciao {userEmail}!</h1>
@@ -589,8 +640,8 @@ export default function Dashboard() {
                     </div>
                 </div>
             </div>
-            <div className="dashboard-content flex justify-between gap-4 p-4 mt-16">
-                <div className="tasks border p-4 rounded-xl bg-white w-1/2 max-w-[30vw] max-h-96 overflow-y-auto pb-4">
+            <div className="dashboard-content flex justify-between gap-4 p-4 mt-16 h-full">
+                <div className="tasks border p-4 rounded-xl bg-white w-1/2 max-w-[30vw] max-h-full overflow-y-auto pb-4">
                     <div className="title flex flex-row items-center justify-between mb-4">
                         <div className="left-row title flex flex-row items-center gap-2 ">
                             <svg
@@ -687,7 +738,117 @@ export default function Dashboard() {
                         </div>
                     )}
                 </div>{" "}
-                <div className="employees border p-4 rounded-xl bg-white w-1/4 max-h-96 overflow-y-auto">
+                <div className="tasks border p-4 rounded-xl bg-white w-1/2 max-w-[30vw] max-h-full overflow-y-auto pb-4">
+                    <div className="title flex flex-row items-center justify-between mb-4">
+                        <div className="left-row title flex flex-row items-center gap-2 ">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                width="20"
+                                height="20"
+                                color="oklch(44.6% 0.03 256.802)"
+                                fill="none"
+                            >
+                                <path
+                                    d="M12 2.00012C17.5228 2.00012 22 6.47727 22 12.0001C22 17.523 17.5228 22.0001 12 22.0001C6.47715 22.0001 2 17.523 2 12.0001M8.909 2.48699C7.9 2.8146 6.96135 3.29828 6.12153 3.90953M3.90943 6.12162C3.29806 6.9616 2.81432 7.90044 2.4867 8.90964"
+                                    stroke="currentColor"
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
+                                <path
+                                    d="M14.9994 15.0001L9 9.00012M9.00064 15.0001L15 9.00012"
+                                    stroke="currentColor"
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
+                            </svg>{" "}
+                            <p className="text-gray-600">Task incomplete</p>
+                        </div>
+                    </div>
+
+                    <div className="separator"></div>
+
+                    {loading ? (
+                        <div className="text-center py-4">
+                            Caricamento task...
+                        </div>
+                    ) : incompleteTasks.length === 0 ? (
+                        <div className="text-center py-4 text-gray-500">
+                            Nessun task incompleto per oggi
+                        </div>
+                    ) : (
+                        <div>
+                            <div className="mb-6 mt-8">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 24 24"
+                                        width="20"
+                                        height="20"
+                                        color="oklch(44.6% 0.03 256.802)"
+                                        fill="none"
+                                    >
+                                        <path
+                                            d="M17 12C17 14.7614 14.7614 17 12 17C9.23858 17 7 14.7614 7 12C7 9.23858 9.23858 7 12 7C14.7614 7 17 9.23858 17 12Z"
+                                            stroke="oklch(44.6% 0.03 256.802)"
+                                            strokeWidth="1.5"
+                                        ></path>
+                                        <path
+                                            d="M12 2V3.5M12 20.5V22M19.0708 19.0713L18.0101 18.0106M5.98926 5.98926L4.9286 4.9286M22 12H20.5M3.5 12H2M19.0713 4.92871L18.0106 5.98937M5.98975 18.0107L4.92909 19.0714"
+                                            stroke="oklch(44.6% 0.03 256.802)"
+                                            strokeWidth="1.5"
+                                            strokeLinecap="round"
+                                        ></path>
+                                    </svg>
+                                    <h4 className="text-gray-600">Giorno</h4>
+                                    <span className="span">
+                                        {incompleteDayTasks.length} task
+                                    </span>
+                                </div>
+                                {renderTaskList(
+                                    incompleteDayTasks,
+                                    "Day",
+                                    true,
+                                    true
+                                )}
+                            </div>
+
+                            <div>
+                                <div className="flex items-center gap-2 mb-4">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 24 24"
+                                        width="20"
+                                        height="20"
+                                        color="oklch(44.6% 0.03 256.802)"
+                                        fill="none"
+                                    >
+                                        <path
+                                            d="M21.5 14.0784C20.3003 14.7189 18.9301 15.0821 17.4751 15.0821C12.7491 15.0821 8.91792 11.2509 8.91792 6.52485C8.91792 5.06986 9.28105 3.69968 9.92163 2.5C5.66765 3.49698 2.5 7.31513 2.5 11.8731C2.5 17.1899 6.8101 21.5 12.1269 21.5C16.6849 21.5 20.503 18.3324 21.5 14.0784Z"
+                                            stroke="oklch(44.6% 0.03 256.802)"
+                                            strokeWidth="1.5"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        ></path>
+                                    </svg>
+                                    <h4 className="text-gray-600">Notte</h4>
+                                    <span className="span">
+                                        {incompleteNightTasks.length} task
+                                    </span>
+                                </div>
+                                {renderTaskList(
+                                    incompleteNightTasks,
+                                    "Night",
+                                    true,
+                                    true
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>{" "}
+                <div className="employees border p-4 rounded-xl bg-white w-1/4 max-h-full overflow-y-auto">
                     <div className="title flex flex-row items-center gap-2 mb-4">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -792,7 +953,7 @@ export default function Dashboard() {
                         </div>
                     ))}
                 </div>
-            </div>{" "}
+            </div>
             <Modal
                 isOpen={modal.isOpen}
                 onClose={closeModal}
@@ -800,6 +961,7 @@ export default function Dashboard() {
                 message={modal.message}
                 type={modal.type}
                 onConfirm={modal.onConfirm}
+                confirmText={modal.confirmText}
             />{" "}
             <DescriptionModal
                 isOpen={descriptionModal.isOpen}
