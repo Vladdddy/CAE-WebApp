@@ -774,6 +774,9 @@ export default function Tasks() {
                                                         : task.status ===
                                                           "in corso"
                                                         ? "#f6ad10"
+                                                        : task.status ===
+                                                          "non completato"
+                                                        ? "#dc2626"
                                                         : "#6b7280"
                                                 }
                                                 fill="none"

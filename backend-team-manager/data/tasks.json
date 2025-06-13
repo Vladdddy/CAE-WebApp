@@ -83,10 +83,10 @@
     "id": 20,
     "title": "vfdg",
     "assignedTo": "Gianluca",
-    "status": "completato",
+    "status": "non completato",
     "date": "2025-06-13",
     "time": "15:00",
-    "description": "Prova descrizione",
-    "simulator": "Simulatore JSNN8q3q"
+    "description": "Prova descrizione 2",
+    "simulator": "JSNN8q3q"
   }
 ]
