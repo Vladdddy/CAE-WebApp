@@ -1,8 +1,9 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const logbookController = require('../controllers/logbookController');
+const verifyToken = require("../middleware/auth");
+const logbookController = require("../controllers/logbookController");
 
-router.get('/:date', logbookController.getEntriesByDate);
-router.post('/:date', logbookController.saveEntriesByDate);
+router.get("/:date", verifyToken, logbookController.getEntriesByDate);
+router.post("/:date", verifyToken, logbookController.saveEntriesByDate);
 
 module.exports = router;

@@ -120,11 +120,11 @@ exports.toggleTask = (req, res) => {
             });
         }
     }
-
     const nextStatus = {
         "non iniziato": "in corso",
         "in corso": "completato",
-        completato: "non iniziato",
+        completato: "non completato",
+        "non completato": "non iniziato",
     };
 
     task.status = nextStatus[task.status] || "non iniziato";

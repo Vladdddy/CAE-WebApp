@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import Modal from "../components/Modal";
+import TaskDetailsModal from "../components/TaskDetailsModal";
 import html2pdf from "html2pdf.js";
 import "../styles/tasks.css";
 
@@ -21,6 +22,10 @@ export default function Tasks() {
         message: "",
         type: "info",
         onConfirm: null,
+    });
+    const [taskDetailsModal, setTaskDetailsModal] = useState({
+        isOpen: false,
+        task: null,
     });
     const API = process.env.REACT_APP_API_URL;
     const tasksListRef = useRef();
@@ -50,9 +55,22 @@ export default function Tasks() {
             onConfirm,
         });
     };
-
     const closeModal = () => {
         setModal((prev) => ({ ...prev, isOpen: false }));
+    };
+
+    const openTaskDetails = (task) => {
+        setTaskDetailsModal({
+            isOpen: true,
+            task: task,
+        });
+    };
+
+    const closeTaskDetails = () => {
+        setTaskDetailsModal({
+            isOpen: false,
+            task: null,
+        });
     };
 
     // Helper function to check if user can perform actions
@@ -156,7 +174,6 @@ export default function Tasks() {
                 setTime("08:00");
             } else {
                 const errorData = await res.json();
-                console.error("Error adding task:", errorData);
                 showModal(
                     "Errore",
                     errorData.message || "Errore durante l'aggiunta del task",
@@ -164,7 +181,6 @@ export default function Tasks() {
                 );
             }
         } catch (error) {
-            console.error("Error adding task:", error);
             showModal("Errore", "Errore durante l'aggiunta del task", "error");
         }
     };
@@ -374,13 +390,14 @@ export default function Tasks() {
             );
         }
     };
-
     const getBorderColor = (status) => {
         switch (status) {
             case "completato":
                 return "#139d5440";
             case "in corso":
                 return "#f6ad1040";
+            case "non completato":
+                return "#dc262640";
             default:
                 return "#e5e7eb40";
         }
@@ -410,22 +427,20 @@ export default function Tasks() {
                                 <path
                                     d="M15 6C15 6 9.00001 10.4189 9 12C8.99999 13.5812 15 18 15 18"
                                     stroke="#3b82f6"
-                                    stroke-width="1.5"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
                                 ></path>
                             </svg>
                         </button>{" "}
-                        <p className="text-xl font-normal text-gray-600">
-                            {new Date(selectedDate).toLocaleDateString(
-                                "it-IT",
-                                {
-                                    year: "numeric",
-                                    month: "numeric",
-                                    day: "numeric",
-                                }
-                            )}
-                        </p>
+                        <input
+                            type="date"
+                            value={selectedDate}
+                            onChange={(e) => {
+                                setSelectedDate(e.target.value);
+                                setDate(e.target.value);
+                            }}
+                        />
                         <button
                             onClick={() => handleChangeDay(1)}
                             className="arroww bg-[#3b82f620] p-2 rounded-md"
@@ -441,40 +456,40 @@ export default function Tasks() {
                                 <path
                                     d="M9.00005 6C9.00005 6 15 10.4189 15 12C15 13.5812 9 18 9 18"
                                     stroke="#3b82f6"
-                                    stroke-width="1.5"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
                                 ></path>
                             </svg>{" "}
                         </button>
                         <button
                             onClick={handleExportPDF}
-                            className="aggiungi-btn flex items-center gap-2 col-span-1 sm:col-span-2 bg-blue-600 px-4 py-2 rounded"
+                            className="aggiungi-btn flex items-center gap-2 col-span-1 sm:col-span-2 bg-blue-600 px-8 py-2 rounded"
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24"
-                                width="24"
-                                height="24"
+                                width="20"
+                                height="20"
                                 color="#fff"
                                 fill="none"
                             >
                                 <path
                                     d="M20 13V10.6569C20 9.83935 20 9.4306 19.8478 9.06306C19.6955 8.69552 19.4065 8.40649 18.8284 7.82843L14.0919 3.09188C13.593 2.593 13.3436 2.34355 13.0345 2.19575C12.9702 2.165 12.9044 2.13772 12.8372 2.11401C12.5141 2 12.1614 2 11.4558 2C8.21082 2 6.58831 2 5.48933 2.88607C5.26731 3.06508 5.06508 3.26731 4.88607 3.48933C4 4.58831 4 6.21082 4 9.45584V13M13 2.5V3C13 5.82843 13 7.24264 13.8787 8.12132C14.7574 9 16.1716 9 19 9H19.5"
                                     stroke="currentColor"
-                                    stroke-width="1.5"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
                                 />
                                 <path
                                     d="M19.75 16H17.25C16.6977 16 16.25 16.4477 16.25 17V19M16.25 19V22M16.25 19H19.25M4.25 22V19.5M4.25 19.5V16H6C6.9665 16 7.75 16.7835 7.75 17.75C7.75 18.7165 6.9665 19.5 6 19.5H4.25ZM10.25 16H11.75C12.8546 16 13.75 16.8954 13.75 18V20C13.75 21.1046 12.8546 22 11.75 22H10.25V16Z"
                                     stroke="currentColor"
-                                    stroke-width="1.5"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
                                 />
                             </svg>
-                            <p className="text-white">Export PDF</p>
+                            <p className="text-white">Export</p>
                         </button>
                     </div>
                     <div
@@ -633,12 +648,13 @@ export default function Tasks() {
                         dailyTasks.map((task) => (
                             <div
                                 key={task.id}
-                                className="display-task flex items-center justify-between dashboard-content p-3 rounded mt-3 bg-gray-100"
+                                className="display-task flex items-center justify-between dashboard-content p-3 rounded mt-3 bg-gray-100 cursor-pointer hover:bg-gray-200 transition-colors"
                                 style={{
                                     border: `2px solid ${getBorderColor(
                                         task.status
                                     )}`,
                                 }}
+                                onClick={() => openTaskDetails(task)}
                             >
                                 <div className="task-info">
                                     <p className="text-gray-600 max-w-md font-semibold text-sm">
@@ -652,7 +668,10 @@ export default function Tasks() {
                                 <div className="buttons flex flex-row gap-2">
                                     {canToggleTask(task) && (
                                         <button
-                                            onClick={() => toggleTask(task.id)}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                toggleTask(task.id);
+                                            }}
                                             title="Cambia stato"
                                         >
                                             <svg
@@ -699,11 +718,13 @@ export default function Tasks() {
                                                 />
                                             </svg>
                                         </button>
-                                    )}
-
+                                    )}{" "}
                                     {canDeleteTasks() && (
                                         <button
-                                            onClick={() => deleteTask(task.id)}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                deleteTask(task.id);
+                                            }}
                                             title="Elimina task"
                                         >
                                             <svg
@@ -734,7 +755,7 @@ export default function Tasks() {
                             </div>
                         ))
                     )}
-                </div>
+                </div>{" "}
                 <Modal
                     isOpen={modal.isOpen}
                     onClose={closeModal}
@@ -742,6 +763,11 @@ export default function Tasks() {
                     message={modal.message}
                     type={modal.type}
                     onConfirm={modal.onConfirm}
+                />
+                <TaskDetailsModal
+                    isOpen={taskDetailsModal.isOpen}
+                    onClose={closeTaskDetails}
+                    task={taskDetailsModal.task}
                 />
             </div>
         </>

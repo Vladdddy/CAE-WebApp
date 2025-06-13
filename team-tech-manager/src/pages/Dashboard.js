@@ -101,23 +101,18 @@ export default function Dashboard() {
     }, []); // Fetch users data
     useEffect(() => {
         const token = localStorage.getItem("authToken");
-        console.log("Fetching users with token:", token);
         fetch(`${API}/api/users`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
         })
             .then((res) => {
-                console.log("Users response status:", res.status);
                 return res.json();
             })
             .then((data) => {
-                console.log("Users data received:", data);
                 setUsers(data);
             })
-            .catch((error) => {
-                console.error("Error fetching users:", error);
-            });
+            .catch((error) => {});
     }, []); // Fetch shifts data for current month
     useEffect(() => {
         const token = localStorage.getItem("authToken");
@@ -125,18 +120,15 @@ export default function Dashboard() {
         const year = currentDate.getFullYear();
         const month = String(currentDate.getMonth() + 1).padStart(2, "0");
 
-        console.log("Fetching shifts for:", `${year}/${month}`);
         fetch(`${API}/api/shifts/${year}/${month}`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
         })
             .then((res) => {
-                console.log("Shifts response status:", res.status);
                 return res.json();
             })
             .then((data) => {
-                console.log("Shifts data received:", data);
                 setShifts(data);
             })
             .catch((error) => {
@@ -170,7 +162,6 @@ export default function Dashboard() {
                 console.error("Error toggling task:", await res.text());
             }
         } catch (error) {
-            console.error("Error toggling task:", error);
             showModal("Errore", "Errore durante la modifica del task", "error");
         }
     }; // Funzione per eliminare un task
@@ -208,7 +199,6 @@ export default function Dashboard() {
                             "success"
                         );
                     } else {
-                        console.error("Error deleting task:", await res.text());
                         showModal(
                             "Errore",
                             "Errore durante l'eliminazione del task",
@@ -216,7 +206,6 @@ export default function Dashboard() {
                         );
                     }
                 } catch (error) {
-                    console.error("Error deleting task:", error);
                     showModal(
                         "Errore",
                         "Errore durante l'eliminazione del task",
@@ -226,13 +215,14 @@ export default function Dashboard() {
             }
         );
     };
-
     const getBorderColor = (status) => {
         switch (status) {
             case "completato":
                 return "#139d5440";
             case "in corso":
                 return "#f6ad1040";
+            case "non completato":
+                return "#dc262640";
             default:
                 return "#e5e7eb40";
         }
@@ -268,30 +258,20 @@ export default function Dashboard() {
         const shift = getCurrentShift();
         const today = new Date().toISOString().split("T")[0];
 
-        console.log("Current shift:", shift);
-        console.log("Today:", today);
-        console.log("Users:", users);
-        console.log("Shifts:", shifts);
-
         if (shifts[today]) {
             const todayShifts = shifts[today];
             const employeesInShift = [];
 
-            console.log("Today's shifts:", todayShifts);
-
             users.forEach((user) => {
                 const userShiftData = todayShifts[user.name];
-                console.log(`Checking user ${user.name}:`, userShiftData);
                 if (userShiftData && userShiftData.shift === shift) {
                     employeesInShift.push(user.name);
                 }
             });
 
-            console.log("Employees in current shift:", employeesInShift);
             return employeesInShift;
         }
 
-        console.log("No shift data for today");
         return [];
     };
 
@@ -331,13 +311,50 @@ export default function Dashboard() {
                     </div>
                 </div>{" "}
                 <div className="buttons flex flex-row gap-2">
+                    <button>
+                        <svg
+                            className="finito-icon"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            width="20"
+                            height="20"
+                            color={"#6b7280"}
+                            fill="none"
+                        >
+                            <path
+                                d="M10.2892 21.9614H9.39111C6.14261 21.9614 4.51836 21.9614 3.50918 20.9363C2.5 19.9111 2.5 18.2612 2.5 14.9614V9.96139C2.5 6.66156 2.5 5.01165 3.50918 3.98653C4.51836 2.9614 6.14261 2.9614 9.39111 2.9614H12.3444C15.5929 2.9614 17.4907 3.01658 18.5 4.04171C19.5092 5.06683 19.5 6.66156 19.5 9.96139V11.1478"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            ></path>
+                            <path
+                                d="M15.9453 2V4M10.9453 2V4M5.94531 2V4"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            ></path>
+                            <path
+                                d="M7 15H11M7 10H15"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                            ></path>
+                            <path
+                                opacity="0.93"
+                                d="M20.7598 14.8785C19.8544 13.8641 19.3112 13.9245 18.7076 14.1056C18.2851 14.166 16.8365 15.8568 16.2329 16.3952C15.2419 17.3743 14.2464 18.3823 14.1807 18.5138C13.9931 18.8188 13.8186 19.3592 13.7341 19.963C13.5771 20.8688 13.3507 21.8885 13.6375 21.9759C13.9242 22.0632 14.7239 21.8954 15.6293 21.7625C16.2329 21.6538 16.6554 21.533 16.9572 21.3519C17.3797 21.0983 18.1644 20.2046 19.5164 18.8761C20.3644 17.9833 21.1823 17.3664 21.4238 16.7626C21.6652 15.8568 21.3031 15.3737 20.7598 14.8785Z"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
+                            ></path>
+                        </svg>
+                    </button>
                     {canToggleTask(task) && (
                         <button
                             onClick={() => toggleTask(task.id)}
                             title="Cambia stato"
                         >
                             <svg
-                                className="finito-icon"
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24"
                                 width="20"
@@ -352,31 +369,33 @@ export default function Dashboard() {
                                 fill="none"
                             >
                                 <path
-                                    d="M10.2892 21.9614H9.39111C6.14261 21.9614 4.51836 21.9614 3.50918 20.9363C2.5 19.9111 2.5 18.2612 2.5 14.9614V9.96139C2.5 6.66156 2.5 5.01165 3.50918 3.98653C4.51836 2.9614 6.14261 2.9614 9.39111 2.9614H12.3444C15.5929 2.9614 17.4907 3.01658 18.5 4.04171C19.5092 5.06683 19.5 6.66156 19.5 9.96139V11.1478"
+                                    d="M20.5 5.5H9.5C5.78672 5.5 3 8.18503 3 12"
                                     stroke="currentColor"
-                                    stroke-width="1.5"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                ></path>
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
                                 <path
-                                    d="M15.9453 2V4M10.9453 2V4M5.94531 2V4"
+                                    d="M3.5 18.5H14.5C18.2133 18.5 21 15.815 21 12"
                                     stroke="currentColor"
-                                    stroke-width="1.5"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                ></path>
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
                                 <path
-                                    d="M7 15H11M7 10H15"
+                                    d="M18.5 3C18.5 3 21 4.84122 21 5.50002C21 6.15882 18.5 8 18.5 8"
                                     stroke="currentColor"
-                                    stroke-width="1.5"
-                                    stroke-linecap="round"
-                                ></path>
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
                                 <path
-                                    opacity="0.93"
-                                    d="M20.7598 14.8785C19.8544 13.8641 19.3112 13.9245 18.7076 14.1056C18.2851 14.166 16.8365 15.8568 16.2329 16.3952C15.2419 17.3743 14.2464 18.3823 14.1807 18.5138C13.9931 18.8188 13.8186 19.3592 13.7341 19.963C13.5771 20.8688 13.3507 21.8885 13.6375 21.9759C13.9242 22.0632 14.7239 21.8954 15.6293 21.7625C16.2329 21.6538 16.6554 21.533 16.9572 21.3519C17.3797 21.0983 18.1644 20.2046 19.5164 18.8761C20.3644 17.9833 21.1823 17.3664 21.4238 16.7626C21.6652 15.8568 21.3031 15.3737 20.7598 14.8785Z"
+                                    d="M5.49998 16C5.49998 16 3.00001 17.8412 3 18.5C2.99999 19.1588 5.5 21 5.5 21"
                                     stroke="currentColor"
-                                    stroke-width="1.5"
-                                ></path>
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
                             </svg>
                         </button>
                     )}
@@ -434,13 +453,13 @@ export default function Dashboard() {
                                 <path
                                     d="M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z"
                                     stroke="currentColor"
-                                    stroke-width="1"
+                                    strokeWidth="1"
                                 />
                                 <path
                                     d="M14 14H10C7.23858 14 5 16.2386 5 19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19C19 16.2386 16.7614 14 14 14Z"
                                     stroke="currentColor"
-                                    stroke-width="1"
-                                    stroke-linejoin="round"
+                                    strokeWidth="1"
+                                    strokeLinejoin="round"
                                 />
                             </svg>
                             <p className="text-xs text-gray-400 capitalize">
@@ -490,13 +509,13 @@ export default function Dashboard() {
                                 <path
                                     d="M10.6119 5.00008L10.0851 7M12.2988 2.76313C12.713 3.49288 12.4672 4.42601 11.7499 4.84733C11.0326 5.26865 10.1153 5.01862 9.70118 4.28887C9.28703 3.55912 9.53281 2.62599 10.2501 2.20467C10.9674 1.78334 11.8847 2.03337 12.2988 2.76313Z"
                                     stroke="oklch(44.6% 0.03 256.802)"
-                                    stroke-width="1.5"
-                                    stroke-linecap="round"
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
                                 ></path>
                                 <path
                                     d="M13 21.998C12.031 20.8176 10.5 18 8.5 18C7.20975 18.1059 6.53573 19.3611 5.84827 20.3287M5.84827 20.3287C5.45174 19.961 5.30251 19.4126 5.00406 18.3158L3.26022 11.9074C2.5584 9.32827 2.20749 8.0387 2.80316 7.02278C3.39882 6.00686 4.70843 5.66132 7.32766 4.97025L9.5 4.39708M5.84827 20.3287C6.2448 20.6965 6.80966 20.8103 7.9394 21.0379L12.0813 21.8725C12.9642 22.0504 12.9721 22.0502 13.8426 21.8205L16.6723 21.0739C19.2916 20.3828 20.6012 20.0373 21.1968 19.0214C21.7925 18.0055 21.4416 16.7159 20.7398 14.1368L19.0029 7.75375C18.301 5.17462 17.9501 3.88506 16.9184 3.29851C16.0196 2.78752 14.9098 2.98396 12.907 3.5"
                                     stroke="oklch(44.6% 0.03 256.802)"
-                                    stroke-width="1.5"
+                                    strokeWidth="1.5"
                                 ></path>
                             </svg>
                             <p className="text-gray-600">Task giornaliere</p>
@@ -528,13 +547,13 @@ export default function Dashboard() {
                                         <path
                                             d="M17 12C17 14.7614 14.7614 17 12 17C9.23858 17 7 14.7614 7 12C7 9.23858 9.23858 7 12 7C14.7614 7 17 9.23858 17 12Z"
                                             stroke="oklch(44.6% 0.03 256.802)"
-                                            stroke-width="1.5"
+                                            strokeWidth="1.5"
                                         ></path>
                                         <path
                                             d="M12 2V3.5M12 20.5V22M19.0708 19.0713L18.0101 18.0106M5.98926 5.98926L4.9286 4.9286M22 12H20.5M3.5 12H2M19.0713 4.92871L18.0106 5.98937M5.98975 18.0107L4.92909 19.0714"
                                             stroke="oklch(44.6% 0.03 256.802)"
-                                            stroke-width="1.5"
-                                            stroke-linecap="round"
+                                            strokeWidth="1.5"
+                                            strokeLinecap="round"
                                         ></path>
                                     </svg>
                                     <h4 className="text-gray-600">Giorno</h4>
@@ -558,9 +577,9 @@ export default function Dashboard() {
                                         <path
                                             d="M21.5 14.0784C20.3003 14.7189 18.9301 15.0821 17.4751 15.0821C12.7491 15.0821 8.91792 11.2509 8.91792 6.52485C8.91792 5.06986 9.28105 3.69968 9.92163 2.5C5.66765 3.49698 2.5 7.31513 2.5 11.8731C2.5 17.1899 6.8101 21.5 12.1269 21.5C16.6849 21.5 20.503 18.3324 21.5 14.0784Z"
                                             stroke="oklch(44.6% 0.03 256.802)"
-                                            stroke-width="1.5"
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
+                                            strokeWidth="1.5"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
                                         ></path>
                                     </svg>
                                     <h4 className="text-gray-600">Notte</h4>
@@ -586,50 +605,50 @@ export default function Dashboard() {
                             <path
                                 d="M7.5 19.5C7.5 18.5344 7.82853 17.5576 8.63092 17.0204C9.59321 16.3761 10.7524 16 12 16C13.2476 16 14.4068 16.3761 15.3691 17.0204C16.1715 17.5576 16.5 18.5344 16.5 19.5"
                                 stroke="oklch(44.6% 0.03 256.802)"
-                                stroke-width="1.5"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
                             ></path>
                             <circle
                                 cx="12"
                                 cy="11"
                                 r="2.5"
                                 stroke="oklch(44.6% 0.03 256.802)"
-                                stroke-width="1.5"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
                             ></circle>
                             <path
                                 d="M17.5 11C18.6101 11 19.6415 11.3769 20.4974 12.0224C21.2229 12.5696 21.5 13.4951 21.5 14.4038V14.5"
                                 stroke="oklch(44.6% 0.03 256.802)"
-                                stroke-width="1.5"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
                             ></path>
                             <circle
                                 cx="17.5"
                                 cy="6.5"
                                 r="2"
                                 stroke="oklch(44.6% 0.03 256.802)"
-                                stroke-width="1.5"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
                             ></circle>
                             <path
                                 d="M6.5 11C5.38987 11 4.35846 11.3769 3.50256 12.0224C2.77706 12.5696 2.5 13.4951 2.5 14.4038V14.5"
                                 stroke="oklch(44.6% 0.03 256.802)"
-                                stroke-width="1.5"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
                             ></path>
                             <circle
                                 cx="6.5"
                                 cy="6.5"
                                 r="2"
                                 stroke="oklch(44.6% 0.03 256.802)"
-                                stroke-width="1.5"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
                             ></circle>
                         </svg>
                         <p className="text-gray-600">Dipendenti in turno</p>
@@ -652,14 +671,14 @@ export default function Dashboard() {
                                     cy="12"
                                     r="10"
                                     stroke="oklch(44.6% 0.03 256.802)"
-                                    stroke-width="1.5"
+                                    strokeWidth="1.5"
                                 ></circle>
                                 <path
                                     d="M12 8V12L14 14"
                                     stroke="oklch(44.6% 0.03 256.802)"
-                                    stroke-width="1.5"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
                                 ></path>
                             </svg>
                             <h4 className="text-gray-600">Turno</h4>

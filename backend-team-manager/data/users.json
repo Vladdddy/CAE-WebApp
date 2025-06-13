@@ -10,27 +10,27 @@
     },
     {
         "id": 2,
-        "email": "marco.verdi@teamtech.com",
-        "password": "marco123",
-        "name": "Marco Verdi",
+        "email": "mario@teamtech.com",
+        "password": "mario123",
+        "name": "Mario",
         "role": "employee",
         "department": "Operations",
         "active": true
     },
     {
         "id": 3,
-        "email": "luca.rossi@teamtech.com",
+        "email": "luca@teamtech.com",
         "password": "luca123",
-        "name": "Luca Rossi",
+        "name": "Luca",
         "role": "employee",
         "department": "Operations",
         "active": true
     },
     {
         "id": 5,
-        "email": "andrea.bianchi@teamtech.com",
-        "password": "andrea123",
-        "name": "Andrea Bianchi",
+        "email": "simone@teamtech.com",
+        "password": "simone123",
+        "name": "Simone",
         "role": "employee",
         "department": "Operations",
         "active": true
@@ -46,9 +46,9 @@
     },
     {
         "id": 7,
-        "email": "simone.neri@teamtech.com",
-        "password": "simone123",
-        "name": "Simone Neri",
+        "email": "andrea.bianchi@teamtech.com",
+        "password": "andrea123",
+        "name": "Andrea Bianchi",
         "role": "employee",
         "department": "Operations",
         "active": true
@@ -85,8 +85,8 @@
         "email": "gianluca@teamtech.com",
         "password": "gianluca123",
         "name": "Gianluca",
-        "role": "admin",
-        "department": "IT",
+        "role": "employee",
+        "department": "Operations",
         "active": true
     }
 ]

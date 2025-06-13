@@ -85,3 +85,12 @@ select option:checked {
     background-color: #3b82f6;
     color: white;
 }
+
+.employee-info {
+    background-color: #3b82f630;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
