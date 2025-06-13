@@ -152,6 +152,43 @@ exports.deleteTask = (req, res) => {
     res.json({ success: true, id });
 };
 
+// Add description and simulator to a task
+exports.updateTaskDescription = (req, res) => {
+    console.log('updateTaskDescription called with:', {
+        id: req.params.id,
+        body: req.body,
+        user: req.user
+    });
+    
+    const id = parseInt(req.params.id);
+    const { description, simulator } = req.body;
+    const task = tasks.find((t) => t.id === id);
+
+    if (!task) {
+        console.log('Task not found with id:', id);
+        return res.status(404).json({ message: "Task non trovato" });
+    }
+
+    // Check permissions for employees
+    if (req.user.role === "employee") {
+        // Employees can only update descriptions for tasks assigned to them
+        if (task.assignedTo !== req.user.name) {
+            console.log('Permission denied: task assigned to', task.assignedTo, 'but user is', req.user.name);
+            return res.status(403).json({
+                message:
+                    "Non hai i permessi per modificare questo task. Puoi modificare solo i task assegnati a te.",
+            });
+        }
+    }
+
+    console.log('Updating task with description:', description, 'and simulator:', simulator);
+    task.description = description || "";
+    task.simulator = simulator || "";
+    saveTasksToFile();
+    console.log('Task updated successfully:', task);
+    res.json(task);
+};
+
 // New endpoint to get available employees for a specific date and time
 exports.getAvailableEmployees = (req, res) => {
     const { date, time } = req.query;

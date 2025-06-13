@@ -80,19 +80,13 @@
     "time": "20:00"
   },
   {
-    "id": 19,
-    "title": "fgsgfdgfg",
-    "assignedTo": "Mario",
-    "status": "non iniziato",
-    "date": "2025-06-13",
-    "time": "08:00"
-  },
-  {
     "id": 20,
     "title": "vfdg",
     "assignedTo": "Gianluca",
     "status": "completato",
     "date": "2025-06-13",
-    "time": "15:00"
+    "time": "15:00",
+    "description": "Prova descrizione",
+    "simulator": "Simulatore JSNN8q3q"
   }
 ]

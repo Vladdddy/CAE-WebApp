@@ -84,7 +84,6 @@ export default function TaskDetailsModal({ isOpen, onClose, task }) {
                             <p className="text-[#3b82f6]">{task.assignedTo}</p>
                         </div>
                     </div>
-
                     {/* Task Title */}
                     <div>
                         <label className="block text-xs font-medium text-gray-600 mb-1">
@@ -94,7 +93,6 @@ export default function TaskDetailsModal({ isOpen, onClose, task }) {
                             {task.title}
                         </p>
                     </div>
-
                     {/* Date and Time */}
                     <div className="flex justify-between">
                         <div>
@@ -126,28 +124,23 @@ export default function TaskDetailsModal({ isOpen, onClose, task }) {
                             </span>
                         </div>
                     </div>
-
                     {/* Status */}
-
-                    <div className="separator"></div>
-
-                    {/* Created Date (placeholder) */}
+                    <div className="separator"></div> {/* Simulator */}
                     <div>
                         <label className="block text-xs font-medium text-gray-600 mb-1">
                             Simulatore
                         </label>
                         <p className="text-gray-600 text-sm">
-                            (nome simulatore)
+                            {task.simulator || "Nessun simulatore"}
                         </p>
-                    </div>
-
-                    {/* Description (placeholder) */}
+                    </div>{" "}
+                    {/* Description */}
                     <div>
                         <label className="block text-xs font-medium text-gray-600 mb-1">
                             Descrizione
                         </label>
                         <p className="text-gray-600 text-sm">
-                            (note o motivazione del task)
+                            {task.description || "Nessuna descrizione"}
                         </p>
                     </div>
                 </div>

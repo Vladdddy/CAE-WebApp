@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import Modal from "../components/Modal";
 import TaskDetailsModal from "../components/TaskDetailsModal";
+import DescriptionModal from "../components/DescriptionModal";
 import html2pdf from "html2pdf.js";
 import "../styles/tasks.css";
 
@@ -26,6 +27,12 @@ export default function Tasks() {
     const [taskDetailsModal, setTaskDetailsModal] = useState({
         isOpen: false,
         task: null,
+    });
+    const [descriptionModal, setDescriptionModal] = useState({
+        isOpen: false,
+        taskId: null,
+        currentDescription: "",
+        currentSimulator: "",
     });
     const API = process.env.REACT_APP_API_URL;
     const tasksListRef = useRef();
@@ -91,6 +98,88 @@ export default function Tasks() {
             currentUser.role === "employee" &&
             task.assignedTo === currentUser.name
         );
+    };
+
+    const canEditDescription = (task) => {
+        if (!currentUser) return false;
+        // Admins, managers, supervisors can edit any task description
+        if (["admin", "manager", "supervisor"].includes(currentUser.role))
+            return true;
+        // Employees can only edit descriptions for tasks assigned to them
+        return (
+            currentUser.role === "employee" &&
+            task.assignedTo === currentUser.name
+        );
+    };
+    const openDescriptionModal = (task) => {
+        setDescriptionModal({
+            isOpen: true,
+            taskId: task.id,
+            currentDescription: task.description || "",
+            currentSimulator: task.simulator || "",
+        });
+    };
+
+    const closeDescriptionModal = () => {
+        setDescriptionModal({
+            isOpen: false,
+            taskId: null,
+            currentDescription: "",
+            currentSimulator: "",
+        });
+    };
+    const updateTaskDescription = async (data) => {
+        const token = localStorage.getItem("authToken");
+        try {
+            const res = await fetch(
+                `${API}/api/tasks/${descriptionModal.taskId}/description`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify(data),
+                }
+            );
+
+            if (res.status === 403) {
+                const error = await res.json();
+                showModal(
+                    "Accesso negato",
+                    error.message ||
+                        "Non hai i permessi per modificare questo task",
+                    "error"
+                );
+                return;
+            }
+
+            if (res.ok) {
+                const updated = await res.json();
+                setTasks(
+                    tasks.map((t) =>
+                        t.id === descriptionModal.taskId ? updated : t
+                    )
+                );
+                showModal(
+                    "Successo",
+                    "Descrizione aggiornata con successo",
+                    "success"
+                );
+            } else {
+                showModal(
+                    "Errore",
+                    "Errore durante l'aggiornamento della descrizione",
+                    "error"
+                );
+            }
+        } catch (error) {
+            showModal(
+                "Errore",
+                "Errore durante l'aggiornamento della descrizione",
+                "error"
+            );
+        }
     };
 
     useEffect(() => {
@@ -664,7 +753,7 @@ export default function Tasks() {
                                         {task.time} • {task.assignedTo} •{" "}
                                         {task.status}
                                     </div>
-                                </div>
+                                </div>{" "}
                                 <div className="buttons flex flex-row gap-2">
                                     {canToggleTask(task) && (
                                         <button
@@ -675,7 +764,6 @@ export default function Tasks() {
                                             title="Cambia stato"
                                         >
                                             <svg
-                                                className="finito-icon"
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 viewBox="0 0 24 24"
                                                 width="20"
@@ -691,30 +779,32 @@ export default function Tasks() {
                                                 fill="none"
                                             >
                                                 <path
-                                                    d="M10.2892 21.9614H9.39111C6.14261 21.9614 4.51836 21.9614 3.50918 20.9363C2.5 19.9111 2.5 18.2612 2.5 14.9614V9.96139C2.5 6.66156 2.5 5.01165 3.50918 3.98653C4.51836 2.9614 6.14261 2.9614 9.39111 2.9614H12.3444C15.5929 2.9614 17.4907 3.01658 18.5 4.04171C19.5092 5.06683 19.5 6.66156 19.5 9.96139V11.1478"
+                                                    d="M20.5 5.5H9.5C5.78672 5.5 3 8.18503 3 12"
                                                     stroke="currentColor"
                                                     strokeWidth="1.5"
                                                     strokeLinecap="round"
                                                     strokeLinejoin="round"
                                                 />
                                                 <path
-                                                    d="M15.9453 2V4M10.9453 2V4M5.94531 2V4"
+                                                    d="M3.5 18.5H14.5C18.2133 18.5 21 15.815 21 12"
                                                     stroke="currentColor"
                                                     strokeWidth="1.5"
                                                     strokeLinecap="round"
                                                     strokeLinejoin="round"
                                                 />
                                                 <path
-                                                    d="M7 15H11M7 10H15"
+                                                    d="M18.5 3C18.5 3 21 4.84122 21 5.50002C21 6.15882 18.5 8 18.5 8"
                                                     stroke="currentColor"
                                                     strokeWidth="1.5"
                                                     strokeLinecap="round"
+                                                    strokeLinejoin="round"
                                                 />
                                                 <path
-                                                    opacity="0.93"
-                                                    d="M20.7598 14.8785C19.8544 13.8641 19.3112 13.9245 18.7076 14.1056C18.2851 14.166 16.8365 15.8568 16.2329 16.3952C15.2419 17.3743 14.2464 18.3823 14.1807 18.5138C13.9931 18.8188 13.8186 19.3592 13.7341 19.963C13.5771 20.8688 13.3507 21.8885 13.6375 21.9759C13.9242 22.0632 14.7239 21.8954 15.6293 21.7625C16.2329 21.6538 16.6554 21.533 16.9572 21.3519C17.3797 21.0983 18.1644 20.2046 19.5164 18.8761C20.3644 17.9833 21.1823 17.3664 21.4238 16.7626C21.6652 15.8568 21.3031 15.3737 20.7598 14.8785Z"
+                                                    d="M5.49998 16C5.49998 16 3.00001 17.8412 3 18.5C2.99999 19.1588 5.5 21 5.5 21"
                                                     stroke="currentColor"
                                                     strokeWidth="1.5"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
                                                 />
                                             </svg>
                                         </button>
@@ -763,11 +853,18 @@ export default function Tasks() {
                     message={modal.message}
                     type={modal.type}
                     onConfirm={modal.onConfirm}
-                />
+                />{" "}
                 <TaskDetailsModal
                     isOpen={taskDetailsModal.isOpen}
                     onClose={closeTaskDetails}
                     task={taskDetailsModal.task}
+                />{" "}
+                <DescriptionModal
+                    isOpen={descriptionModal.isOpen}
+                    onClose={closeDescriptionModal}
+                    onSave={updateTaskDescription}
+                    currentDescription={descriptionModal.currentDescription}
+                    currentSimulator={descriptionModal.currentSimulator}
                 />
             </div>
         </>
