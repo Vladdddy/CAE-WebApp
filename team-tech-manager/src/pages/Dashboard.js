@@ -585,7 +585,9 @@ export default function Dashboard() {
         <>
             <div className="top-dashboard flex justify-between items-center px-4 text-gray-800">
                 <div>
-                    <h1 className="text-2xl font-bold">Ciao {userEmail}!</h1>
+                    <h1 className="text-2xl font-bold">
+                        Ciao {currentUser?.name}!
+                    </h1>
                 </div>
                 <div className="flex justify-center">
                     <img
@@ -613,7 +615,7 @@ export default function Dashboard() {
                     </div>
                 </div>
             </div>
-            <div className="dashboard-content flex justify-between gap-4 p-4 mt-16 h-full">
+            <div className="dashboard-content flex justify-between gap-4 p-4 mt-16 h-96">
                 <div className="tasks border p-4 rounded-xl bg-white w-1/2 max-w-[30vw] max-h-full overflow-y-auto pb-4">
                     <div className="title flex flex-row items-center justify-between mb-4">
                         <div className="left-row title flex flex-row items-center gap-2 ">

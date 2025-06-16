@@ -33,12 +33,12 @@ export default function Tasks() {
         taskId: null,
         currentDescription: "",
         currentSimulator: "",
-    });
-    // Filter states
+    }); // Filter states
     const [filters, setFilters] = useState({
         searchText: "",
         fromDate: "",
         toDate: "",
+        status: "",
     });
     const [filteredTasks, setFilteredTasks] = useState([]);
     const [showFilterResults, setShowFilterResults] = useState(false);
@@ -511,7 +511,6 @@ export default function Tasks() {
             [field]: value,
         }));
     };
-
     const applyFilters = (tasksToFilter, currentFilters) => {
         let filtered = [...tasksToFilter];
 
@@ -527,6 +526,22 @@ export default function Tasks() {
                     (task.simulator &&
                         task.simulator.toLowerCase().includes(searchLower))
             );
+        }
+
+        // Status filter
+        if (currentFilters.status) {
+            filtered = filtered.filter((task) => {
+                if (currentFilters.status === "non iniziato") {
+                    // Non iniziato means no status or status is not one of the defined ones
+                    return (
+                        !task.status ||
+                        !["completato", "in corso", "non completato"].includes(
+                            task.status
+                        )
+                    );
+                }
+                return task.status === currentFilters.status;
+            });
         }
 
         // Date range filter
@@ -549,12 +564,12 @@ export default function Tasks() {
         setFilteredTasks(filtered);
         setShowFilterResults(true);
     };
-
     const clearFilters = () => {
         setFilters({
             searchText: "",
             fromDate: "",
             toDate: "",
+            status: "",
         });
         setFilteredTasks([]);
         setShowFilterResults(false);
@@ -567,7 +582,7 @@ export default function Tasks() {
     return (
         <>
             <div className="flex gap-4 flex-col lg:flex-row justify-between max-w-full p-4">
-                <div className="flex flex-col min-w-0">
+                <div className="flex flex-col min-w-0 justify-between">
                     <div className="date-selector flex items-center justify-center mb-4 gap-8 flex-wrap">
                         <button
                             onClick={() => handleChangeDay(-1)}
@@ -685,11 +700,11 @@ export default function Tasks() {
 
                         <form
                             onSubmit={handleAddTask}
-                            className="flex flex-col gap-4"
+                            className="flex flex-col gap-2"
                         >
                             <label
                                 htmlFor="title"
-                                className="text-sm text-gray-600"
+                                className="text-xs text-gray-500"
                             >
                                 Titolo
                             </label>
@@ -698,11 +713,12 @@ export default function Tasks() {
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
                                 className="border px-3 py-2 rounded mb-4 text-gray-600 text-sm"
+                                placeholder="Inserisci un titolo"
                                 required
                             />
                             <label
                                 htmlFor="assignedTo"
-                                className="text-sm text-gray-600"
+                                className="text-xs text-gray-500"
                             >
                                 Assegna a
                             </label>
@@ -718,7 +734,7 @@ export default function Tasks() {
                                         ? "Caricamento dipendenti..."
                                         : availableEmployees.length === 0
                                         ? "Nessun dipendente disponibile"
-                                        : "---"}
+                                        : "Seleziona dipendente"}
                                 </option>
                                 {availableEmployees.map((employee) => (
                                     <option key={employee} value={employee}>
@@ -728,7 +744,7 @@ export default function Tasks() {
                             </select>
                             <label
                                 htmlFor="date"
-                                className="text-sm text-gray-600"
+                                className="text-xs text-gray-500"
                             >
                                 Data
                             </label>
@@ -741,7 +757,7 @@ export default function Tasks() {
                             />
                             <label
                                 htmlFor="time"
-                                className="text-sm text-gray-600"
+                                className="text-xs text-gray-500"
                             >
                                 Orario
                             </label>
@@ -764,10 +780,10 @@ export default function Tasks() {
                 <div className="flex flex-col items-center justify-between">
                     {" "}
                     <div
-                        className="tasks flex flex-col w-[44vw] border p-4 rounded-xl bg-white mb-8 overflow-y-auto max-h-full max-w-full"
+                        className="tasks flex flex-col w-[44vw] h-auto border p-4 rounded-xl bg-white mb-8 overflow-y-auto max-h-full max-w-full"
                         style={{ boxShadow: "4px 4px 10px #00000010" }}
                     >
-                        <div className="title flex flex-row items-center gap-2 mb-4">
+                        <div className="title flex flex-row items-center gap-2">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24"
@@ -819,7 +835,13 @@ export default function Tasks() {
                             <p className="text-gray-600">Filtro task</p>
                         </div>
                         <div className="separator"></div>{" "}
-                        <div className="filter-form flex flex-col gap-4 mt-0">
+                        <div className="filter-form flex flex-col gap-2 mt-0">
+                            <label
+                                htmlFor="searchText"
+                                className="text-xs text-gray-500"
+                            >
+                                Cerca
+                            </label>
                             <div className="flex flex-row gap-2">
                                 <input
                                     type="text"
@@ -873,9 +895,31 @@ export default function Tasks() {
                                         Cancella
                                     </button>
                                 )}
-                            </div>
-
-                            <div className="flex flex-col gap-2 mt-4">
+                            </div>{" "}
+                            <label
+                                htmlFor="status"
+                                className="text-xs text-gray-500"
+                            >
+                                Stato
+                            </label>
+                            <select
+                                value={filters.status}
+                                onChange={(e) =>
+                                    handleFilterChange("status", e.target.value)
+                                }
+                                className="border px-3 py-2 rounded w-1/2 text-gray-600 text-sm focus:outline-none"
+                            >
+                                <option value="">Seleziona stato</option>
+                                <option value="non iniziato">
+                                    Non iniziato
+                                </option>
+                                <option value="in corso">In corso</option>
+                                <option value="completato">Completato</option>
+                                <option value="non completato">
+                                    Non completato
+                                </option>
+                            </select>
+                            <div className="flex flex-col gap-2 mt-2">
                                 <div className="flex gap-2 items-center">
                                     <div className="flex flex-col flex-1">
                                         <label
@@ -923,7 +967,7 @@ export default function Tasks() {
                     </div>{" "}
                     <div
                         ref={tasksListRef}
-                        className="tasks flex flex-col w-[44vw] border p-4 rounded-xl bg-white mb-8 overflow-y-auto max-h-[50vh] flex-1 max-w-full"
+                        className="tasks flex flex-col w-[44vw] border p-4 rounded-xl bg-white mb-8 overflow-y-auto max-h-[30vh] flex-1 max-w-full"
                     >
                         <div className="title flex flex-row items-center gap-2">
                             <svg
@@ -955,17 +999,16 @@ export default function Tasks() {
                                         </span>
                                     </>
                                 ) : (
-                                    `Task per il ${new Date(
-                                        selectedDate
-                                    ).toLocaleDateString("it-IT", {
-                                        year: "numeric",
-                                        month: "numeric",
-                                        day: "numeric",
-                                    })}`
+                                    <>
+                                        Task per oggi{" "}
+                                        <span className="span ml-1">
+                                            {dailyTasks.length} task
+                                        </span>
+                                    </>
                                 )}
                             </p>
-                        </div>{" "}
-                        <div className="separator"></div>
+                        </div>
+                        <div className="separator w-full border-b border-gray-200"></div>
                         {showFilterResults ? (
                             // Show filtered results
                             filteredTasks.length === 0 ? (
