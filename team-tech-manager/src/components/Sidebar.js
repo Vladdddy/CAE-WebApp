@@ -1,9 +1,26 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import "../styles/sidebar.css";
+import logo from "../assets/cae2.png";
 
 export default function Sidebar() {
     const location = useLocation();
     const navigate = useNavigate();
+
+    // Get current user info from token
+    const getCurrentUser = () => {
+        const token = localStorage.getItem("authToken");
+        if (!token) return null;
+
+        try {
+            const payload = JSON.parse(atob(token.split(".")[1]));
+            return payload;
+        } catch (error) {
+            console.error("Error parsing token:", error);
+            return null;
+        }
+    };
+
+    const currentUser = getCurrentUser();
 
     const handleLogout = async () => {
         try {
@@ -191,38 +208,45 @@ export default function Sidebar() {
                             ></path>
                         </svg>
                         <p className="text-l">Shifts</p>
-                    </Link>
+                    </Link>{" "}
                 </li>{" "}
             </ul>
-            <button
-                onClick={handleLogout}
-                className="flex align-items-center gap-2 p-2 rounded mt-auto logout-btn hover:bg-gray-700 transition-colors text-left w-full"
-            >
-                <svg
-                    className="dashboard-icon"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    width=""
-                    height=""
-                    color=""
-                    fill="none"
+            <div className="flex items-center justify-between p-2 rounded mt-auto transition-colors">
+                <div className="flex items-center gap-3">
+                    <img
+                        src={logo}
+                        alt="Logo"
+                        className="w-10 h-10 rounded-full object-cover"
+                    />
+                    <div className="flex flex-col">
+                        <span className="text-sm font-medium text-white">
+                            {currentUser?.name || "User"}
+                        </span>
+                        <span className="text-xs text-gray-300">
+                            {currentUser?.role || "Role"}
+                        </span>
+                    </div>
+                </div>
+                <button
+                    onClick={handleLogout}
+                    className="p-2 hover:bg-red-600 rounded transition-colors"
+                    title="Logout"
                 >
-                    <path
-                        d="M11 3L10.3374 3.23384C7.75867 4.144 6.46928 4.59908 5.73464 5.63742C5 6.67576 5 8.0431 5 10.7778V13.2222C5 15.9569 5 17.3242 5.73464 18.3626C6.46928 19.4009 7.75867 19.856 10.3374 20.7662L11 21"
-                        stroke=""
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                    ></path>
-                    <path
-                        d="M21 12L11 12M21 12C21 11.2998 19.0057 9.99153 18.5 9.5M21 12C21 12.7002 19.0057 14.0085 18.5 14.5"
-                        stroke=""
+                    <svg
+                        className="w-5 h-5"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
                         strokeWidth="1.5"
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                    ></path>
-                </svg>
-                <p className="text-l">Logout</p>
-            </button>
+                    >
+                        <path d="M11 3L10.3374 3.23384C7.75867 4.144 6.46928 4.59908 5.73464 5.63742C5 6.67576 5 8.0431 5 10.7778V13.2222C5 15.9569 5 17.3242 5.73464 18.3626C6.46928 19.4009 7.75867 19.856 10.3374 20.7662L11 21" />
+                        <path d="M21 12L11 12M21 12C21 11.2998 19.0057 9.99153 18.5 9.5M21 12C21 12.7002 19.0057 14.0085 18.5 14.5" />
+                    </svg>
+                </button>
+            </div>
         </div>
     );
 }

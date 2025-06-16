@@ -34,6 +34,14 @@ export default function Tasks() {
         currentDescription: "",
         currentSimulator: "",
     });
+    // Filter states
+    const [filters, setFilters] = useState({
+        searchText: "",
+        fromDate: "",
+        toDate: "",
+    });
+    const [filteredTasks, setFilteredTasks] = useState([]);
+    const [showFilterResults, setShowFilterResults] = useState(false);
     const API = process.env.REACT_APP_API_URL;
     const tasksListRef = useRef();
 
@@ -198,7 +206,13 @@ export default function Tasks() {
                 console.error("Error fetching tasks:", error);
                 setLoading(false);
             });
-    }, []);
+    }, []); // Update filtered tasks when tasks change
+    useEffect(() => {
+        if (showFilterResults) {
+            const filtered = applyFilters(tasks, filters);
+            setFilteredTasks(filtered);
+        }
+    }, [tasks, filters, showFilterResults]);
 
     // Fetch available employees when date or time changes
     const fetchAvailableEmployees = async (selectedDate, selectedTime) => {
@@ -490,6 +504,60 @@ export default function Tasks() {
             default:
                 return "#e5e7eb40";
         }
+    }; // Filter functions
+    const handleFilterChange = (field, value) => {
+        setFilters((prev) => ({
+            ...prev,
+            [field]: value,
+        }));
+    };
+
+    const applyFilters = (tasksToFilter, currentFilters) => {
+        let filtered = [...tasksToFilter];
+
+        // Text search filter
+        if (currentFilters.searchText.trim()) {
+            const searchLower = currentFilters.searchText.toLowerCase();
+            filtered = filtered.filter(
+                (task) =>
+                    task.title.toLowerCase().includes(searchLower) ||
+                    task.assignedTo.toLowerCase().includes(searchLower) ||
+                    (task.description &&
+                        task.description.toLowerCase().includes(searchLower)) ||
+                    (task.simulator &&
+                        task.simulator.toLowerCase().includes(searchLower))
+            );
+        }
+
+        // Date range filter
+        if (currentFilters.fromDate) {
+            filtered = filtered.filter(
+                (task) => task.date >= currentFilters.fromDate
+            );
+        }
+        if (currentFilters.toDate) {
+            filtered = filtered.filter(
+                (task) => task.date <= currentFilters.toDate
+            );
+        }
+
+        return filtered;
+    };
+
+    const executeFilters = () => {
+        const filtered = applyFilters(tasks, filters);
+        setFilteredTasks(filtered);
+        setShowFilterResults(true);
+    };
+
+    const clearFilters = () => {
+        setFilters({
+            searchText: "",
+            fromDate: "",
+            toDate: "",
+        });
+        setFilteredTasks([]);
+        setShowFilterResults(false);
     };
 
     const dailyTasks = tasks.filter((t) => t.date === selectedDate);
@@ -498,9 +566,9 @@ export default function Tasks() {
 
     return (
         <>
-            <div className="flex gap-64 flex-col lg:flex-row justify-between max-w-full p-4">
-                <div className="flex-1 min-w-0">
-                    <div className="date-selector flex items-center justify-start mb-4 gap-8 flex-wrap">
+            <div className="flex gap-4 flex-col lg:flex-row justify-between max-w-full p-4">
+                <div className="flex flex-col min-w-0">
+                    <div className="date-selector flex items-center justify-center mb-4 gap-8 flex-wrap">
                         <button
                             onClick={() => handleChangeDay(-1)}
                             className="arroww bg-[#3b82f620] p-2 rounded-md"
@@ -595,17 +663,21 @@ export default function Tasks() {
                                 fill="none"
                             >
                                 <path
-                                    d="M10.6119 5.00008L10.0851 7M12.2988 2.76313C12.713 3.49288 12.4672 4.42601 11.7499 4.84733C11.0326 5.26865 10.1153 5.01862 9.70118 4.28887C9.28703 3.55912 9.53281 2.62599 10.2501 2.20467C10.9674 1.78334 11.8847 2.03337 12.2988 2.76313Z"
-                                    stroke="oklch(44.6% 0.03 256.802)"
-                                    strokeWidth="1.5"
-                                    strokeLinecap="round"
-                                />
+                                    d="M4 12.0005L4 14.5446C4 17.7896 4 19.4122 4.88607 20.5111C5.06508 20.7331 5.26731 20.9354 5.48933 21.1144C6.58831 22.0005 8.21082 22.0005 11.4558 22.0005C12.1614 22.0005 12.5141 22.0005 12.8372 21.8865C12.9044 21.8627 12.9702 21.8355 13.0345 21.8047C13.3436 21.6569 13.593 21.4075 14.0919 20.9086L18.8284 16.172C19.4065 15.594 19.6955 15.3049 19.8478 14.9374C20 14.5699 20 14.1611 20 13.3436V10.0005C20 6.22922 20 4.34361 18.8284 3.17203C17.7693 2.11287 16.1265 2.01125 13.0345 2.0015M13 21.5005V21.0005C13 18.172 13 16.7578 13.8787 15.8791C14.7574 15.0005 16.1716 15.0005 19 15.0005H19.5"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                ></path>
                                 <path
-                                    d="M13 21.998C12.031 20.8176 10.5 18 8.5 18C7.20975 18.1059 6.53573 19.3611 5.84827 20.3287M5.84827 20.3287C5.45174 19.961 5.30251 19.4126 5.00406 18.3158L3.26022 11.9074C2.5584 9.32827 2.20749 8.0387 2.80316 7.02278C3.39882 6.00686 4.70843 5.66132 7.32766 4.97025L9.5 4.39708M5.84827 20.3287C6.2448 20.6965 6.80966 20.8103 7.9394 21.0379L12.0813 21.8725C12.9642 22.0504 12.9721 22.0502 13.8426 21.8205L16.6723 21.0739C19.2916 20.3828 20.6012 20.0373 21.1968 19.0214C21.7925 18.0055 21.4416 16.7159 20.7398 14.1368L19.0029 7.75375C18.301 5.17462 17.9501 3.88506 16.9184 3.29851C16.0196 2.78752 14.9098 2.98396 12.907 3.5"
-                                    stroke="oklch(44.6% 0.03 256.802)"
-                                    strokeWidth="1.5"
-                                />
+                                    d="M12 5.99954H4M8 1.99954V9.99954"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                ></path>
                             </svg>
+
                             <p className="text-gray-600">Aggiungi una task</p>
                         </div>
 
@@ -689,166 +761,461 @@ export default function Tasks() {
                         </form>
                     </div>{" "}
                 </div>{" "}
-                <div
-                    ref={tasksListRef}
-                    className="tasks border p-4 rounded-xl bg-white mb-6 overflow-y-auto max-h-96 flex-1 max-w-xs"
-                >
-                    <div className="title flex flex-row items-center gap-2 mb-4">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            width="20"
-                            height="20"
-                            color="oklch(44.6% 0.03 256.802)"
-                            fill="none"
-                        >
-                            <path
-                                d="M10.6119 5.00008L10.0851 7M12.2988 2.76313C12.713 3.49288 12.4672 4.42601 11.7499 4.84733C11.0326 5.26865 10.1153 5.01862 9.70118 4.28887C9.28703 3.55912 9.53281 2.62599 10.2501 2.20467C10.9674 1.78334 11.8847 2.03337 12.2988 2.76313Z"
-                                stroke="oklch(44.6% 0.03 256.802)"
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                            />
-                            <path
-                                d="M13 21.998C12.031 20.8176 10.5 18 8.5 18C7.20975 18.1059 6.53573 19.3611 5.84827 20.3287M5.84827 20.3287C5.45174 19.961 5.30251 19.4126 5.00406 18.3158L3.26022 11.9074C2.5584 9.32827 2.20749 8.0387 2.80316 7.02278C3.39882 6.00686 4.70843 5.66132 7.32766 4.97025L9.5 4.39708M5.84827 20.3287C6.2448 20.6965 6.80966 20.8103 7.9394 21.0379L12.0813 21.8725C12.9642 22.0504 12.9721 22.0502 13.8426 21.8205L16.6723 21.0739C19.2916 20.3828 20.6012 20.0373 21.1968 19.0214C21.7925 18.0055 21.4416 16.7159 20.7398 14.1368L19.0029 7.75375C18.301 5.17462 17.9501 3.88506 16.9184 3.29851C16.0196 2.78752 14.9098 2.98396 12.907 3.5"
-                                stroke="oklch(44.6% 0.03 256.802)"
-                                strokeWidth="1.5"
-                            />
-                        </svg>
-                        <p className="text-gray-600">
-                            Task per il{" "}
-                            {new Date(selectedDate).toLocaleDateString(
-                                "it-IT",
-                                {
-                                    year: "numeric",
-                                    month: "numeric",
-                                    day: "numeric",
-                                }
-                            )}
-                        </p>
-                    </div>
-
-                    <div className="separator"></div>
-
-                    {dailyTasks.length === 0 ? (
-                        <div className="text-center py-4 text-gray-500">
-                            Nessun task per questa data
-                        </div>
-                    ) : (
-                        dailyTasks.map((task) => (
-                            <div
-                                key={task.id}
-                                className="display-task flex items-center justify-between dashboard-content p-3 rounded mt-3 bg-gray-100 cursor-pointer hover:bg-gray-200 transition-colors"
-                                style={{
-                                    border: `2px solid ${getBorderColor(
-                                        task.status
-                                    )}`,
-                                }}
-                                onClick={() => openTaskDetails(task)}
+                <div className="flex flex-col items-center justify-between">
+                    {" "}
+                    <div
+                        className="tasks flex flex-col w-[44vw] border p-4 rounded-xl bg-white mb-8 overflow-y-auto max-h-full max-w-full"
+                        style={{ boxShadow: "4px 4px 10px #00000010" }}
+                    >
+                        <div className="title flex flex-row items-center gap-2 mb-4">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                width="20"
+                                height="20"
+                                color="oklch(44.6% 0.03 256.802)"
+                                fill="none"
                             >
-                                <div className="task-info">
-                                    <p className="text-gray-600 max-w-md font-semibold text-sm">
-                                        {task.title}
-                                    </p>
-                                    <div className=" text-xs text-gray-500 capitalize">
-                                        {task.time} • {task.assignedTo} •{" "}
-                                        {task.status}
+                                <path
+                                    d="M3 7H6"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                />
+                                <path
+                                    d="M3 17H9"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                />
+                                <path
+                                    d="M18 17L21 17"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                />
+                                <path
+                                    d="M15 7L21 7"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                />
+                                <path
+                                    d="M6 7C6 6.06812 6 5.60218 6.15224 5.23463C6.35523 4.74458 6.74458 4.35523 7.23463 4.15224C7.60218 4 8.06812 4 9 4C9.93188 4 10.3978 4 10.7654 4.15224C11.2554 4.35523 11.6448 4.74458 11.8478 5.23463C12 5.60218 12 6.06812 12 7C12 7.93188 12 8.39782 11.8478 8.76537C11.6448 9.25542 11.2554 9.64477 10.7654 9.84776C10.3978 10 9.93188 10 9 10C8.06812 10 7.60218 10 7.23463 9.84776C6.74458 9.64477 6.35523 9.25542 6.15224 8.76537C6 8.39782 6 7.93188 6 7Z"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                />
+                                <path
+                                    d="M12 17C12 16.0681 12 15.6022 12.1522 15.2346C12.3552 14.7446 12.7446 14.3552 13.2346 14.1522C13.6022 14 14.0681 14 15 14C15.9319 14 16.3978 14 16.7654 14.1522C17.2554 14.3552 17.6448 14.7446 17.8478 15.2346C18 15.6022 18 16.0681 18 17C18 17.9319 18 18.3978 17.8478 18.7654C17.6448 19.2554 17.2554 19.6448 16.7654 19.8478C16.3978 20 15.9319 20 15 20C14.0681 20 13.6022 20 13.2346 19.8478C12.7446 19.6448 12.3552 19.2554 12.1522 18.7654C12 18.3978 12 17.9319 12 17Z"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                />
+                            </svg>
+
+                            <p className="text-gray-600">Filtro task</p>
+                        </div>
+                        <div className="separator"></div>{" "}
+                        <div className="filter-form flex flex-col gap-4 mt-0">
+                            <div className="flex flex-row gap-2">
+                                <input
+                                    type="text"
+                                    id="searchText"
+                                    value={filters.searchText}
+                                    onChange={(e) =>
+                                        handleFilterChange(
+                                            "searchText",
+                                            e.target.value
+                                        )
+                                    }
+                                    onKeyPress={(e) =>
+                                        e.key === "Enter" && executeFilters()
+                                    }
+                                    placeholder="Cerca per testo, titolo, nome..."
+                                    className="flex w-full border px-3 py-2 rounded text-gray-600 text-sm focus:outline-nones"
+                                />
+                                <button
+                                    onClick={executeFilters}
+                                    className="flex items-center bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 24 24"
+                                        width="16"
+                                        height="16"
+                                        color="white"
+                                        fill="none"
+                                    >
+                                        <path
+                                            d="M17.5 17.5L22 22"
+                                            stroke="currentColor"
+                                            strokeWidth="1.5"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        />
+                                        <path
+                                            d="M20 11C20 6.02944 15.9706 2 11 2C6.02944 2 2 6.02944 2 11C2 15.9706 6.02944 20 11 20C15.9706 20 20 15.9706 20 11Z"
+                                            stroke="currentColor"
+                                            strokeWidth="1.5"
+                                            strokeLinejoin="round"
+                                        />
+                                    </svg>
+                                    <p className="p-0 m-0">Cerca</p>
+                                </button>
+                                {showFilterResults && (
+                                    <button
+                                        onClick={clearFilters}
+                                        className="px-4 py-2 border border-red-300 text-red-600 rounded text-sm hover:bg-red-50 transition-colors"
+                                    >
+                                        Cancella
+                                    </button>
+                                )}
+                            </div>
+
+                            <div className="flex flex-col gap-2 mt-4">
+                                <div className="flex gap-2 items-center">
+                                    <div className="flex flex-col flex-1">
+                                        <label
+                                            htmlFor="fromDate"
+                                            className="text-xs text-gray-500 mb-2"
+                                        >
+                                            Da
+                                        </label>
+                                        <input
+                                            type="date"
+                                            id="fromDate"
+                                            value={filters.fromDate}
+                                            onChange={(e) =>
+                                                handleFilterChange(
+                                                    "fromDate",
+                                                    e.target.value
+                                                )
+                                            }
+                                            className="border px-3 py-2 rounded text-gray-600 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        />
+                                    </div>
+                                    <div className="flex flex-col flex-1">
+                                        <label
+                                            htmlFor="toDate"
+                                            className="text-xs text-gray-500 mb-2"
+                                        >
+                                            A
+                                        </label>
+                                        <input
+                                            type="date"
+                                            id="toDate"
+                                            value={filters.toDate}
+                                            onChange={(e) =>
+                                                handleFilterChange(
+                                                    "toDate",
+                                                    e.target.value
+                                                )
+                                            }
+                                            className="border px-3 py-2 rounded text-gray-600 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        />
                                     </div>
                                 </div>{" "}
-                                <div className="buttons flex flex-row gap-2">
-                                    {canToggleTask(task) && (
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                toggleTask(task.id);
-                                            }}
-                                            title="Cambia stato"
-                                        >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 24 24"
-                                                width="20"
-                                                height="20"
-                                                color={
-                                                    task.status === "completato"
-                                                        ? "#139d54"
-                                                        : task.status ===
-                                                          "in corso"
-                                                        ? "#f6ad10"
-                                                        : task.status ===
-                                                          "non completato"
-                                                        ? "#dc2626"
-                                                        : "#6b7280"
-                                                }
-                                                fill="none"
-                                            >
-                                                <path
-                                                    d="M20.5 5.5H9.5C5.78672 5.5 3 8.18503 3 12"
-                                                    stroke="currentColor"
-                                                    strokeWidth="1.5"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                />
-                                                <path
-                                                    d="M3.5 18.5H14.5C18.2133 18.5 21 15.815 21 12"
-                                                    stroke="currentColor"
-                                                    strokeWidth="1.5"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                />
-                                                <path
-                                                    d="M18.5 3C18.5 3 21 4.84122 21 5.50002C21 6.15882 18.5 8 18.5 8"
-                                                    stroke="currentColor"
-                                                    strokeWidth="1.5"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                />
-                                                <path
-                                                    d="M5.49998 16C5.49998 16 3.00001 17.8412 3 18.5C2.99999 19.1588 5.5 21 5.5 21"
-                                                    stroke="currentColor"
-                                                    strokeWidth="1.5"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                />
-                                            </svg>
-                                        </button>
-                                    )}{" "}
-                                    {canDeleteTasks() && (
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                deleteTask(task.id);
-                                            }}
-                                            title="Elimina task"
-                                        >
-                                            <svg
-                                                className="elimina-icon"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 24 24"
-                                                width="20"
-                                                height="20"
-                                                color="#e53e3e"
-                                                fill="none"
-                                            >
-                                                <path
-                                                    d="M19.5 5.5L18.8803 15.5251C18.7219 18.0864 18.6428 19.3671 18.0008 20.2879C17.6833 20.7431 17.2747 21.1273 16.8007 21.416C15.8421 22 14.559 22 11.9927 22C9.42312 22 8.1383 22 7.17905 21.4149C6.7048 21.1257 6.296 20.7408 5.97868 20.2848C5.33688 19.3626 5.25945 18.0801 5.10461 15.5152L4.5 5.5"
-                                                    stroke="currentColor"
-                                                    strokeWidth="1.5"
-                                                    strokeLinecap="round"
-                                                />
-                                                <path
-                                                    d="M3 5.5H21M16.0557 5.5L15.3731 4.09173C14.9196 3.15626 14.6928 2.68852 14.3017 2.39681C14.215 2.3321 14.1231 2.27454 14.027 2.2247C13.5939 2 13.0741 2 12.0345 2C10.9688 2 10.436 2 9.99568 2.23412C9.8981 2.28601 9.80498 2.3459 9.71729 2.41317C9.32164 2.7167 9.10063 3.20155 8.65861 4.17126L8.05292 5.5"
-                                                    stroke="currentColor"
-                                                    strokeWidth="1.5"
-                                                    strokeLinecap="round"
-                                                />
-                                            </svg>
-                                        </button>
-                                    )}
-                                </div>
                             </div>
-                        ))
-                    )}
-                </div>{" "}
+                        </div>
+                    </div>{" "}
+                    <div
+                        ref={tasksListRef}
+                        className="tasks flex flex-col w-[44vw] border p-4 rounded-xl bg-white mb-8 overflow-y-auto max-h-[50vh] flex-1 max-w-full"
+                    >
+                        <div className="title flex flex-row items-center gap-2">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                width="20"
+                                height="20"
+                                color="oklch(44.6% 0.03 256.802)"
+                                fill="none"
+                            >
+                                <path
+                                    d="M10.6119 5.00008L10.0851 7M12.2988 2.76313C12.713 3.49288 12.4672 4.42601 11.7499 4.84733C11.0326 5.26865 10.1153 5.01862 9.70118 4.28887C9.28703 3.55912 9.53281 2.62599 10.2501 2.20467C10.9674 1.78334 11.8847 2.03337 12.2988 2.76313Z"
+                                    stroke="oklch(44.6% 0.03 256.802)"
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                />
+                                <path
+                                    d="M13 21.998C12.031 20.8176 10.5 18 8.5 18C7.20975 18.1059 6.53573 19.3611 5.84827 20.3287M5.84827 20.3287C5.45174 19.961 5.30251 19.4126 5.00406 18.3158L3.26022 11.9074C2.5584 9.32827 2.20749 8.0387 2.80316 7.02278C3.39882 6.00686 4.70843 5.66132 7.32766 4.97025L9.5 4.39708M5.84827 20.3287C6.2448 20.6965 6.80966 20.8103 7.9394 21.0379L12.0813 21.8725C12.9642 22.0504 12.9721 22.0502 13.8426 21.8205L16.6723 21.0739C19.2916 20.3828 20.6012 20.0373 21.1968 19.0214C21.7925 18.0055 21.4416 16.7159 20.7398 14.1368L19.0029 7.75375C18.301 5.17462 17.9501 3.88506 16.9184 3.29851C16.0196 2.78752 14.9098 2.98396 12.907 3.5"
+                                    stroke="oklch(44.6% 0.03 256.802)"
+                                    strokeWidth="1.5"
+                                />
+                            </svg>{" "}
+                            <p className="text-gray-600">
+                                {showFilterResults ? (
+                                    <>
+                                        Risultato{" "}
+                                        <span className="span ml-1">
+                                            {filteredTasks.length} task
+                                        </span>
+                                    </>
+                                ) : (
+                                    `Task per il ${new Date(
+                                        selectedDate
+                                    ).toLocaleDateString("it-IT", {
+                                        year: "numeric",
+                                        month: "numeric",
+                                        day: "numeric",
+                                    })}`
+                                )}
+                            </p>
+                        </div>{" "}
+                        <div className="separator"></div>
+                        {showFilterResults ? (
+                            // Show filtered results
+                            filteredTasks.length === 0 ? (
+                                <div className="text-center py-4 text-gray-500">
+                                    Nessun task trovato con i filtri applicati
+                                </div>
+                            ) : (
+                                filteredTasks.map((task) => (
+                                    <>
+                                        <div
+                                            key={task.id}
+                                            className="display-task flex items-center gap-4 justify-between dashboard-content p-3 rounded mt-3 bg-gray-100 cursor-pointer hover:bg-gray-200 transition-colors"
+                                            style={{
+                                                border: `2px solid ${getBorderColor(
+                                                    task.status
+                                                )}`,
+                                            }}
+                                            onClick={() =>
+                                                openTaskDetails(task)
+                                            }
+                                        >
+                                            <div className="task-info">
+                                                <p className="text-gray-600 max-w-md font-semibold text-sm">
+                                                    {task.title}
+                                                </p>
+                                                <div className="text-xs text-gray-500 capitalize">
+                                                    {task.date} • {task.time} •{" "}
+                                                    {task.assignedTo} •{" "}
+                                                    {task.status}
+                                                </div>
+                                            </div>
+                                            <div className="buttons flex flex-row gap-2">
+                                                {canToggleTask(task) && (
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            toggleTask(task.id);
+                                                        }}
+                                                        title="Cambia stato"
+                                                    >
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            viewBox="0 0 24 24"
+                                                            width="20"
+                                                            height="20"
+                                                            color={
+                                                                task.status ===
+                                                                "completato"
+                                                                    ? "#139d54"
+                                                                    : task.status ===
+                                                                      "in corso"
+                                                                    ? "#f6ad10"
+                                                                    : task.status ===
+                                                                      "non completato"
+                                                                    ? "#dc2626"
+                                                                    : "#6b7280"
+                                                            }
+                                                            fill="none"
+                                                        >
+                                                            <path
+                                                                d="M20.5 5.5H9.5C5.78672 5.5 3 8.18503 3 12"
+                                                                stroke="currentColor"
+                                                                strokeWidth="1.5"
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                            />
+                                                            <path
+                                                                d="M3.5 18.5H14.5C18.2133 18.5 21 15.815 21 12"
+                                                                stroke="currentColor"
+                                                                strokeWidth="1.5"
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                            />
+                                                            <path
+                                                                d="M18.5 3C18.5 3 21 4.84122 21 5.50002C21 6.15882 18.5 8 18.5 8"
+                                                                stroke="currentColor"
+                                                                strokeWidth="1.5"
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                            />
+                                                            <path
+                                                                d="M5.49998 16C5.49998 16 3.00001 17.8412 3 18.5C2.99999 19.1588 5.5 21 5.5 21"
+                                                                stroke="currentColor"
+                                                                strokeWidth="1.5"
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                            />
+                                                        </svg>
+                                                    </button>
+                                                )}
+                                                {canDeleteTasks() && (
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            deleteTask(task.id);
+                                                        }}
+                                                        title="Elimina task"
+                                                    >
+                                                        <svg
+                                                            className="elimina-icon"
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            viewBox="0 0 24 24"
+                                                            width="20"
+                                                            height="20"
+                                                            color="#e53e3e"
+                                                            fill="none"
+                                                        >
+                                                            <path
+                                                                d="M19.5 5.5L18.8803 15.5251C18.7219 18.0864 18.6428 19.3671 18.0008 20.2879C17.6833 20.7431 17.2747 21.1273 16.8007 21.416C15.8421 22 14.559 22 11.9927 22C9.42312 22 8.1383 22 7.17905 21.4149C6.7048 21.1257 6.296 20.7408 5.97868 20.2848C5.33688 19.3626 5.25945 18.0801 5.10461 15.5152L4.5 5.5"
+                                                                stroke="currentColor"
+                                                                strokeWidth="1.5"
+                                                                strokeLinecap="round"
+                                                            />
+                                                            <path
+                                                                d="M3 5.5H21M16.0557 5.5L15.3731 4.09173C14.9196 3.15626 14.6928 2.68852 14.3017 2.39681C14.215 2.3321 14.1231 2.27454 14.027 2.2247C13.5939 2 13.0741 2 12.0345 2C10.9688 2 10.436 2 9.99568 2.23412C9.8981 2.28601 9.80498 2.3459 9.71729 2.41317C9.32164 2.7167 9.10063 3.20155 8.65861 4.17126L8.05292 5.5"
+                                                                stroke="currentColor"
+                                                                strokeWidth="1.5"
+                                                                strokeLinecap="round"
+                                                            />
+                                                        </svg>
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </>
+                                ))
+                            )
+                        ) : // Show daily tasks (original behavior)
+                        dailyTasks.length === 0 ? (
+                            <div className="text-center py-4 text-gray-500">
+                                Nessun task per questa data
+                            </div>
+                        ) : (
+                            dailyTasks.map((task) => (
+                                <div
+                                    key={task.id}
+                                    className="display-task flex items-center gap-4 justify-between dashboard-content p-3 rounded mt-3 bg-gray-100 cursor-pointer hover:bg-gray-200 transition-colors"
+                                    style={{
+                                        border: `2px solid ${getBorderColor(
+                                            task.status
+                                        )}`,
+                                    }}
+                                    onClick={() => openTaskDetails(task)}
+                                >
+                                    <div className="task-info">
+                                        <p className="text-gray-600 max-w-md font-semibold text-sm">
+                                            {task.title}
+                                        </p>
+                                        <div className=" text-xs text-gray-500 capitalize">
+                                            {task.time} • {task.assignedTo} •{" "}
+                                            {task.status}
+                                        </div>
+                                    </div>{" "}
+                                    <div className="buttons flex flex-row gap-2">
+                                        {canToggleTask(task) && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    toggleTask(task.id);
+                                                }}
+                                                title="Cambia stato"
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    viewBox="0 0 24 24"
+                                                    width="20"
+                                                    height="20"
+                                                    color={
+                                                        task.status ===
+                                                        "completato"
+                                                            ? "#139d54"
+                                                            : task.status ===
+                                                              "in corso"
+                                                            ? "#f6ad10"
+                                                            : task.status ===
+                                                              "non completato"
+                                                            ? "#dc2626"
+                                                            : "#6b7280"
+                                                    }
+                                                    fill="none"
+                                                >
+                                                    <path
+                                                        d="M20.5 5.5H9.5C5.78672 5.5 3 8.18503 3 12"
+                                                        stroke="currentColor"
+                                                        strokeWidth="1.5"
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                    />
+                                                    <path
+                                                        d="M3.5 18.5H14.5C18.2133 18.5 21 15.815 21 12"
+                                                        stroke="currentColor"
+                                                        strokeWidth="1.5"
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                    />
+                                                    <path
+                                                        d="M18.5 3C18.5 3 21 4.84122 21 5.50002C21 6.15882 18.5 8 18.5 8"
+                                                        stroke="currentColor"
+                                                        strokeWidth="1.5"
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                    />
+                                                    <path
+                                                        d="M5.49998 16C5.49998 16 3.00001 17.8412 3 18.5C2.99999 19.1588 5.5 21 5.5 21"
+                                                        stroke="currentColor"
+                                                        strokeWidth="1.5"
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                    />
+                                                </svg>
+                                            </button>
+                                        )}{" "}
+                                        {canDeleteTasks() && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    deleteTask(task.id);
+                                                }}
+                                                title="Elimina task"
+                                            >
+                                                <svg
+                                                    className="elimina-icon"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    viewBox="0 0 24 24"
+                                                    width="20"
+                                                    height="20"
+                                                    color="#e53e3e"
+                                                    fill="none"
+                                                >
+                                                    <path
+                                                        d="M19.5 5.5L18.8803 15.5251C18.7219 18.0864 18.6428 19.3671 18.0008 20.2879C17.6833 20.7431 17.2747 21.1273 16.8007 21.416C15.8421 22 14.559 22 11.9927 22C9.42312 22 8.1383 22 7.17905 21.4149C6.7048 21.1257 6.296 20.7408 5.97868 20.2848C5.33688 19.3626 5.25945 18.0801 5.10461 15.5152L4.5 5.5"
+                                                        stroke="currentColor"
+                                                        strokeWidth="1.5"
+                                                        strokeLinecap="round"
+                                                    />
+                                                    <path
+                                                        d="M3 5.5H21M16.0557 5.5L15.3731 4.09173C14.9196 3.15626 14.6928 2.68852 14.3017 2.39681C14.215 2.3321 14.1231 2.27454 14.027 2.2247C13.5939 2 13.0741 2 12.0345 2C10.9688 2 10.436 2 9.99568 2.23412C9.8981 2.28601 9.80498 2.3459 9.71729 2.41317C9.32164 2.7167 9.10063 3.20155 8.65861 4.17126L8.05292 5.5"
+                                                        stroke="currentColor"
+                                                        strokeWidth="1.5"
+                                                        strokeLinecap="round"
+                                                    />
+                                                </svg>
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>{" "}
+                </div>
                 <Modal
                     isOpen={modal.isOpen}
                     onClose={closeModal}
