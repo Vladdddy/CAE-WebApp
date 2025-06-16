@@ -82,19 +82,19 @@ export default function Login() {
                     <form className="space-y-6" onSubmit={handleSubmit}>
                         <div>
                             <label
-                                htmlFor="email"
+                                htmlFor="username"
                                 className="block text-sm font-medium text-gray-700 mb-2"
                             >
-                                Email
+                                Username
                             </label>
                             <input
-                                id="email"
-                                name="email"
-                                type="email"
-                                autoComplete="email"
+                                id="username"
+                                name="username"
+                                type="text"
+                                autoComplete="username"
                                 required
                                 className="w-full text-[14px] px-3 py-2 border border-gray-300 rounded shadow-sm placeholder-gray-400 focus:outline-none focus:ring-gray-500 focus:border-gray-500 transition-colors"
-                                placeholder="Inserisci la tua email"
+                                placeholder="Inserisci il tuo username"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                             />

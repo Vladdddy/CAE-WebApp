@@ -37,7 +37,9 @@
     "assignedTo": "Gianluca",
     "status": "non completato",
     "date": "2025-06-09",
-    "time": "08:00"
+    "time": "08:00",
+    "description": "Prova",
+    "simulator": "F2FAS"
   },
   {
     "id": 7,
@@ -46,50 +48,6 @@
     "status": "non iniziato",
     "date": "2025-06-09",
     "time": "08:00"
-  },
-  {
-    "id": 9,
-    "title": "Prova 1",
-    "assignedTo": "Luca",
-    "status": "completato",
-    "date": "2025-06-10",
-    "time": "08:00"
-  },
-  {
-    "id": 10,
-    "title": "Prova 2",
-    "assignedTo": "Simone",
-    "status": "in corso",
-    "date": "2025-06-10",
-    "time": "05:00"
-  },
-  {
-    "id": 16,
-    "title": "Colloquio Stagisti",
-    "assignedTo": "Sara Gialli",
-    "status": "completato",
-    "date": "2025-06-11",
-    "time": "11:00",
-    "description": "dfhdfdf",
-    "simulator": "Boh"
-  },
-  {
-    "id": 17,
-    "title": "Importare task già esistenti",
-    "assignedTo": "Andrea Bianchi",
-    "status": "completato",
-    "date": "2025-06-12",
-    "time": "20:00"
-  },
-  {
-    "id": 18,
-    "title": "Prova task",
-    "assignedTo": "Mario",
-    "status": "completato",
-    "date": "2025-06-13",
-    "time": "08:00",
-    "description": "Nulla, prova ",
-    "simulator": ""
   },
   {
     "id": 19,
