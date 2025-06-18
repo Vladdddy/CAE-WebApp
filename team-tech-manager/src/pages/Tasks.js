@@ -407,39 +407,63 @@ export default function Tasks() {
             title.style.color = "#333";
             title.style.borderBottom = "2px solid #3b82f6";
             title.style.paddingBottom = "10px";
-            pdfContent.appendChild(title);
-
-            if (dailyTasks.length === 0) {
+            pdfContent.appendChild(title);            if (dailyTasks.length === 0) {
                 const noTasks = document.createElement("p");
                 noTasks.textContent = "Nessun task per questa data";
                 noTasks.style.color = "#666";
                 noTasks.style.fontStyle = "italic";
                 pdfContent.appendChild(noTasks);
             } else {
-                dailyTasks.forEach((task, index) => {
-                    const taskDiv = document.createElement("div");
-                    taskDiv.style.marginBottom = "15px";
-                    taskDiv.style.padding = "15px";
-                    taskDiv.style.border = `2px solid ${getBorderColor(
-                        task.status
-                    )}`;
-                    taskDiv.style.borderRadius = "8px";
-                    taskDiv.style.backgroundColor = "#f9f9f9";
+                // Group tasks by simulator
+                const tasksBySimulator = {};
+                dailyTasks.forEach((task) => {
+                    const simulator = task.simulator || "Nessun Simulatore";
+                    if (!tasksBySimulator[simulator]) {
+                        tasksBySimulator[simulator] = [];
+                    }
+                    tasksBySimulator[simulator].push(task);
+                });
 
-                    const taskTitle = document.createElement("h4");
-                    taskTitle.textContent = `${index + 1}. ${task.title}`;
-                    taskTitle.style.margin = "0 0 8px 0";
-                    taskTitle.style.color = "#333";
-                    taskDiv.appendChild(taskTitle);
+                // Render tasks grouped by simulator
+                Object.keys(tasksBySimulator).forEach((simulator) => {
+                    // Add simulator header
+                    const simulatorHeader = document.createElement("h4");
+                    simulatorHeader.textContent = simulator;
+                    simulatorHeader.style.margin = "20px 0 10px 0";
+                    simulatorHeader.style.color = "#1f2937";
+                    simulatorHeader.style.fontSize = "18px";
+                    simulatorHeader.style.fontWeight = "bold";
+                    simulatorHeader.style.borderBottom = "1px solid #d1d5db";
+                    simulatorHeader.style.paddingBottom = "5px";
+                    pdfContent.appendChild(simulatorHeader);
 
-                    const taskDetails = document.createElement("p");
-                    taskDetails.textContent = `Orario: ${task.time} • Assegnato a: ${task.assignedTo} • Status: ${task.status}`;
-                    taskDetails.style.margin = "0";
-                    taskDetails.style.color = "#666";
-                    taskDetails.style.fontSize = "14px";
-                    taskDiv.appendChild(taskDetails);
+                    // Add tasks for this simulator
+                    tasksBySimulator[simulator].forEach((task, index) => {
+                        const taskDiv = document.createElement("div");
+                        taskDiv.style.marginBottom = "15px";
+                        taskDiv.style.padding = "15px";
+                        taskDiv.style.border = `2px solid ${getBorderColor(
+                            task.status
+                        )}`;
+                        taskDiv.style.borderRadius = "8px";
+                        taskDiv.style.backgroundColor = "#f9f9f9";
 
-                    pdfContent.appendChild(taskDiv);
+                        const taskTitle = document.createElement("h5");
+                        taskTitle.textContent = `${index + 1}. ${task.title}`;
+                        taskTitle.style.margin = "0 0 8px 0";
+                        taskTitle.style.color = "#333";
+                        taskTitle.style.fontSize = "16px";
+                        taskDiv.appendChild(taskTitle);
+
+                        const taskDetails = document.createElement("p");
+                        taskDetails.textContent = `Orario: ${task.time} • Assegnato a: ${task.assignedTo} • Status: ${task.status}`;
+                        taskDetails.style.margin = "0";
+                        taskDetails.style.color = "#666";
+                        taskDetails.style.fontSize = "14px";
+                        taskDiv.appendChild(taskDetails);
+
+                        pdfContent.appendChild(taskDiv);
+                    });
                 });
             }
 

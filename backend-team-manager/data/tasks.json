@@ -35,7 +35,7 @@
     "id": 6,
     "title": "motion ",
     "assignedTo": "Gianluca",
-    "status": "non completato",
+    "status": "completato",
     "date": "2025-06-09",
     "time": "08:00",
     "description": "Prova",
@@ -74,5 +74,51 @@
     "status": "completato",
     "date": "2025-06-16",
     "time": "09:15"
+  },
+  {
+    "id": 22,
+    "title": "Task giornaliera",
+    "assignedTo": "Simone",
+    "status": "completato",
+    "date": "2025-06-17",
+    "time": "10:00"
+  },
+  {
+    "id": 23,
+    "title": "Esportare le task giornaliere divise in simulatore",
+    "assignedTo": "Luca",
+    "status": "non iniziato",
+    "date": "2025-06-18",
+    "time": "10:00",
+    "description": "",
+    "simulator": "Prova"
+  },
+  {
+    "id": 24,
+    "title": "Prova",
+    "assignedTo": "Gianluca",
+    "status": "non iniziato",
+    "date": "2025-06-17",
+    "time": "20:00"
+  },
+  {
+    "id": 25,
+    "title": "Task 2",
+    "assignedTo": "Simone",
+    "status": "non iniziato",
+    "date": "2025-06-18",
+    "time": "08:00",
+    "description": "",
+    "simulator": "Prova"
+  },
+  {
+    "id": 26,
+    "title": "Boh",
+    "assignedTo": "Luca",
+    "status": "non iniziato",
+    "date": "2025-06-18",
+    "time": "08:00",
+    "description": "",
+    "simulator": ""
   }
 ]
