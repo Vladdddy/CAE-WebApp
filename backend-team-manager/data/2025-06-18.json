@@ -1,0 +1,22 @@
+[
+  {
+    "text": "Prova",
+    "author": "Mario",
+    "category": "troubleshooting",
+    "subcategory": "HW",
+    "extraDetail": "ENV",
+    "date": "2025-06-18",
+    "time": "08:00",
+    "duration": "1h30"
+  },
+  {
+    "text": "Prova admin",
+    "author": "Administrator",
+    "category": "troubleshooting",
+    "subcategory": "",
+    "extraDetail": "SOUND",
+    "date": "2025-06-18",
+    "time": "08:00",
+    "duration": "1h30"
+  }
+]

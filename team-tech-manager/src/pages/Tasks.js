@@ -407,7 +407,8 @@ export default function Tasks() {
             title.style.color = "#333";
             title.style.borderBottom = "2px solid #3b82f6";
             title.style.paddingBottom = "10px";
-            pdfContent.appendChild(title);            if (dailyTasks.length === 0) {
+            pdfContent.appendChild(title);
+            if (dailyTasks.length === 0) {
                 const noTasks = document.createElement("p");
                 noTasks.textContent = "Nessun task per questa data";
                 noTasks.style.color = "#666";
@@ -434,7 +435,7 @@ export default function Tasks() {
                     simulatorHeader.style.fontSize = "18px";
                     simulatorHeader.style.fontWeight = "bold";
                     simulatorHeader.style.borderBottom = "1px solid #d1d5db";
-                    simulatorHeader.style.paddingBottom = "5px";
+                    simulatorHeader.style.paddingBottom = "20px";
                     pdfContent.appendChild(simulatorHeader);
 
                     // Add tasks for this simulator

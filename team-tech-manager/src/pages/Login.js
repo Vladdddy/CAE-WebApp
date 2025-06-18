@@ -49,6 +49,7 @@ export default function Login() {
             const data = await response.json();
             if (response.ok && data.token) {
                 localStorage.setItem("authToken", data.token);
+                localStorage.setItem("userName", data.user.name);
                 navigate("/");
             } else {
                 showModal("Errore di login", data.error || "Login fallito!");
