@@ -815,8 +815,8 @@ export default function Logbook() {
                         </svg>
                         <p className="text-gray-600">
                             {editIndex !== null
-                                ? "Modifica voce"
-                                : "Nuova voce"}
+                                ? "Modifica task"
+                                : "Nuova task"}
                         </p>
                     </div>
 
@@ -827,13 +827,13 @@ export default function Logbook() {
                         className="flex flex-col gap-2"
                     >
                         <label htmlFor="text" className="text-xs text-gray-500">
-                            Testo della voce
+                            Testo della task
                         </label>
                         <textarea
                             id="text"
                             value={text}
                             onChange={(e) => setText(e.target.value)}
-                            placeholder="Testo della voce..."
+                            placeholder="Aggiungi descrizione"
                             className="border px-3 py-2 rounded mb-4 text-gray-600 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                             rows="3"
                             required
