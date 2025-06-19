@@ -34,7 +34,7 @@ export default function Tasks() {
         taskId: null,
         currentDescription: "",
         currentSimulator: "",
-    });    // Simulator schedule states - now date-specific
+    }); // Simulator schedule states - now date-specific
     const [simulatorSchedules, setSimulatorSchedules] = useState(() => {
         const saved = localStorage.getItem("simulatorSchedules");
         const allSchedules = saved ? JSON.parse(saved) : {};
@@ -153,7 +153,7 @@ export default function Tasks() {
             currentDescription: "",
             currentSimulator: "",
         });
-    };    // Schedule modal functions
+    }; // Schedule modal functions
     const openScheduleModal = (simulator) => {
         // Check if the selected date is today
         const today = new Date().toISOString().split("T")[0];
@@ -182,24 +182,30 @@ export default function Tasks() {
             startTime: "",
             endTime: "",
         });
-    };    const saveSimulatorSchedule = () => {
+    };
+    const saveSimulatorSchedule = () => {
         const { simulator, startTime, endTime } = scheduleModal;
         if (startTime && endTime) {
             // Get all existing schedules from localStorage
-            const allSchedules = JSON.parse(localStorage.getItem("simulatorSchedules") || "{}");
-            
+            const allSchedules = JSON.parse(
+                localStorage.getItem("simulatorSchedules") || "{}"
+            );
+
             // Update schedules for the selected date
             const newSchedules = {
                 ...simulatorSchedules,
                 [simulator]: { startTime, endTime },
             };
-            
+
             // Save to the date-specific entry
             allSchedules[selectedDate] = newSchedules;
-            
+
             // Update both local state and localStorage
             setSimulatorSchedules(newSchedules);
-            localStorage.setItem("simulatorSchedules", JSON.stringify(allSchedules));
+            localStorage.setItem(
+                "simulatorSchedules",
+                JSON.stringify(allSchedules)
+            );
         }
         closeScheduleModal();
     };
@@ -267,7 +273,8 @@ export default function Tasks() {
                 "error"
             );
         }
-    };    useEffect(() => {
+    };
+    useEffect(() => {
         const token = localStorage.getItem("authToken");
         fetch(`${API}/api/tasks`, {
             headers: {
@@ -283,13 +290,15 @@ export default function Tasks() {
                 console.error("Error fetching tasks:", error);
                 setLoading(false);
             });
-    }, []);     // Update simulator schedules when selected date changes
+    }, []); // Update simulator schedules when selected date changes
     useEffect(() => {
-        const allSchedules = JSON.parse(localStorage.getItem("simulatorSchedules") || "{}");
+        const allSchedules = JSON.parse(
+            localStorage.getItem("simulatorSchedules") || "{}"
+        );
         const dateSchedules = allSchedules[selectedDate] || {};
         setSimulatorSchedules(dateSchedules);
     }, [selectedDate]);
-    
+
     // Update filtered tasks when tasks change
     useEffect(() => {
         if (showFilterResults) {
@@ -1009,7 +1018,8 @@ export default function Tasks() {
                                                         key={simulator}
                                                         className="simulator-column flex-1 min-w-[120px]"
                                                     >
-                                                        {" "}                                                        <div className="simulator-header flex flex-row items-center justify-center gap-2 mb-4">
+                                                        {" "}
+                                                        <div className="simulator-header flex flex-row items-center justify-center gap-2 mb-4">
                                                             <p className="text-xs font-medium text-gray-600">
                                                                 {simulator}
                                                                 {simulatorSchedules[
@@ -1033,24 +1043,47 @@ export default function Tasks() {
                                                                 )}
                                                             </p>
                                                             {(() => {
-                                                                const today = new Date().toISOString().split("T")[0];
-                                                                const isToday = selectedDate === today;
-                                                                
+                                                                const today =
+                                                                    new Date()
+                                                                        .toISOString()
+                                                                        .split(
+                                                                            "T"
+                                                                        )[0];
+                                                                const isToday =
+                                                                    selectedDate ===
+                                                                    today;
+
                                                                 return (
                                                                     <svg
                                                                         xmlns="http://www.w3.org/2000/svg"
                                                                         viewBox="0 0 24 24"
                                                                         width="16"
                                                                         height="16"
-                                                                        color={isToday ? "#3b82f6" : "#9ca3af"}
+                                                                        color={
+                                                                            isToday
+                                                                                ? "#3b82f6"
+                                                                                : "#9ca3af"
+                                                                        }
                                                                         fill="none"
-                                                                        className={isToday ? "cursor-pointer hover:scale-110 transition-transform" : "cursor-not-allowed opacity-50"}
+                                                                        className={
+                                                                            isToday
+                                                                                ? "cursor-pointer hover:scale-110 transition-transform"
+                                                                                : "cursor-not-allowed opacity-50"
+                                                                        }
                                                                         onClick={() => {
-                                                                            if (isToday) {
-                                                                                openScheduleModal(simulator);
+                                                                            if (
+                                                                                isToday
+                                                                            ) {
+                                                                                openScheduleModal(
+                                                                                    simulator
+                                                                                );
                                                                             }
                                                                         }}
-                                                                        title={isToday ? "Modifica orari" : "Puoi modificare gli orari solo per oggi"}
+                                                                        title={
+                                                                            isToday
+                                                                                ? "Modifica orari"
+                                                                                : "Puoi modificare gli orari solo per oggi"
+                                                                        }
                                                                     >
                                                                         <path
                                                                             d="M22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12Z"
@@ -1253,7 +1286,8 @@ export default function Tasks() {
                                                                             key={`night-${simulator}`}
                                                                             className="simulator-column flex-1 min-w-[120px]"
                                                                         >
-                                                                            {" "}                                                                            <div className="simulator-header flex flex-row items-center justify-center gap-2 mb-4">
+                                                                            {" "}
+                                                                            <div className="simulator-header flex flex-row items-center justify-center gap-2 mb-4">
                                                                                 <p className="text-xs font-medium text-gray-600">
                                                                                     {
                                                                                         simulator
@@ -1280,24 +1314,47 @@ export default function Tasks() {
                                                                                     )}
                                                                                 </p>
                                                                                 {(() => {
-                                                                                    const today = new Date().toISOString().split("T")[0];
-                                                                                    const isToday = selectedDate === today;
-                                                                                    
+                                                                                    const today =
+                                                                                        new Date()
+                                                                                            .toISOString()
+                                                                                            .split(
+                                                                                                "T"
+                                                                                            )[0];
+                                                                                    const isToday =
+                                                                                        selectedDate ===
+                                                                                        today;
+
                                                                                     return (
                                                                                         <svg
                                                                                             xmlns="http://www.w3.org/2000/svg"
                                                                                             viewBox="0 0 24 24"
                                                                                             width="16"
                                                                                             height="16"
-                                                                                            color={isToday ? "#3b82f6" : "#9ca3af"}
+                                                                                            color={
+                                                                                                isToday
+                                                                                                    ? "#3b82f6"
+                                                                                                    : "#9ca3af"
+                                                                                            }
                                                                                             fill="none"
-                                                                                            className={isToday ? "cursor-pointer hover:scale-110 transition-transform" : "cursor-not-allowed opacity-50"}
+                                                                                            className={
+                                                                                                isToday
+                                                                                                    ? "cursor-pointer hover:scale-110 transition-transform"
+                                                                                                    : "cursor-not-allowed opacity-50"
+                                                                                            }
                                                                                             onClick={() => {
-                                                                                                if (isToday) {
-                                                                                                    openScheduleModal(simulator);
+                                                                                                if (
+                                                                                                    isToday
+                                                                                                ) {
+                                                                                                    openScheduleModal(
+                                                                                                        simulator
+                                                                                                    );
                                                                                                 }
                                                                                             }}
-                                                                                            title={isToday ? "Modifica orari" : "Puoi modificare gli orari solo per oggi"}
+                                                                                            title={
+                                                                                                isToday
+                                                                                                    ? "Modifica orari"
+                                                                                                    : "Puoi modificare gli orari solo per oggi"
+                                                                                            }
                                                                                         >
                                                                                             <path
                                                                                                 d="M22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12Z"
@@ -1578,253 +1635,243 @@ export default function Tasks() {
                                         </form>
                                     </div>
                                 </div>
-                                <div
-                                    className="tasks flex flex-col w-1/2 h-auto border p-4 rounded-xl bg-white mb-8 overflow-y-auto max-h-full max-w-full"
-                                    style={{
-                                        boxShadow: "4px 4px 10px #00000010",
-                                    }}
+                            </>
+                        )}
+                        <div
+                            className="tasks flex flex-col w-1/2 h-auto border p-4 rounded-xl bg-white mb-8 overflow-y-auto max-h-full max-w-full"
+                            style={{
+                                boxShadow: "4px 4px 10px #00000010",
+                            }}
+                        >
+                            {" "}
+                            <div
+                                className="title flex flex-row items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded transition-colors"
+                                onClick={() =>
+                                    setIsFilterAccordionOpen(
+                                        !isFilterAccordionOpen
+                                    )
+                                }
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    width="20"
+                                    height="20"
+                                    color="oklch(44.6% 0.03 256.802)"
+                                    fill="none"
                                 >
-                                    {" "}
-                                    <div
-                                        className="title flex flex-row items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded transition-colors"
-                                        onClick={() =>
-                                            setIsFilterAccordionOpen(
-                                                !isFilterAccordionOpen
+                                    <path
+                                        d="M3 7H6"
+                                        stroke="currentColor"
+                                        stroke-width="1.5"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    />
+                                    <path
+                                        d="M3 17H9"
+                                        stroke="currentColor"
+                                        stroke-width="1.5"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    />
+                                    <path
+                                        d="M18 17L21 17"
+                                        stroke="currentColor"
+                                        stroke-width="1.5"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    />
+                                    <path
+                                        d="M15 7L21 7"
+                                        stroke="currentColor"
+                                        stroke-width="1.5"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    />
+                                    <path
+                                        d="M6 7C6 6.06812 6 5.60218 6.15224 5.23463C6.35523 4.74458 6.74458 4.35523 7.23463 4.15224C7.60218 4 8.06812 4 9 4C9.93188 4 10.3978 4 10.7654 4.15224C11.2554 4.35523 11.6448 4.74458 11.8478 5.23463C12 5.60218 12 6.06812 12 7C12 7.93188 12 8.39782 11.8478 8.76537C11.6448 9.25542 11.2554 9.64477 10.7654 9.84776C10.3978 10 9.93188 10 9 10C8.06812 10 7.60218 10 7.23463 9.84776C6.74458 9.64477 6.35523 9.25542 6.15224 8.76537C6 8.39782 6 7.93188 6 7Z"
+                                        stroke="currentColor"
+                                        stroke-width="1.5"
+                                    />
+                                    <path
+                                        d="M12 17C12 16.0681 12 15.6022 12.1522 15.2346C12.3552 14.7446 12.7446 14.3552 13.2346 14.1522C13.6022 14 14.0681 14 15 14C15.9319 14 16.3978 14 16.7654 14.1522C17.2554 14.3552 17.6448 14.7446 17.8478 15.2346C18 15.6022 18 16.0681 18 17C18 17.9319 18 18.3978 17.8478 18.7654C17.6448 19.2554 17.2554 19.6448 16.7654 19.8478C16.3978 20 15.9319 20 15 20C14.0681 20 13.6022 20 13.2346 19.8478C12.7446 19.6448 12.3552 19.2554 12.1522 18.7654C12 18.3978 12 17.9319 12 17Z"
+                                        stroke="currentColor"
+                                        stroke-width="1.5"
+                                    />
+                                </svg>
+
+                                <p className="text-gray-600">Filtro task</p>
+
+                                {/* Accordion arrow */}
+                                <svg
+                                    className={`ml-auto transform transition-transform duration-200 ${
+                                        isFilterAccordionOpen
+                                            ? "rotate-180"
+                                            : ""
+                                    }`}
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    width="16"
+                                    height="16"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                >
+                                    <path d="m6 9 6 6 6-6" />
+                                </svg>
+                            </div>
+                            {/* Accordion content */}
+                            <div
+                                className={`accordion-content overflow-hidden transition-all duration-300 ease-in-out ${
+                                    isFilterAccordionOpen
+                                        ? "max-h-[600px] opacity-100"
+                                        : "max-h-0 opacity-0"
+                                }`}
+                            >
+                                <div className="separator"></div>{" "}
+                                <div className="filter-form flex flex-col gap-2 mt-0">
+                                    <label
+                                        htmlFor="searchText"
+                                        className="text-xs text-gray-500"
+                                    >
+                                        Cerca
+                                    </label>
+                                    <div className="flex flex-row gap-2">
+                                        <input
+                                            type="text"
+                                            id="searchText"
+                                            value={filters.searchText}
+                                            onChange={(e) =>
+                                                handleFilterChange(
+                                                    "searchText",
+                                                    e.target.value
+                                                )
+                                            }
+                                            onKeyPress={(e) =>
+                                                e.key === "Enter" &&
+                                                executeFilters()
+                                            }
+                                            placeholder="Cerca per testo, titolo, nome..."
+                                            className="flex w-full border px-3 py-2 rounded text-gray-600 text-sm focus:outline-nones"
+                                        />
+                                        <button
+                                            onClick={executeFilters}
+                                            className="flex items-center bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 24 24"
+                                                width="16"
+                                                height="16"
+                                                color="white"
+                                                fill="none"
+                                            >
+                                                <path
+                                                    d="M17.5 17.5L22 22"
+                                                    stroke="currentColor"
+                                                    strokeWidth="1.5"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                />
+                                                <path
+                                                    d="M20 11C20 6.02944 15.9706 2 11 2C6.02944 2 2 6.02944 2 11C2 15.9706 6.02944 20 11 20C15.9706 20 20 15.9706 20 11Z"
+                                                    stroke="currentColor"
+                                                    strokeWidth="1.5"
+                                                    strokeLinejoin="round"
+                                                />
+                                            </svg>
+                                            <p className="p-0 m-0">Cerca</p>
+                                        </button>
+                                        {showFilterResults && (
+                                            <button
+                                                onClick={clearFilters}
+                                                className="px-4 py-2 border border-red-300 text-red-600 rounded text-sm hover:bg-red-50 transition-colors"
+                                            >
+                                                Cancella
+                                            </button>
+                                        )}
+                                    </div>{" "}
+                                    <label
+                                        htmlFor="status"
+                                        className="text-xs text-gray-500"
+                                    >
+                                        Stato
+                                    </label>
+                                    <select
+                                        value={filters.status}
+                                        onChange={(e) =>
+                                            handleFilterChange(
+                                                "status",
+                                                e.target.value
                                             )
                                         }
+                                        className="border px-3 py-2 rounded w-1/2 text-gray-600 text-sm focus:outline-none"
                                     >
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 24 24"
-                                            width="20"
-                                            height="20"
-                                            color="oklch(44.6% 0.03 256.802)"
-                                            fill="none"
-                                        >
-                                            <path
-                                                d="M3 7H6"
-                                                stroke="currentColor"
-                                                stroke-width="1.5"
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                            />
-                                            <path
-                                                d="M3 17H9"
-                                                stroke="currentColor"
-                                                stroke-width="1.5"
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                            />
-                                            <path
-                                                d="M18 17L21 17"
-                                                stroke="currentColor"
-                                                stroke-width="1.5"
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                            />
-                                            <path
-                                                d="M15 7L21 7"
-                                                stroke="currentColor"
-                                                stroke-width="1.5"
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                            />
-                                            <path
-                                                d="M6 7C6 6.06812 6 5.60218 6.15224 5.23463C6.35523 4.74458 6.74458 4.35523 7.23463 4.15224C7.60218 4 8.06812 4 9 4C9.93188 4 10.3978 4 10.7654 4.15224C11.2554 4.35523 11.6448 4.74458 11.8478 5.23463C12 5.60218 12 6.06812 12 7C12 7.93188 12 8.39782 11.8478 8.76537C11.6448 9.25542 11.2554 9.64477 10.7654 9.84776C10.3978 10 9.93188 10 9 10C8.06812 10 7.60218 10 7.23463 9.84776C6.74458 9.64477 6.35523 9.25542 6.15224 8.76537C6 8.39782 6 7.93188 6 7Z"
-                                                stroke="currentColor"
-                                                stroke-width="1.5"
-                                            />
-                                            <path
-                                                d="M12 17C12 16.0681 12 15.6022 12.1522 15.2346C12.3552 14.7446 12.7446 14.3552 13.2346 14.1522C13.6022 14 14.0681 14 15 14C15.9319 14 16.3978 14 16.7654 14.1522C17.2554 14.3552 17.6448 14.7446 17.8478 15.2346C18 15.6022 18 16.0681 18 17C18 17.9319 18 18.3978 17.8478 18.7654C17.6448 19.2554 17.2554 19.6448 16.7654 19.8478C16.3978 20 15.9319 20 15 20C14.0681 20 13.6022 20 13.2346 19.8478C12.7446 19.6448 12.3552 19.2554 12.1522 18.7654C12 18.3978 12 17.9319 12 17Z"
-                                                stroke="currentColor"
-                                                stroke-width="1.5"
-                                            />
-                                        </svg>
-
-                                        <p className="text-gray-600">
-                                            Filtro task
-                                        </p>
-
-                                        {/* Accordion arrow */}
-                                        <svg
-                                            className={`ml-auto transform transition-transform duration-200 ${
-                                                isFilterAccordionOpen
-                                                    ? "rotate-180"
-                                                    : ""
-                                            }`}
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 24 24"
-                                            width="16"
-                                            height="16"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            strokeWidth="2"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        >
-                                            <path d="m6 9 6 6 6-6" />
-                                        </svg>
-                                    </div>
-                                    {/* Accordion content */}
-                                    <div
-                                        className={`accordion-content overflow-hidden transition-all duration-300 ease-in-out ${
-                                            isFilterAccordionOpen
-                                                ? "max-h-[600px] opacity-100"
-                                                : "max-h-0 opacity-0"
-                                        }`}
-                                    >
-                                        <div className="separator"></div>{" "}
-                                        <div className="filter-form flex flex-col gap-2 mt-0">
-                                            <label
-                                                htmlFor="searchText"
-                                                className="text-xs text-gray-500"
-                                            >
-                                                Cerca
-                                            </label>
-                                            <div className="flex flex-row gap-2">
+                                        <option value="">
+                                            Seleziona stato
+                                        </option>
+                                        <option value="non iniziato">
+                                            Non iniziato
+                                        </option>
+                                        <option value="in corso">
+                                            In corso
+                                        </option>
+                                        <option value="completato">
+                                            Completato
+                                        </option>
+                                        <option value="non completato">
+                                            Non completato
+                                        </option>
+                                    </select>
+                                    <div className="flex flex-col gap-2 mt-2">
+                                        <div className="flex gap-2 items-center">
+                                            <div className="flex flex-col flex-1">
+                                                <label
+                                                    htmlFor="fromDate"
+                                                    className="text-xs text-gray-500 mb-2"
+                                                >
+                                                    Da
+                                                </label>
                                                 <input
-                                                    type="text"
-                                                    id="searchText"
-                                                    value={filters.searchText}
+                                                    type="date"
+                                                    id="fromDate"
+                                                    value={filters.fromDate}
                                                     onChange={(e) =>
                                                         handleFilterChange(
-                                                            "searchText",
+                                                            "fromDate",
                                                             e.target.value
                                                         )
                                                     }
-                                                    onKeyPress={(e) =>
-                                                        e.key === "Enter" &&
-                                                        executeFilters()
-                                                    }
-                                                    placeholder="Cerca per testo, titolo, nome..."
-                                                    className="flex w-full border px-3 py-2 rounded text-gray-600 text-sm focus:outline-nones"
+                                                    className="border px-3 py-2 rounded text-gray-600 text-sm focus:outline-none"
                                                 />
-                                                <button
-                                                    onClick={executeFilters}
-                                                    className="flex items-center bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
-                                                >
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        viewBox="0 0 24 24"
-                                                        width="16"
-                                                        height="16"
-                                                        color="white"
-                                                        fill="none"
-                                                    >
-                                                        <path
-                                                            d="M17.5 17.5L22 22"
-                                                            stroke="currentColor"
-                                                            strokeWidth="1.5"
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                        />
-                                                        <path
-                                                            d="M20 11C20 6.02944 15.9706 2 11 2C6.02944 2 2 6.02944 2 11C2 15.9706 6.02944 20 11 20C15.9706 20 20 15.9706 20 11Z"
-                                                            stroke="currentColor"
-                                                            strokeWidth="1.5"
-                                                            strokeLinejoin="round"
-                                                        />
-                                                    </svg>
-                                                    <p className="p-0 m-0">
-                                                        Cerca
-                                                    </p>
-                                                </button>
-                                                {showFilterResults && (
-                                                    <button
-                                                        onClick={clearFilters}
-                                                        className="px-4 py-2 border border-red-300 text-red-600 rounded text-sm hover:bg-red-50 transition-colors"
-                                                    >
-                                                        Cancella
-                                                    </button>
-                                                )}
-                                            </div>{" "}
-                                            <label
-                                                htmlFor="status"
-                                                className="text-xs text-gray-500"
-                                            >
-                                                Stato
-                                            </label>
-                                            <select
-                                                value={filters.status}
-                                                onChange={(e) =>
-                                                    handleFilterChange(
-                                                        "status",
-                                                        e.target.value
-                                                    )
-                                                }
-                                                className="border px-3 py-2 rounded w-1/2 text-gray-600 text-sm focus:outline-none"
-                                            >
-                                                <option value="">
-                                                    Seleziona stato
-                                                </option>
-                                                <option value="non iniziato">
-                                                    Non iniziato
-                                                </option>
-                                                <option value="in corso">
-                                                    In corso
-                                                </option>
-                                                <option value="completato">
-                                                    Completato
-                                                </option>
-                                                <option value="non completato">
-                                                    Non completato
-                                                </option>
-                                            </select>
-                                            <div className="flex flex-col gap-2 mt-2">
-                                                <div className="flex gap-2 items-center">
-                                                    <div className="flex flex-col flex-1">
-                                                        <label
-                                                            htmlFor="fromDate"
-                                                            className="text-xs text-gray-500 mb-2"
-                                                        >
-                                                            Da
-                                                        </label>
-                                                        <input
-                                                            type="date"
-                                                            id="fromDate"
-                                                            value={
-                                                                filters.fromDate
-                                                            }
-                                                            onChange={(e) =>
-                                                                handleFilterChange(
-                                                                    "fromDate",
-                                                                    e.target
-                                                                        .value
-                                                                )
-                                                            }
-                                                            className="border px-3 py-2 rounded text-gray-600 text-sm focus:outline-none"
-                                                        />
-                                                    </div>
-                                                    <div className="flex flex-col flex-1">
-                                                        <label
-                                                            htmlFor="toDate"
-                                                            className="text-xs text-gray-500 mb-2"
-                                                        >
-                                                            A
-                                                        </label>
-                                                        <input
-                                                            type="date"
-                                                            id="toDate"
-                                                            value={
-                                                                filters.toDate
-                                                            }
-                                                            onChange={(e) =>
-                                                                handleFilterChange(
-                                                                    "toDate",
-                                                                    e.target
-                                                                        .value
-                                                                )
-                                                            }
-                                                            className="border px-3 py-2 rounded text-gray-600 text-sm focus:outline-none"
-                                                        />
-                                                    </div>{" "}
-                                                </div>{" "}
                                             </div>
-                                        </div>
+                                            <div className="flex flex-col flex-1">
+                                                <label
+                                                    htmlFor="toDate"
+                                                    className="text-xs text-gray-500 mb-2"
+                                                >
+                                                    A
+                                                </label>
+                                                <input
+                                                    type="date"
+                                                    id="toDate"
+                                                    value={filters.toDate}
+                                                    onChange={(e) =>
+                                                        handleFilterChange(
+                                                            "toDate",
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    className="border px-3 py-2 rounded text-gray-600 text-sm focus:outline-none"
+                                                />
+                                            </div>{" "}
+                                        </div>{" "}
                                     </div>
                                 </div>
-                            </>
-                        )}
+                            </div>
+                        </div>
                     </div>
                 </div>{" "}
                 <Modal
