@@ -11,7 +11,7 @@
     "id": 2,
     "title": "Test di una scheda grafica",
     "assignedTo": "Mario",
-    "status": "completato",
+    "status": "non completato",
     "date": "2025-04-30",
     "time": "08:00"
   },
@@ -125,9 +125,11 @@
     "id": 28,
     "title": "Prova oggi",
     "assignedTo": "Simone",
-    "status": "in corso",
+    "status": "completato",
     "date": "2025-06-19",
-    "time": "08:00"
+    "time": "08:00",
+    "description": "",
+    "simulator": "189"
   },
   {
     "id": 29,
@@ -135,6 +137,26 @@
     "assignedTo": "Gianluca",
     "status": "non completato",
     "date": "2025-06-19",
-    "time": "20:25"
+    "time": "20:25",
+    "description": "",
+    "simulator": "109FFS"
+  },
+  {
+    "id": 30,
+    "title": "Prova",
+    "assignedTo": "Luca",
+    "status": "non iniziato",
+    "date": "2025-06-19",
+    "time": "08:00"
+  },
+  {
+    "id": 31,
+    "title": "mkkmkmmkm",
+    "assignedTo": "Luca",
+    "status": "in corso",
+    "date": "2025-06-19",
+    "time": "08:00",
+    "description": "",
+    "simulator": "FTD"
   }
 ]

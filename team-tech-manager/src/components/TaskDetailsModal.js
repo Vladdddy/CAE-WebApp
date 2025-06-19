@@ -82,13 +82,13 @@ export default function TaskDetailsModal({
                                 <path
                                     d="M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z"
                                     stroke="currentColor"
-                                    stroke-width="2"
+                                    strokeWidth="1.5"
                                 />
                                 <path
                                     d="M14 14H10C7.23858 14 5 16.2386 5 19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19C19 16.2386 16.7614 14 14 14Z"
                                     stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linejoin="round"
+                                    strokeWidth="1.5"
+                                    strokeLinejoin="round"
                                 />
                             </svg>
                             <p className="text-[#3b82f6]">{task.assignedTo}</p>
@@ -162,6 +162,43 @@ export default function TaskDetailsModal({
                                 Azioni
                             </label>
                             <div className="flex gap-3 flex-wrap">
+                                {canEditDescription(task) && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onClose(); // Close task details modal first
+                                            onEditDescription(task); // Then open description modal
+                                        }}
+                                        className="flex items-center gap-2 px-4 py-2 bg-green-50 hover:bg-green-100 text-green-600 rounded-lg transition-colors border border-green-200"
+                                        title="Modifica descrizione e simulatore"
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 24 24"
+                                            width="16"
+                                            height="16"
+                                            color="currentColor"
+                                            fill="none"
+                                        >
+                                            <path
+                                                d="M16.2141 4.98239L17.6158 3.58063C18.39 2.80646 19.6452 2.80646 20.4194 3.58063C21.1935 4.3548 21.1935 5.60998 20.4194 6.38415L19.0176 7.78591M16.2141 4.98239L10.9802 10.2163C9.93493 11.2616 9.41226 11.7842 9.05637 12.4211C8.70047 13.058 8.3424 14.5619 8 16C9.43809 15.6576 10.942 15.2995 11.5789 14.9436C12.2158 14.5877 12.7384 14.0651 13.7837 13.0198L19.0176 7.78591M16.2141 4.98239L19.0176 7.78591"
+                                                stroke="currentColor"
+                                                strokeWidth="1.5"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
+                                            <path
+                                                d="M21 12C21 16.2426 21 18.364 19.682 19.682C18.364 21 16.2426 21 12 21C7.75736 21 5.63604 21 4.31802 19.682C3 18.364 3 16.2426 3 12C3 7.75736 3 5.63604 4.31802 4.31802C5.63604 3 7.75736 3 12 3"
+                                                stroke="currentColor"
+                                                strokeWidth="1.5"
+                                                strokeLinecap="round"
+                                            />
+                                        </svg>
+                                        <span className="text-sm">
+                                            Modifica
+                                        </span>
+                                    </button>
+                                )}
                                 {canToggleTask(task) && (
                                     <button
                                         onClick={(e) => {
@@ -174,8 +211,8 @@ export default function TaskDetailsModal({
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
                                             viewBox="0 0 24 24"
-                                            width="20"
-                                            height="20"
+                                            width="16"
+                                            height="16"
                                             color="currentColor"
                                             fill="none"
                                         >
@@ -208,44 +245,12 @@ export default function TaskDetailsModal({
                                                 strokeLinejoin="round"
                                             />
                                         </svg>
-                                        <span>Cambia Stato</span>
+                                        <span className="text-sm">
+                                            Cambia Stato
+                                        </span>
                                     </button>
                                 )}
-                                {canEditDescription(task) && (
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            onClose(); // Close task details modal first
-                                            onEditDescription(task); // Then open description modal
-                                        }}
-                                        className="flex items-center gap-2 px-4 py-2 bg-green-50 hover:bg-green-100 text-green-600 rounded-lg transition-colors border border-green-200"
-                                        title="Modifica descrizione e simulatore"
-                                    >
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 24 24"
-                                            width="20"
-                                            height="20"
-                                            color="currentColor"
-                                            fill="none"
-                                        >
-                                            <path
-                                                d="M16.2141 4.98239L17.6158 3.58063C18.39 2.80646 19.6452 2.80646 20.4194 3.58063C21.1935 4.3548 21.1935 5.60998 20.4194 6.38415L19.0176 7.78591M16.2141 4.98239L10.9802 10.2163C9.93493 11.2616 9.41226 11.7842 9.05637 12.4211C8.70047 13.058 8.3424 14.5619 8 16C9.43809 15.6576 10.942 15.2995 11.5789 14.9436C12.2158 14.5877 12.7384 14.0651 13.7837 13.0198L19.0176 7.78591M16.2141 4.98239L19.0176 7.78591"
-                                                stroke="currentColor"
-                                                strokeWidth="1.5"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                            />
-                                            <path
-                                                d="M21 12C21 16.2426 21 18.364 19.682 19.682C18.364 21 16.2426 21 12 21C7.75736 21 5.63604 21 4.31802 19.682C3 18.364 3 16.2426 3 12C3 7.75736 3 5.63604 4.31802 4.31802C5.63604 3 7.75736 3 12 3"
-                                                stroke="currentColor"
-                                                strokeWidth="1.5"
-                                                strokeLinecap="round"
-                                            />
-                                        </svg>
-                                        <span>Modifica</span>
-                                    </button>
-                                )}
+
                                 {canDeleteTasks() && (
                                     <button
                                         onClick={(e) => {
@@ -259,8 +264,8 @@ export default function TaskDetailsModal({
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
                                             viewBox="0 0 24 24"
-                                            width="20"
-                                            height="20"
+                                            width="16"
+                                            height="16"
                                             color="currentColor"
                                             fill="none"
                                         >
@@ -277,7 +282,9 @@ export default function TaskDetailsModal({
                                                 strokeLinecap="round"
                                             />
                                         </svg>
-                                        <span>Elimina Task</span>
+                                        <span className="text-sm">
+                                            Elimina Task
+                                        </span>
                                     </button>
                                 )}
                             </div>
