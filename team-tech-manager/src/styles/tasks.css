@@ -132,8 +132,6 @@ select option:checked {
 .simulator-header p {
     font-weight: 500;
     color: #4b5563;
-    padding-bottom: 0.25rem;
-    font-size: 0.75rem;
 }
 
 .simulator-tasks {

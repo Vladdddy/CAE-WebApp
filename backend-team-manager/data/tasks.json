@@ -102,26 +102,6 @@
     "time": "20:00"
   },
   {
-    "id": 26,
-    "title": "Boh",
-    "assignedTo": "Luca",
-    "status": "completato",
-    "date": "2025-06-18",
-    "time": "08:00",
-    "description": "",
-    "simulator": "109FFS"
-  },
-  {
-    "id": 27,
-    "title": "Boh prova",
-    "assignedTo": "Gianluca",
-    "status": "completato",
-    "date": "2025-06-18",
-    "time": "20:00",
-    "description": "",
-    "simulator": "139#3"
-  },
-  {
     "id": 28,
     "title": "Prova oggi",
     "assignedTo": "Simone",
@@ -148,15 +128,5 @@
     "status": "non iniziato",
     "date": "2025-06-19",
     "time": "08:00"
-  },
-  {
-    "id": 31,
-    "title": "mkkmkmmkm",
-    "assignedTo": "Luca",
-    "status": "in corso",
-    "date": "2025-06-19",
-    "time": "08:00",
-    "description": "",
-    "simulator": "FTD"
   }
 ]

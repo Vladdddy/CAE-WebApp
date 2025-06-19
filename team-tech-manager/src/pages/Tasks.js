@@ -34,6 +34,18 @@ export default function Tasks() {
         taskId: null,
         currentDescription: "",
         currentSimulator: "",
+    });    // Simulator schedule states - now date-specific
+    const [simulatorSchedules, setSimulatorSchedules] = useState(() => {
+        const saved = localStorage.getItem("simulatorSchedules");
+        const allSchedules = saved ? JSON.parse(saved) : {};
+        // Return schedules for the selected date, or empty object if none exist
+        return allSchedules[selectedDate] || {};
+    });
+    const [scheduleModal, setScheduleModal] = useState({
+        isOpen: false,
+        simulator: "",
+        startTime: "",
+        endTime: "",
     }); // Filter states
     const [filters, setFilters] = useState({
         searchText: "",
@@ -134,7 +146,6 @@ export default function Tasks() {
             currentSimulator: task.simulator || "",
         });
     };
-
     const closeDescriptionModal = () => {
         setDescriptionModal({
             isOpen: false,
@@ -142,6 +153,55 @@ export default function Tasks() {
             currentDescription: "",
             currentSimulator: "",
         });
+    };    // Schedule modal functions
+    const openScheduleModal = (simulator) => {
+        // Check if the selected date is today
+        const today = new Date().toISOString().split("T")[0];
+        if (selectedDate !== today) {
+            showModal(
+                "Accesso negato",
+                "Puoi modificare gli orari solo per la data di oggi",
+                "error"
+            );
+            return;
+        }
+
+        const existingSchedule = simulatorSchedules[simulator] || {};
+        setScheduleModal({
+            isOpen: true,
+            simulator: simulator,
+            startTime: existingSchedule.startTime || "",
+            endTime: existingSchedule.endTime || "",
+        });
+    };
+
+    const closeScheduleModal = () => {
+        setScheduleModal({
+            isOpen: false,
+            simulator: "",
+            startTime: "",
+            endTime: "",
+        });
+    };    const saveSimulatorSchedule = () => {
+        const { simulator, startTime, endTime } = scheduleModal;
+        if (startTime && endTime) {
+            // Get all existing schedules from localStorage
+            const allSchedules = JSON.parse(localStorage.getItem("simulatorSchedules") || "{}");
+            
+            // Update schedules for the selected date
+            const newSchedules = {
+                ...simulatorSchedules,
+                [simulator]: { startTime, endTime },
+            };
+            
+            // Save to the date-specific entry
+            allSchedules[selectedDate] = newSchedules;
+            
+            // Update both local state and localStorage
+            setSimulatorSchedules(newSchedules);
+            localStorage.setItem("simulatorSchedules", JSON.stringify(allSchedules));
+        }
+        closeScheduleModal();
     };
     const updateTaskDescription = async (data) => {
         const token = localStorage.getItem("authToken");
@@ -207,9 +267,7 @@ export default function Tasks() {
                 "error"
             );
         }
-    };
-
-    useEffect(() => {
+    };    useEffect(() => {
         const token = localStorage.getItem("authToken");
         fetch(`${API}/api/tasks`, {
             headers: {
@@ -225,7 +283,14 @@ export default function Tasks() {
                 console.error("Error fetching tasks:", error);
                 setLoading(false);
             });
-    }, []); // Update filtered tasks when tasks change
+    }, []);     // Update simulator schedules when selected date changes
+    useEffect(() => {
+        const allSchedules = JSON.parse(localStorage.getItem("simulatorSchedules") || "{}");
+        const dateSchedules = allSchedules[selectedDate] || {};
+        setSimulatorSchedules(dateSchedules);
+    }, [selectedDate]);
+    
+    // Update filtered tasks when tasks change
     useEffect(() => {
         if (showFilterResults) {
             const filtered = applyFilters(tasks, filters);
@@ -454,19 +519,38 @@ export default function Tasks() {
             } else {
                 // Group tasks by simulator
                 const tasksBySimulator = {};
-                dailyTasks.forEach((task) => {
-                    const simulator = task.simulator || "Nessun Simulatore";
-                    if (!tasksBySimulator[simulator]) {
-                        tasksBySimulator[simulator] = [];
-                    }
-                    tasksBySimulator[simulator].push(task);
-                });
+                const simulators = [
+                    "FTD",
+                    "109FFS",
+                    "139#1",
+                    "139#3",
+                    "169",
+                    "189",
+                ];
 
-                // Render tasks grouped by simulator
+                dailyTasks.forEach((task) => {
+                    const simulator = task.simulator || "";
+                    let simulatorGroup;
+
+                    if (simulators.includes(simulator)) {
+                        simulatorGroup = simulator;
+                    } else {
+                        simulatorGroup = "Others";
+                    }
+
+                    if (!tasksBySimulator[simulatorGroup]) {
+                        tasksBySimulator[simulatorGroup] = [];
+                    }
+                    tasksBySimulator[simulatorGroup].push(task);
+                }); // Render tasks grouped by simulator
                 Object.keys(tasksBySimulator).forEach((simulator) => {
-                    // Add simulator header
+                    // Add simulator header with schedule if available
                     const simulatorHeader = document.createElement("h4");
-                    simulatorHeader.textContent = simulator;
+                    let headerText = simulator;
+                    if (simulatorSchedules[simulator]) {
+                        headerText += ` ${simulatorSchedules[simulator].startTime}-${simulatorSchedules[simulator].endTime}`;
+                    }
+                    simulatorHeader.textContent = headerText;
                     simulatorHeader.style.margin = "20px 0 10px 0";
                     simulatorHeader.style.color = "#1f2937";
                     simulatorHeader.style.fontSize = "18px";
@@ -925,10 +1009,66 @@ export default function Tasks() {
                                                         key={simulator}
                                                         className="simulator-column flex-1 min-w-[120px]"
                                                     >
-                                                        <div className="simulator-header text-center mb-3">
-                                                            <p className="text-xs font-medium text-gray-600 pb-1">
+                                                        {" "}                                                        <div className="simulator-header flex flex-row items-center justify-center gap-2 mb-4">
+                                                            <p className="text-xs font-medium text-gray-600">
                                                                 {simulator}
+                                                                {simulatorSchedules[
+                                                                    simulator
+                                                                ] && (
+                                                                    <span className="ml-2 bg-blue-100 p-1 rounded text-blue-600 text-xs">
+                                                                        {
+                                                                            simulatorSchedules[
+                                                                                simulator
+                                                                            ]
+                                                                                .startTime
+                                                                        }
+                                                                        -
+                                                                        {
+                                                                            simulatorSchedules[
+                                                                                simulator
+                                                                            ]
+                                                                                .endTime
+                                                                        }
+                                                                    </span>
+                                                                )}
                                                             </p>
+                                                            {(() => {
+                                                                const today = new Date().toISOString().split("T")[0];
+                                                                const isToday = selectedDate === today;
+                                                                
+                                                                return (
+                                                                    <svg
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                        viewBox="0 0 24 24"
+                                                                        width="16"
+                                                                        height="16"
+                                                                        color={isToday ? "#3b82f6" : "#9ca3af"}
+                                                                        fill="none"
+                                                                        className={isToday ? "cursor-pointer hover:scale-110 transition-transform" : "cursor-not-allowed opacity-50"}
+                                                                        onClick={() => {
+                                                                            if (isToday) {
+                                                                                openScheduleModal(simulator);
+                                                                            }
+                                                                        }}
+                                                                        title={isToday ? "Modifica orari" : "Puoi modificare gli orari solo per oggi"}
+                                                                    >
+                                                                        <path
+                                                                            d="M22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12Z"
+                                                                            stroke="currentColor"
+                                                                            stroke-width="1.5"
+                                                                            stroke-linecap="round"
+                                                                            stroke-linejoin="round"
+                                                                        />
+                                                                        <path
+                                                                            d="M12 8V16M16 12H8"
+                                                                            stroke="currentColor"
+                                                                            stroke-width="1.5"
+                                                                            stroke-linecap="round"
+                                                                            stroke-linejoin="round"
+                                                                        />
+                                                                    </svg>
+                                                                );
+                                                            })()}
                                                         </div>
                                                         <div className="simulator-tasks space-y-2">
                                                             {tasks.length ===
@@ -1113,12 +1253,69 @@ export default function Tasks() {
                                                                             key={`night-${simulator}`}
                                                                             className="simulator-column flex-1 min-w-[120px]"
                                                                         >
-                                                                            <div className="simulator-header text-center mb-3">
-                                                                                <p className="text-xs font-medium text-gray-600 pb-1">
+                                                                            {" "}                                                                            <div className="simulator-header flex flex-row items-center justify-center gap-2 mb-4">
+                                                                                <p className="text-xs font-medium text-gray-600">
                                                                                     {
                                                                                         simulator
                                                                                     }
+                                                                                    {simulatorSchedules[
+                                                                                        simulator
+                                                                                    ] && (
+                                                                                        <span className="ml-2 bg-blue-100 p-1 rounded text-blue-600 text-xs">
+                                                                                            {
+                                                                                                simulatorSchedules[
+                                                                                                    simulator
+                                                                                                ]
+                                                                                                    .startTime
+                                                                                            }
+
+                                                                                            -
+                                                                                            {
+                                                                                                simulatorSchedules[
+                                                                                                    simulator
+                                                                                                ]
+                                                                                                    .endTime
+                                                                                            }
+                                                                                        </span>
+                                                                                    )}
                                                                                 </p>
+                                                                                {(() => {
+                                                                                    const today = new Date().toISOString().split("T")[0];
+                                                                                    const isToday = selectedDate === today;
+                                                                                    
+                                                                                    return (
+                                                                                        <svg
+                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                            viewBox="0 0 24 24"
+                                                                                            width="16"
+                                                                                            height="16"
+                                                                                            color={isToday ? "#3b82f6" : "#9ca3af"}
+                                                                                            fill="none"
+                                                                                            className={isToday ? "cursor-pointer hover:scale-110 transition-transform" : "cursor-not-allowed opacity-50"}
+                                                                                            onClick={() => {
+                                                                                                if (isToday) {
+                                                                                                    openScheduleModal(simulator);
+                                                                                                }
+                                                                                            }}
+                                                                                            title={isToday ? "Modifica orari" : "Puoi modificare gli orari solo per oggi"}
+                                                                                        >
+                                                                                            <path
+                                                                                                d="M22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12Z"
+                                                                                                stroke="currentColor"
+                                                                                                stroke-width="1.5"
+                                                                                                stroke-linecap="round"
+                                                                                                stroke-linejoin="round"
+                                                                                            />
+                                                                                            <path
+                                                                                                d="M12 8V16M16 12H8"
+                                                                                                stroke="currentColor"
+                                                                                                stroke-width="1.5"
+                                                                                                stroke-linecap="round"
+                                                                                                stroke-linejoin="round"
+                                                                                            />
+                                                                                        </svg>
+                                                                                    );
+                                                                                })()}
                                                                             </div>
                                                                             <div className="simulator-tasks space-y-2">
                                                                                 {tasks.length ===
@@ -1656,6 +1853,75 @@ export default function Tasks() {
                     currentDescription={descriptionModal.currentDescription}
                     currentSimulator={descriptionModal.currentSimulator}
                 />
+                {/* Schedule Modal */}
+                {scheduleModal.isOpen && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-lg p-6 w-96 max-w-[90vw]">
+                            <h3 className="text-lg font-semibold mb-4 text-gray-800">
+                                Orari per Simulatore {scheduleModal.simulator}
+                            </h3>
+
+                            <div className="space-y-4">
+                                <div>
+                                    <label
+                                        htmlFor="startTime"
+                                        className="block text-sm font-medium text-gray-700 mb-2"
+                                    >
+                                        Orario inizio
+                                    </label>
+                                    <input
+                                        type="time"
+                                        id="startTime"
+                                        value={scheduleModal.startTime}
+                                        onChange={(e) =>
+                                            setScheduleModal((prev) => ({
+                                                ...prev,
+                                                startTime: e.target.value,
+                                            }))
+                                        }
+                                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label
+                                        htmlFor="endTime"
+                                        className="block text-sm font-medium text-gray-700 mb-2"
+                                    >
+                                        Orario fine
+                                    </label>
+                                    <input
+                                        type="time"
+                                        id="endTime"
+                                        value={scheduleModal.endTime}
+                                        onChange={(e) =>
+                                            setScheduleModal((prev) => ({
+                                                ...prev,
+                                                endTime: e.target.value,
+                                            }))
+                                        }
+                                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="flex justify-end gap-3 mt-6">
+                                <button
+                                    onClick={closeScheduleModal}
+                                    className="px-4 py-2 text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                                >
+                                    Annulla
+                                </button>
+                                <button
+                                    onClick={saveSimulatorSchedule}
+                                    className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
+                                >
+                                    Salva
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </>
     );
