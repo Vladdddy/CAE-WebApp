@@ -102,16 +102,6 @@
     "time": "20:00"
   },
   {
-    "id": 25,
-    "title": "Task 2",
-    "assignedTo": "Simone",
-    "status": "non completato",
-    "date": "2025-06-18",
-    "time": "08:00",
-    "description": "Prova",
-    "simulator": "FTD"
-  },
-  {
     "id": 26,
     "title": "Boh",
     "assignedTo": "Luca",
@@ -130,5 +120,21 @@
     "time": "20:00",
     "description": "",
     "simulator": "139#3"
+  },
+  {
+    "id": 28,
+    "title": "Prova oggi",
+    "assignedTo": "Simone",
+    "status": "in corso",
+    "date": "2025-06-19",
+    "time": "08:00"
+  },
+  {
+    "id": 29,
+    "title": "Notturno",
+    "assignedTo": "Gianluca",
+    "status": "non completato",
+    "date": "2025-06-19",
+    "time": "20:25"
   }
 ]

@@ -2,38 +2,26 @@ import "../styles/dashboard.css";
 import Logo from "../assets/logo.png";
 import Modal from "../components/Modal";
 import DescriptionModal from "../components/DescriptionModal";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 export default function Dashboard() {
-    const [currentTime, setCurrentTime] = useState(new Date());
-    const [tasks, setTasks] = useState([]);
-    const [users, setUsers] = useState([]);
-    const [shifts, setShifts] = useState({});
-    const [loading, setLoading] = useState(true);
-    const [modal, setModal] = useState({
-        isOpen: false,
-        title: "",
-        message: "",
-        type: "info",
-        onConfirm: null,
-        confirmText: "Conferma",
-    });
-    const [descriptionModal, setDescriptionModal] = useState({
-        isOpen: false,
-        taskId: null,
-        currentDescription: "",
-        currentSimulator: "",
-    });
-    const API = process.env.REACT_APP_API_URL;
     const today = new Date().toISOString().split("T")[0];
-    let userEmail = (localStorage.getItem("userEmail") || "Utente").split(
-        "@"
-    )[0];
-    userEmail = userEmail.charAt(0).toUpperCase() + userEmail.slice(1);
+    const token = localStorage.getItem("authToken");
+    let userEmail = (localStorage.getItem("userEmail") || "Utente")[0];
+    userEmail = userEmail.charAt(0).toUpperCase();
 
-    // Get current user info from token
+    // Aggiorna il tempo corrente ogni secondo
+    const [currentTime, setCurrentTime] = useState(new Date());
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, []);
+
+    // Prende le info dell'utente dal token JWT
     const getCurrentUser = () => {
-        const token = localStorage.getItem("authToken");
         if (!token) return null;
 
         try {
@@ -44,8 +32,102 @@ export default function Dashboard() {
             return null;
         }
     };
+    const currentUser = useMemo(() => getCurrentUser(), [token]);
 
-    const currentUser = getCurrentUser(); // Helper functions for modal
+    const canDeleteTasks = () => {
+        return currentUser && ["admin"].includes(currentUser.role);
+    };
+
+    const canSwitchStatus = (task) => {
+        if (!currentUser) return false;
+        if (["admin"].includes(currentUser.role)) return true;
+        return (
+            currentUser.role === "employee" &&
+            task.assignedTo === currentUser.name
+        );
+    };
+
+    const canEditDescription = (task) => {
+        if (!currentUser) return false;
+        if (["admin"].includes(currentUser.role)) return true;
+        return (
+            currentUser.role === "employee" &&
+            task.assignedTo === currentUser.name
+        );
+    };
+
+    // Fetcha le tasks dal server
+    const API = process.env.REACT_APP_API_URL;
+    const [tasks, setTasks] = useState([]);
+    const [loading, setLoading] = useState(true);
+    useEffect(() => {
+        fetch(`${API}/api/tasks`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        })
+            .then((res) => res.json())
+            .then((data) => {
+                setTasks(data);
+                setLoading(false);
+            })
+            .catch((error) => {
+                console.error("Error fetching tasks:", error);
+                setLoading(false);
+            });
+    }, []);
+
+    // Fetcha tutti i dipendenti
+    const [users, setUsers] = useState([]);
+    useEffect(() => {
+        fetch(`${API}/api/users`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        })
+            .then((res) => {
+                return res.json();
+            })
+            .then((data) => {
+                setUsers(data);
+            })
+            .catch((error) => {
+                console.error("Error fetching users:", error);
+            });
+    }, []);
+
+    // Fetcha tutti i turni del mese corrente
+    const [shifts, setShifts] = useState({});
+    useEffect(() => {
+        const currentDate = new Date();
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+
+        fetch(`${API}/api/shifts/${year}/${month}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        })
+            .then((res) => {
+                return res.json();
+            })
+            .then((data) => {
+                setShifts(data);
+            })
+            .catch((error) => {
+                console.error("Error fetching shifts:", error);
+            });
+    }, []);
+
+    // Gestione dei modali
+    const [modal, setModal] = useState({
+        isOpen: false,
+        title: "",
+        message: "",
+        type: "info",
+        onConfirm: null,
+        confirmText: "Conferma",
+    });
     const showModal = (
         title,
         message,
@@ -62,42 +144,12 @@ export default function Dashboard() {
             confirmText,
         });
     };
-
-    const closeModal = () => {
-        setModal((prev) => ({ ...prev, isOpen: false }));
-    };
-
-    // Helper function to check if user can perform actions
-    const canDeleteTasks = () => {
-        return (
-            currentUser &&
-            ["admin", "manager", "supervisor"].includes(currentUser.role)
-        );
-    };
-
-    const canToggleTask = (task) => {
-        if (!currentUser) return false;
-        // Admins, managers, supervisors can toggle any task
-        if (["admin", "manager", "supervisor"].includes(currentUser.role))
-            return true;
-        // Employees can only toggle their own tasks
-        return (
-            currentUser.role === "employee" &&
-            task.assignedTo === currentUser.name
-        );
-    };
-
-    const canEditDescription = (task) => {
-        if (!currentUser) return false;
-        // Admins, managers, supervisors can edit any task description
-        if (["admin", "manager", "supervisor"].includes(currentUser.role))
-            return true;
-        // Employees can only edit descriptions for tasks assigned to them
-        return (
-            currentUser.role === "employee" &&
-            task.assignedTo === currentUser.name
-        );
-    };
+    const [descriptionModal, setDescriptionModal] = useState({
+        isOpen: false,
+        taskId: null,
+        currentDescription: "",
+        currentSimulator: "",
+    });
     const openDescriptionModal = (task) => {
         setDescriptionModal({
             isOpen: true,
@@ -114,8 +166,12 @@ export default function Dashboard() {
             currentSimulator: "",
         });
     };
+    const closeModal = () => {
+        setModal((prev) => ({ ...prev, isOpen: false }));
+    };
+
+    // Aggiorna la descrizione della task
     const updateTaskDescription = async (data) => {
-        const token = localStorage.getItem("authToken");
         try {
             const res = await fetch(
                 `${API}/api/tasks/${descriptionModal.taskId}/description`,
@@ -162,75 +218,14 @@ export default function Dashboard() {
         } catch (error) {
             showModal(
                 "Errore",
-                "Errore durante l'aggiornamento della descrizione",
+                "Errore sull'aggiornamento della descrizione",
                 "error"
             );
         }
     };
 
-    // Aggiorna il tempo corrente ogni secondo
-    useEffect(() => {
-        const timer = setInterval(() => {
-            setCurrentTime(new Date());
-        }, 1000);
-
-        return () => clearInterval(timer);
-    }, []); // Prende i task dal server
-    useEffect(() => {
-        const token = localStorage.getItem("authToken");
-        fetch(`${API}/api/tasks`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        })
-            .then((res) => res.json())
-            .then((data) => {
-                setTasks(data);
-                setLoading(false);
-            })
-            .catch((error) => {
-                console.error("Error fetching tasks:", error);
-                setLoading(false);
-            });
-    }, []); // Fetch users data
-    useEffect(() => {
-        const token = localStorage.getItem("authToken");
-        fetch(`${API}/api/users`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        })
-            .then((res) => {
-                return res.json();
-            })
-            .then((data) => {
-                setUsers(data);
-            })
-            .catch((error) => {});
-    }, []); // Fetch shifts data for current month
-    useEffect(() => {
-        const token = localStorage.getItem("authToken");
-        const currentDate = new Date();
-        const year = currentDate.getFullYear();
-        const month = String(currentDate.getMonth() + 1).padStart(2, "0");
-
-        fetch(`${API}/api/shifts/${year}/${month}`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        })
-            .then((res) => {
-                return res.json();
-            })
-            .then((data) => {
-                setShifts(data);
-            })
-            .catch((error) => {
-                console.error("Error fetching shifts:", error);
-            });
-    }, []); // Funzioni per gestire i task
-    const toggleTask = async (id) => {
-        const token = localStorage.getItem("authToken");
+    // Aggiorna lo stato della task
+    const switchTask = async (id) => {
         try {
             const res = await fetch(`${API}/api/tasks/${id}/toggle`, {
                 method: "PATCH",
@@ -258,7 +253,9 @@ export default function Dashboard() {
         } catch (error) {
             showModal("Errore", "Errore durante la modifica del task", "error");
         }
-    }; // Nuova funzione per gestire il toggle con conferma per task incompleti
+    };
+
+    // Setta i task non completati come completati
     const toggleIncompleteTask = async (id) => {
         const task = tasks.find((t) => t.id === id);
         if (task && task.status === "non completato") {
@@ -267,21 +264,22 @@ export default function Dashboard() {
                 "Segnare task come completato?",
                 "confirm",
                 async () => {
-                    await toggleTask(id);
+                    await switchTask(id);
                 },
                 "Salva"
             );
         } else {
-            await toggleTask(id);
+            await switchTask(id);
         }
-    }; // Funzione per eliminare un task
+    };
+
+    // Eliminazione task
     const deleteTask = async (id) => {
         showModal(
             "Conferma eliminazione",
             "Confermi l'eliminazione del task?",
             "confirm",
             async () => {
-                const token = localStorage.getItem("authToken");
                 try {
                     const res = await fetch(`${API}/api/tasks/${id}`, {
                         method: "DELETE",
@@ -325,45 +323,46 @@ export default function Dashboard() {
             }
         );
     };
+
+    // Imposta il colore del bordo in base allo stato del task
     const getBorderColor = (status) => {
         switch (status) {
             case "completato":
-                return "#139d5440";
+                return "#139d5420";
             case "in corso":
-                return "#f6ad1040";
+                return "#f6ad1020";
             case "non completato":
-                return "#dc262640";
+                return "#dc262620";
             default:
-                return "#e5e7eb40";
+                return "#e5e7eb";
         }
     };
+
+    // Filtra le task (prende le task di oggi)
     const dailyTasks = tasks.filter((t) => t.date === today);
 
-    // Filtra i task in base all'orario
-    const dayTasks = dailyTasks.filter((task) => {
-        const taskTime = task.time;
-        const hour = parseInt(taskTime.split(":")[0]);
-        return hour >= 7 && hour < 19;
-    });
-
-    const nightTasks = dailyTasks.filter((task) => {
-        const taskTime = task.time;
-        const hour = parseInt(taskTime.split(":")[0]);
-        return hour >= 19 || hour < 7;
-    }); // Filtra i task incompleti per il secondo container (tutti i task incompleti, non solo quelli di oggi)
+    // Filtra i task incompleti
     const incompleteTasks = tasks.filter(
         (task) => task.status === "non completato"
     );
 
+    // Prende le task del turno diurno
+    const dayTasks = dailyTasks.filter((task) => {
+        const hour = parseInt(task.time.split(":")[0]);
+        return hour >= 7 && hour < 19;
+    });
     const incompleteDayTasks = incompleteTasks.filter((task) => {
-        const taskTime = task.time;
-        const hour = parseInt(taskTime.split(":")[0]);
+        const hour = parseInt(task.time.split(":")[0]);
         return hour >= 7 && hour < 19;
     });
 
+    // Prende le task del turno notturno
+    const nightTasks = dailyTasks.filter((task) => {
+        const hour = parseInt(task.time.split(":")[0]);
+        return hour >= 19 || hour < 7;
+    });
     const incompleteNightTasks = incompleteTasks.filter((task) => {
-        const taskTime = task.time;
-        const hour = parseInt(taskTime.split(":")[0]);
+        const hour = parseInt(task.time.split(":")[0]);
         return hour >= 19 || hour < 7;
     });
 
@@ -378,6 +377,18 @@ export default function Dashboard() {
             return "ON";
         }
     };
+    const getShiftName = () => {
+        const shift = getCurrentShift();
+
+        const shiftNames = {
+            O: "Mattino",
+            OP: "Pomeriggio",
+            ON: "Notte",
+        };
+
+        return shiftNames[shift];
+    };
+
     const getCurrentShiftEmployees = () => {
         const shift = getCurrentShift();
         const today = new Date().toISOString().split("T")[0];
@@ -399,24 +410,14 @@ export default function Dashboard() {
         return [];
     };
 
-    const getShiftName = () => {
-        const shift = getCurrentShift();
-        const shiftNames = {
-            O: "Mattino",
-            OP: "Pomeriggio",
-            ON: "Notte",
-        };
-        return shiftNames[shift];
-    };
     const renderTaskList = (
         taskList,
-        shiftType,
         showDates = false,
         isIncompleteSection = false
     ) => {
         if (taskList.length === 0) {
             return (
-                <div className="text-center py-2 text-gray-400 text-sm">
+                <div className="text-center py-2 text-gray-400 text-xs">
                     Nessun task per il turno
                 </div>
             );
@@ -490,12 +491,12 @@ export default function Dashboard() {
                             </svg>
                         </button>
                     )}
-                    {canToggleTask(task) && (
+                    {canSwitchStatus(task) && (
                         <button
                             onClick={() =>
                                 isIncompleteSection
                                     ? toggleIncompleteTask(task.id)
-                                    : toggleTask(task.id)
+                                    : switchTask(task.id)
                             }
                             title="Cambia stato"
                         >
@@ -511,7 +512,7 @@ export default function Dashboard() {
                                         ? "#f6ad10"
                                         : task.status === "non completato"
                                         ? "#dc2626"
-                                        : "#6b7280"
+                                        : "#e5e7eb"
                                 }
                                 fill="none"
                             >
@@ -650,7 +651,7 @@ export default function Dashboard() {
                             Caricamento task...
                         </div>
                     ) : dailyTasks.length === 0 ? (
-                        <div className="text-center py-4 text-gray-500">
+                        <div className="text-center py-4 text-gray-400">
                             Nessun task per oggi
                         </div>
                     ) : (
@@ -750,7 +751,7 @@ export default function Dashboard() {
                             Caricamento task...
                         </div>
                     ) : incompleteTasks.length === 0 ? (
-                        <div className="text-center py-4 text-gray-500">
+                        <div className="text-center py-4 text-gray-400">
                             Nessun task incompleto per oggi
                         </div>
                     ) : (
@@ -929,6 +930,7 @@ export default function Dashboard() {
                     ))}
                 </div>
             </div>
+
             <Modal
                 isOpen={modal.isOpen}
                 onClose={closeModal}
@@ -937,7 +939,8 @@ export default function Dashboard() {
                 type={modal.type}
                 onConfirm={modal.onConfirm}
                 confirmText={modal.confirmText}
-            />{" "}
+            />
+
             <DescriptionModal
                 isOpen={descriptionModal.isOpen}
                 onClose={closeDescriptionModal}
