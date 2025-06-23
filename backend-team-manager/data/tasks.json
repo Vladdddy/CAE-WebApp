@@ -128,5 +128,43 @@
     "status": "non iniziato",
     "date": "2025-06-19",
     "time": "08:00"
+  },
+  {
+    "id": 31,
+    "title": "fjgnf",
+    "assignedTo": "Luca",
+    "status": "completato",
+    "date": "2025-06-22",
+    "time": "08:00"
+  },
+  {
+    "id": 32,
+    "title": "Prova 23/06",
+    "assignedTo": "Luca",
+    "status": "in corso",
+    "date": "2025-06-23",
+    "time": "08:00",
+    "description": "Prova?",
+    "simulator": ""
+  },
+  {
+    "id": 33,
+    "title": "Notturno",
+    "assignedTo": "Simone",
+    "status": "non iniziato",
+    "date": "2025-06-23",
+    "time": "00:00",
+    "description": "",
+    "simulator": "139#1"
+  },
+  {
+    "id": 34,
+    "title": "task2",
+    "assignedTo": "Simone",
+    "status": "completato",
+    "date": "2025-06-23",
+    "time": "23:00",
+    "description": "",
+    "simulator": "109FFS"
   }
 ]

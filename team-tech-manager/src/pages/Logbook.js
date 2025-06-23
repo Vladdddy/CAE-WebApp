@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import "../styles/tasks.css";
+import Modal from "../components/Modal";
+import TaskDetailsModal from "../components/TaskDetailsModal";
+import html2pdf from "html2pdf.js";
 
 const API = process.env.REACT_APP_API_URL;
 const categories = {
@@ -49,16 +52,40 @@ export default function Logbook() {
         new Date().toISOString().split("T")[0]
     );
     const [isSearching, setIsSearching] = useState(false);
-    const [showFilterResults, setShowFilterResults] = useState(false);
-
-    // Accordion states
+    const [showFilterResults, setShowFilterResults] = useState(false); // Accordion states
     const [isFilterAccordionOpen, setIsFilterAccordionOpen] = useState(false);
     const [isAddTaskAccordionOpen, setIsAddTaskAccordionOpen] = useState(false);
-    const [isTaskAccordionOpen, setIsTaskAccordionOpen] = useState(false);
+    const [isTaskAccordionOpen, setIsTaskAccordionOpen] = useState(false);    // Task details modal state
+    const [taskDetailsModal, setTaskDetailsModal] = useState({
+        isOpen: false,
+        task: null,
+    });
 
-    // Get current user's name from localStorage
+    // Modal state for notifications
+    const [modal, setModal] = useState({
+        isOpen: false,
+        title: "",
+        message: "",
+        type: "info",
+        onConfirm: null,
+    });    // Get current user's name from localStorage
     const currentUserName =
         localStorage.getItem("userName") || "Utente Sconosciuto";
+
+    // Modal functions
+    const showModal = (title, message, type = "info", onConfirm = null) => {
+        setModal({
+            isOpen: true,
+            title,
+            message,
+            type,
+            onConfirm,
+        });
+    };
+
+    const closeModal = () => {
+        setModal((prev) => ({ ...prev, isOpen: false }));
+    };
 
     // Set author to current user on component mount
     useEffect(() => {
@@ -148,9 +175,7 @@ export default function Logbook() {
             all.push(...data.map((e) => ({ ...e, date: d })));
         }
         return all;
-    };
-
-    const handleExportPDF = () => {
+    };    const handleExportPDF = () => {
         try {
             // Create a clean version of the content for PDF
             const formattedDate = new Date(selectedDate).toLocaleDateString(
@@ -162,6 +187,9 @@ export default function Logbook() {
                 }
             );
 
+            // Get the entries to export (use filtered entries if filters are applied, otherwise use all entries)
+            const entriesToExport = showFilterResults ? filteredEntries : entries;
+
             // Create a temporary div with clean styling for PDF
             const pdfContent = document.createElement("div");
             pdfContent.style.padding = "20px";
@@ -170,68 +198,87 @@ export default function Logbook() {
 
             // Add title
             const title = document.createElement("h2");
-            title.textContent = `Task per il ${formattedDate}`;
+            title.textContent = `Logbook per il ${formattedDate}`;
             title.style.marginBottom = "20px";
             title.style.color = "#333";
             title.style.borderBottom = "2px solid #3b82f6";
             title.style.paddingBottom = "10px";
             pdfContent.appendChild(title);
-            if (dailyTasks.length === 0) {
-                const noTasks = document.createElement("p");
-                noTasks.textContent = "Nessun task per questa data";
-                noTasks.style.color = "#666";
-                noTasks.style.fontStyle = "italic";
-                pdfContent.appendChild(noTasks);
+            
+            if (entriesToExport.length === 0) {
+                const noEntries = document.createElement("p");
+                noEntries.textContent = "Nessuna voce per questa data";
+                noEntries.style.color = "#666";
+                noEntries.style.fontStyle = "italic";
+                pdfContent.appendChild(noEntries);
             } else {
-                // Group tasks by simulator
-                const tasksBySimulator = {};
-                dailyTasks.forEach((task) => {
-                    const simulator = task.simulator || "Nessun Simulatore";
-                    if (!tasksBySimulator[simulator]) {
-                        tasksBySimulator[simulator] = [];
+                // Group entries by category
+                const entriesByCategory = {};
+                entriesToExport.forEach((entry) => {
+                    const category = entry.category || "Altri";
+                    if (!entriesByCategory[category]) {
+                        entriesByCategory[category] = [];
                     }
-                    tasksBySimulator[simulator].push(task);
+                    entriesByCategory[category].push(entry);
                 });
 
-                // Render tasks grouped by simulator
-                Object.keys(tasksBySimulator).forEach((simulator) => {
-                    // Add simulator header
-                    const simulatorHeader = document.createElement("h4");
-                    simulatorHeader.textContent = simulator;
-                    simulatorHeader.style.margin = "20px 0 10px 0";
-                    simulatorHeader.style.color = "#1f2937";
-                    simulatorHeader.style.fontSize = "18px";
-                    simulatorHeader.style.fontWeight = "bold";
-                    simulatorHeader.style.borderBottom = "1px solid #d1d5db";
-                    simulatorHeader.style.paddingBottom = "20px";
-                    pdfContent.appendChild(simulatorHeader);
+                // Render entries grouped by category
+                Object.keys(entriesByCategory).forEach((category) => {
+                    // Add category header
+                    const categoryHeader = document.createElement("h4");
+                    categoryHeader.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+                    categoryHeader.style.margin = "20px 0 10px 0";
+                    categoryHeader.style.color = "#1f2937";
+                    categoryHeader.style.fontSize = "18px";
+                    categoryHeader.style.fontWeight = "bold";
+                    categoryHeader.style.borderBottom = "1px solid #d1d5db";
+                    categoryHeader.style.paddingBottom = "5px";
+                    pdfContent.appendChild(categoryHeader);
 
-                    // Add tasks for this simulator
-                    tasksBySimulator[simulator].forEach((task, index) => {
-                        const taskDiv = document.createElement("div");
-                        taskDiv.style.marginBottom = "15px";
-                        taskDiv.style.padding = "15px";
-                        taskDiv.style.border = `2px solid ${getBorderColor(
-                            task.status
-                        )}`;
-                        taskDiv.style.borderRadius = "8px";
-                        taskDiv.style.backgroundColor = "#f9f9f9";
+                    // Add entries for this category
+                    entriesByCategory[category].forEach((entry, index) => {
+                        const entryDiv = document.createElement("div");
+                        entryDiv.style.marginBottom = "15px";
+                        entryDiv.style.padding = "15px";
+                        entryDiv.style.border = "1px solid #d1d5db";
+                        entryDiv.style.borderRadius = "8px";
+                        entryDiv.style.backgroundColor = "#f9f9f9";
 
-                        const taskTitle = document.createElement("h5");
-                        taskTitle.textContent = `${index + 1}. ${task.title}`;
-                        taskTitle.style.margin = "0 0 8px 0";
-                        taskTitle.style.color = "#333";
-                        taskTitle.style.fontSize = "16px";
-                        taskDiv.appendChild(taskTitle);
+                        const entryHeader = document.createElement("h5");
+                        entryHeader.textContent = `${index + 1}. ${entry.time || 'N/A'} - ${entry.author || 'N/A'}`;
+                        entryHeader.style.margin = "0 0 8px 0";
+                        entryHeader.style.color = "#333";
+                        entryHeader.style.fontSize = "16px";
+                        entryDiv.appendChild(entryHeader);
 
-                        const taskDetails = document.createElement("p");
-                        taskDetails.textContent = `Orario: ${task.time} • Assegnato a: ${task.assignedTo} • Status: ${task.status}`;
-                        taskDetails.style.margin = "0";
-                        taskDetails.style.color = "#666";
-                        taskDetails.style.fontSize = "14px";
-                        taskDiv.appendChild(taskDetails);
+                        const entryText = document.createElement("p");
+                        entryText.textContent = entry.text || '';
+                        entryText.style.margin = "0 0 8px 0";
+                        entryText.style.color = "#666";
+                        entryText.style.fontSize = "14px";
+                        entryDiv.appendChild(entryText);
 
-                        pdfContent.appendChild(taskDiv);
+                        if (entry.subcategory) {
+                            const subcategoryText = document.createElement("p");
+                            subcategoryText.textContent = `Sottocategoria: ${entry.subcategory}`;
+                            subcategoryText.style.margin = "0";
+                            subcategoryText.style.color = "#888";
+                            subcategoryText.style.fontSize = "12px";
+                            subcategoryText.style.fontStyle = "italic";
+                            entryDiv.appendChild(subcategoryText);
+                        }
+
+                        if (entry.extraDetail) {
+                            const extraDetailText = document.createElement("p");
+                            extraDetailText.textContent = `Dettagli extra: ${entry.extraDetail}`;
+                            extraDetailText.style.margin = "0";
+                            extraDetailText.style.color = "#888";
+                            extraDetailText.style.fontSize = "12px";
+                            extraDetailText.style.fontStyle = "italic";
+                            entryDiv.appendChild(extraDetailText);
+                        }
+
+                        pdfContent.appendChild(entryDiv);
                     });
                 });
             }
@@ -241,7 +288,7 @@ export default function Logbook() {
 
             const opt = {
                 margin: 0.5,
-                filename: `tasks-${formattedDate.replace(/\//g, "-")}.pdf`,
+                filename: `logbook-${formattedDate.replace(/\//g, "-")}.pdf`,
                 image: { type: "jpeg", quality: 0.98 },
                 html2canvas: {
                     scale: 2,
@@ -260,7 +307,6 @@ export default function Logbook() {
                 .save()
                 .then(() => {
                     document.body.removeChild(pdfContent);
-                    closeModal();
                     showModal(
                         "Successo",
                         "PDF esportato con successo!",
@@ -270,7 +316,6 @@ export default function Logbook() {
                 .catch((error) => {
                     console.error("PDF Export Error:", error);
                     document.body.removeChild(pdfContent);
-                    closeModal();
                     showModal(
                         "Errore",
                         "Errore durante l'esportazione del PDF",
@@ -470,7 +515,71 @@ export default function Logbook() {
         setFormTime(entry.time);
         setDuration(entry.duration || "");
         setEditIndex(index);
+    }; // Task details modal functions
+    const openTaskDetails = (task) => {
+        setTaskDetailsModal({
+            isOpen: true,
+            task: task,
+        });
     };
+
+    const closeTaskDetails = () => {
+        setTaskDetailsModal({
+            isOpen: false,
+            task: null,
+        });
+    }; // Permission functions for TaskDetailsModal (read-only in logbook)
+    const canToggleTask = (task) => false; // No task editing in logbook
+    const canDeleteTasks = () => false; // No task deletion in logbook
+    const canEditDescription = (task) => false; // No description editing in logbook
+
+    // Function to handle saving notes for tasks
+    const handleSaveNote = async (taskId, noteText) => {
+        try {
+            const noteData = {
+                text: noteText,
+                author: currentUserName,
+                timestamp: new Date().toISOString(),
+            };
+
+            // For now, store notes in localStorage until backend endpoint is created
+            const savedNotes = JSON.parse(
+                localStorage.getItem("taskNotes") || "{}"
+            );
+            if (!savedNotes[taskId]) {
+                savedNotes[taskId] = [];
+            }
+            savedNotes[taskId].push(noteData);
+            localStorage.setItem("taskNotes", JSON.stringify(savedNotes));
+
+            // Update the task in local state
+            const updatedTasks = tasks.map((task) => {
+                if (task.id === taskId) {
+                    return {
+                        ...task,
+                        notes: savedNotes[taskId],
+                    };
+                }
+                return task;
+            });
+            setTasks(updatedTasks);
+
+            console.log("Nota salvata con successo:", noteText);
+
+            // Update the task in the modal if it's the same task
+            if (taskDetailsModal.task && taskDetailsModal.task.id === taskId) {
+                const updatedTask = updatedTasks.find((t) => t.id === taskId);
+                setTaskDetailsModal({
+                    ...taskDetailsModal,
+                    task: updatedTask,
+                });
+            }
+        } catch (error) {
+            console.error("Errore nel salvare la nota:", error);
+            alert("Errore nel salvare la nota: " + error.message);
+        }
+    };
+
     const handleChangeDay = (offset) => {
         const d = new Date(date);
         d.setDate(d.getDate() + offset);
@@ -496,6 +605,64 @@ export default function Logbook() {
         link.click();
         URL.revokeObjectURL(url);
     };
+
+    // Helper function to get border color based on category
+    const getCategoryBorderColor = (category) => {
+        switch (category) {
+            case "routine task":
+                return "#3b82f620";
+            case "troubleshooting":
+                return "#dc262620";
+            case "others":
+                return "#f6ad1020";
+            default:
+                return "#e5e7eb";
+        }
+    };
+
+    // Helper function to get border color based on task status
+    const getBorderColor = (status) => {
+        switch (status) {
+            case "completato":
+                return "#139d5420";
+            case "in corso":
+                return "#f6ad1020";
+            case "non completato":
+                return "#dc262620";
+            default:
+                return "#e5e7eb";
+        }
+    };
+
+    // Tasks state (from Tasks.js)
+    const [tasks, setTasks] = useState([]);
+    const [loading, setLoading] = useState(true);
+    useEffect(() => {
+        const token = localStorage.getItem("authToken");
+        fetch(`${API}/api/tasks`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        })
+            .then((res) => res.json())
+            .then((data) => {
+                // Load notes from localStorage and merge with tasks
+                const savedNotes = JSON.parse(
+                    localStorage.getItem("taskNotes") || "{}"
+                );
+                const tasksWithNotes = data.map((task) => ({
+                    ...task,
+                    notes: savedNotes[task.id] || [],
+                }));
+
+                setTasks(tasksWithNotes);
+                setLoading(false);
+            })
+            .catch((error) => {
+                console.error("Error fetching tasks:", error);
+                setLoading(false);
+            });
+    }, []);
 
     return (
         <>
@@ -584,7 +751,7 @@ export default function Logbook() {
                         </button>
                     </div>
                     <div
-                        className="entries flex flex-col w-full border p-4 rounded-xl bg-white my-4 overflow-y-auto max-h-[30vh] flex-1 max-w-full"
+                        className="entries flex flex-col w-full border p-4 rounded-xl bg-white my-2 overflow-y-auto max-h-[80vh] flex-1 max-w-full"
                         style={{ boxShadow: "4px 4px 10px #00000010" }}
                     >
                         <div className="title flex flex-row items-center gap-2">
@@ -597,17 +764,28 @@ export default function Logbook() {
                                 fill="none"
                             >
                                 <path
-                                    d="M10.6119 5.00008L10.0851 7M12.2988 2.76313C12.713 3.49288 12.4672 4.42601 11.7499 4.84733C11.0326 5.26865 10.1153 5.01862 9.70118 4.28887C9.28703 3.55912 9.53281 2.62599 10.2501 2.20467C10.9674 1.78334 11.8847 2.03337 12.2988 2.76313Z"
-                                    stroke="oklch(44.6% 0.03 256.802)"
-                                    strokeWidth="1.5"
-                                    strokeLinecap="round"
-                                ></path>
+                                    d="M20.1069 20.1088C18.7156 21.5001 16.4765 21.5001 11.9981 21.5001C7.51976 21.5001 5.28059 21.5001 3.88935 20.1088C2.49811 18.7176 2.49811 16.4784 2.49811 12.0001C2.49811 7.52172 2.49811 5.28255 3.88935 3.89131C5.28059 2.50006 7.51976 2.50006 11.9981 2.50006C16.4764 2.50006 18.7156 2.50006 20.1069 3.8913C21.4981 5.28255 21.4981 7.52172 21.4981 12.0001C21.4981 16.4784 21.4981 18.7176 20.1069 20.1088Z"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                />
                                 <path
-                                    d="M13 21.998C12.031 20.8176 10.5 18 8.5 18C7.20975 18.1059 6.53573 19.3611 5.84827 20.3287M5.84827 20.3287C5.45174 19.961 5.30251 19.4126 5.00406 18.3158L3.26022 11.9074C2.5584 9.32827 2.20749 8.0387 2.80316 7.02278C3.39882 6.00686 4.70843 5.66132 7.32766 4.97025L9.5 4.39708M5.84827 20.3287C6.2448 20.6965 6.80966 20.8103 7.9394 21.0379L12.0813 21.8725C12.9642 22.0504 12.9721 22.0502 13.8426 21.8205L16.6723 21.0739C19.2916 20.3828 20.6012 20.0373 21.1968 19.0214C21.7925 18.0055 21.4416 16.7159 20.7398 14.1368L19.0029 7.75375C18.301 5.17462 17.9501 3.88506 16.9184 3.29851C16.0196 2.78752 14.9098 2.98396 12.907 3.5"
-                                    stroke="oklch(44.6% 0.03 256.802)"
-                                    strokeWidth="1.5"
-                                ></path>
-                            </svg>
+                                    d="M8.99811 21.5001L8.99811 2.50006"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                />
+                                <path
+                                    d="M21.4981 8.00006L2.49811 8.00006"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                />
+                                <path
+                                    d="M21.4981 16.0001H2.49811"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                />
+                            </svg>{" "}
                             <p className="text-gray-600">
                                 {showFilterResults ? (
                                     <>
@@ -620,44 +798,41 @@ export default function Logbook() {
                                         </span>
                                     </>
                                 ) : (
-                                    <>
-                                        Entries per oggi{" "}
-                                        <span className="span ml-1">
-                                            {
-                                                entries.filter(
-                                                    (e) => e.date === date
-                                                ).length
-                                            }{" "}
-                                            entr
-                                            {entries.filter(
-                                                (e) => e.date === date
-                                            ).length === 1
-                                                ? "y"
-                                                : "ies"}
-                                        </span>
-                                    </>
+                                    <>Tabella delle task</>
                                 )}
                             </p>
                         </div>
-                        <div className="separator w-full border-b border-gray-200"></div>
-
-                        {/* Entries display */}
+                        {!showFilterResults && (
+                            <>
+                                <div className="separator w-full border-b border-gray-200"></div>
+                                <div className="flex flex-row items-center gap-16 mb-2"></div>
+                            </>
+                        )}
                         {showFilterResults ? (
-                            // Show filtered results
-                            filteredEntries.length === 0 ? (
-                                <div className="text-center py-4 text-gray-400 text-sm">
-                                    Nessuna entry trovata con i filtri applicati
-                                </div>
-                            ) : (
-                                <ul className="space-y-3">
-                                    {filteredEntries.map((entry, index) => (
-                                        <li
+                            <>
+                                <div className="separator w-full border-b border-gray-200 mb-4"></div>
+                                {/* Show filtered results */}
+                                {filteredEntries.length === 0 ? (
+                                    <div className="text-center py-4 text-gray-500">
+                                        Nessuna entry trovata con i filtri
+                                        applicati
+                                    </div>
+                                ) : (
+                                    filteredEntries.map((entry, index) => (
+                                        <div
                                             key={index}
-                                            className="flex justify-between items-center p-4 border rounded-md bg-gray-50"
+                                            className="display-entry flex items-center gap-4 justify-between dashboard-content p-3 rounded mt-3 bg-gray-100 cursor-pointer hover:bg-gray-200 transition-colors"
+                                            style={{
+                                                border: `2px solid ${getCategoryBorderColor(
+                                                    entry.category
+                                                )}`,
+                                            }}
                                         >
-                                            <div className="flex flex-col">
-                                                <div>{entry.text}</div>
-                                                <div className="text-sm text-gray-500 mt-1">
+                                            <div className="entry-info">
+                                                <p className="text-gray-600 max-w-md font-bold text-sm">
+                                                    {entry.text}
+                                                </p>
+                                                <div className="text-xs text-gray-500 capitalize">
                                                     {entry.date} • {entry.time}{" "}
                                                     • {entry.duration} •{" "}
                                                     {entry.author} •{" "}
@@ -728,121 +903,461 @@ export default function Logbook() {
                                                             stroke="currentColor"
                                                             strokeWidth="1.5"
                                                             strokeLinecap="round"
-                                                        ></path>
+                                                        />
                                                         <path
                                                             d="M3 5.5H21M16.0557 5.5L15.3731 4.09173C14.9196 3.15626 14.6928 2.68852 14.3017 2.39681C14.215 2.3321 14.1231 2.27454 14.027 2.2247C13.5939 2 13.0741 2 12.0345 2C10.9688 2 10.436 2 9.99568 2.23412C9.8981 2.28601 9.80498 2.3459 9.71729 2.41317C9.32164 2.7167 9.10063 3.20155 8.65861 4.17126L8.05292 5.5"
                                                             stroke="currentColor"
                                                             strokeWidth="1.5"
                                                             strokeLinecap="round"
-                                                        ></path>
+                                                        />
                                                     </svg>
                                                 </button>
                                             </div>
-                                        </li>
-                                    ))}
-                                </ul>
-                            )
-                        ) : // Show daily entries (original behavior)
-                        entries.filter((e) => e.date === date).length === 0 ? (
-                            <div className="text-center py-4 text-gray-400 text-sm">
-                                Nessuna entry per questa data
-                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </>
                         ) : (
-                            <ul className="space-y-3">
-                                {entries
-                                    .filter((e) => e.date === date)
-                                    .map((entry, index) => (
-                                        <li
-                                            key={index}
-                                            className="flex justify-between items-center p-4 border rounded-md bg-gray-50"
-                                        >
-                                            <div className="flex flex-col">
-                                                <div>{entry.text}</div>
-                                                <div className="text-sm text-gray-500 mt-1">
-                                                    {entry.time} •{" "}
-                                                    {entry.duration} •{" "}
-                                                    {entry.author} •{" "}
-                                                    {entry.category}
-                                                    {entry.subcategory &&
-                                                        ` / ${entry.subcategory}`}
-                                                    {entry.extraDetail &&
-                                                        ` / ${entry.extraDetail}`}
-                                                </div>
-                                            </div>
+                            (() => {
+                                // Get entries for the selected date
+                                const dateEntries = entries.filter(
+                                    (e) => e.date === date
+                                ); // Get tasks for the selected date
+                                const dateTasks = tasks.filter(
+                                    (task) => task.date === date
+                                );
 
-                                            <div className="flex gap-4">
-                                                <button
-                                                    onClick={() =>
-                                                        handleEdit(
-                                                            entries.findIndex(
-                                                                (e) =>
-                                                                    e === entry
-                                                            )
-                                                        )
-                                                    }
-                                                    className="text-blue-600 hover:underline"
-                                                >
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        viewBox="0 0 24 24"
-                                                        width="24"
-                                                        height="24"
-                                                        color="currentColor"
-                                                        fill="none"
-                                                    >
-                                                        <path
-                                                            d="M16.2141 4.98239L17.6158 3.58063C18.39 2.80646 19.6452 2.80646 20.4194 3.58063C21.1935 4.3548 21.1935 5.60998 20.4194 6.38415L19.0176 7.78591M16.2141 4.98239L10.9802 10.2163C9.93493 11.2616 9.41226 11.7842 9.05637 12.4211C8.70047 13.058 8.3424 14.5619 8 16C9.43809 15.6576 10.942 15.2995 11.5789 14.9436C12.2158 14.5877 12.7384 14.0651 13.7837 13.0198L19.0176 7.78591M16.2141 4.98239L19.0176 7.78591"
-                                                            stroke="currentColor"
-                                                            strokeWidth="1.5"
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                        />
-                                                        <path
-                                                            d="M21 12C21 16.2426 21 18.364 19.682 19.682C18.364 21 16.2426 21 12 21C7.75736 21 5.63604 21 4.31802 19.682C3 18.364 3 16.2426 3 12C3 7.75736 3 5.63604 4.31802 4.31802C5.63604 3 7.75736 3 12 3"
-                                                            stroke="currentColor"
-                                                            strokeWidth="1.5"
-                                                            strokeLinecap="round"
-                                                        />
-                                                    </svg>
-                                                </button>
-                                                <button
-                                                    onClick={() =>
-                                                        handleDelete(
-                                                            entries.findIndex(
-                                                                (e) =>
-                                                                    e === entry
-                                                            )
-                                                        )
-                                                    }
-                                                    className="text-red-600 hover:underline"
-                                                >
-                                                    <svg
-                                                        className="elimina-icon"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        viewBox="0 0 24 24"
-                                                        width="24"
-                                                        height="24"
-                                                        color="#e53e3e"
-                                                        fill="none"
-                                                    >
-                                                        <path
-                                                            d="M19.5 5.5L18.8803 15.5251C18.7219 18.0864 18.6428 19.3671 18.0008 20.2879C17.6833 20.7431 17.2747 21.1273 16.8007 21.416C15.8421 22 14.559 22 11.9927 22C9.42312 22 8.1383 22 7.17905 21.4149C6.7048 21.1257 6.296 20.7408 5.97868 20.2848C5.33688 19.3626 5.25945 18.0801 5.10461 15.5152L4.5 5.5"
-                                                            stroke="currentColor"
-                                                            strokeWidth="1.5"
-                                                            strokeLinecap="round"
-                                                        ></path>
-                                                        <path
-                                                            d="M3 5.5H21M16.0557 5.5L15.3731 4.09173C14.9196 3.15626 14.6928 2.68852 14.3017 2.39681C14.215 2.3321 14.1231 2.27454 14.027 2.2247C13.5939 2 13.0741 2 12.0345 2C10.9688 2 10.436 2 9.99568 2.23412C9.8981 2.28601 9.80498 2.3459 9.71729 2.41317C9.32164 2.7167 9.10063 3.20155 8.65861 4.17126L8.05292 5.5"
-                                                            stroke="currentColor"
-                                                            strokeWidth="1.5"
-                                                            strokeLinecap="round"
-                                                        ></path>
-                                                    </svg>
-                                                </button>
+                                // Separate day and night shift tasks
+                                const dayShiftTasks = dateTasks.filter(
+                                    (task) => {
+                                        const taskTime = task.time;
+                                        if (!taskTime) return true; // Include tasks without time in day shift
+
+                                        const [hours, minutes] = taskTime
+                                            .split(":")
+                                            .map(Number);
+                                        const timeInMinutes =
+                                            hours * 60 + minutes;
+
+                                        // Day shift: 07:01 to 18:59 (not night shift)
+                                        return (
+                                            timeInMinutes > 420 &&
+                                            timeInMinutes < 1140
+                                        );
+                                    }
+                                );
+
+                                const nightShiftTasks = dateTasks.filter(
+                                    (task) => {
+                                        const taskTime = task.time;
+                                        if (!taskTime) return false; // Exclude tasks without time from night shift
+
+                                        const [hours, minutes] = taskTime
+                                            .split(":")
+                                            .map(Number);
+                                        const timeInMinutes =
+                                            hours * 60 + minutes;
+
+                                        // Night shift: 19:00 to 07:00 (>= 1140 OR <= 420)
+                                        return (
+                                            timeInMinutes >= 1140 ||
+                                            timeInMinutes <= 420
+                                        );
+                                    }
+                                );
+
+                                // If no entries and no tasks, show empty message
+                                if (
+                                    dateEntries.length === 0 &&
+                                    dateTasks.length === 0
+                                ) {
+                                    return (
+                                        <div className="text-center py-4 text-gray-400 text-sm">
+                                            Nessuna entry o task per questa data
+                                        </div>
+                                    );
+                                }
+
+                                // Group entries by category
+                                const entriesByCategory = {};
+                                const categoryList = Object.keys(categories);
+
+                                // Initialize each category group
+                                categoryList.forEach((cat) => {
+                                    entriesByCategory[cat] = [];
+                                });
+
+                                // Group entries by category
+                                dateEntries.forEach((entry) => {
+                                    const category = entry.category || "";
+                                    if (categoryList.includes(category)) {
+                                        entriesByCategory[category].push(entry);
+                                    } else {
+                                        // If category doesn't exist, add to "others"
+                                        if (!entriesByCategory["others"]) {
+                                            entriesByCategory["others"] = [];
+                                        }
+                                        entriesByCategory["others"].push(entry);
+                                    }
+                                });
+
+                                // Function to group tasks by simulator
+                                const groupTasksBySimulator = (taskList) => {
+                                    const tasksBySimulator = {};
+                                    const simulators = [
+                                        "FTD",
+                                        "109FFS",
+                                        "139#1",
+                                        "139#3",
+                                        "169",
+                                        "189",
+                                        "Others",
+                                    ];
+
+                                    // Initialize each simulator group
+                                    simulators.forEach((sim) => {
+                                        tasksBySimulator[sim] = [];
+                                    });
+
+                                    // Group tasks by simulator
+                                    taskList.forEach((task) => {
+                                        const simulator = task.simulator || "";
+                                        if (
+                                            simulators
+                                                .slice(0, -1)
+                                                .includes(simulator)
+                                        ) {
+                                            tasksBySimulator[simulator].push(
+                                                task
+                                            );
+                                        } else {
+                                            tasksBySimulator["Others"].push(
+                                                task
+                                            );
+                                        }
+                                    });
+
+                                    return { tasksBySimulator, simulators };
+                                };
+                                return (
+                                    <div className="combined-container space-y-6">
+                                        {/* Day Shift Tasks Section */}
+                                        {dayShiftTasks.length > 0 && (
+                                            <div className="day-tasks-section">
+                                                <div className="flex flex-row items-center gap-16 mb-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            viewBox="0 0 24 24"
+                                                            width="20"
+                                                            height="20"
+                                                            color="oklch(44.6% 0.03 256.802)"
+                                                            fill="none"
+                                                        >
+                                                            <path
+                                                                d="M17 12C17 14.7614 14.7614 17 12 17C9.23858 17 7 14.7614 7 12C7 9.23858 9.23858 7 12 7C14.7614 7 17 9.23858 17 12Z"
+                                                                stroke="oklch(44.6% 0.03 256.802)"
+                                                                strokeWidth="1.5"
+                                                            ></path>
+                                                            <path
+                                                                d="M12 2V3.5M12 20.5V22M19.0708 19.0713L18.0101 18.0106M5.98926 5.98926L4.9286 4.9286M22 12H20.5M3.5 12H2M19.0713 4.92871L18.0106 5.98937M5.98975 18.0107L4.92909 19.0714"
+                                                                stroke="oklch(44.6% 0.03 256.802)"
+                                                                strokeWidth="1.5"
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                            ></path>
+                                                        </svg>{" "}
+                                                        <h4 className="text-gray-600">
+                                                            Giorno
+                                                        </h4>
+                                                        <span className="span">
+                                                            {
+                                                                dayShiftTasks.length
+                                                            }{" "}
+                                                            task
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                {(() => {
+                                                    const {
+                                                        tasksBySimulator,
+                                                        simulators,
+                                                    } =
+                                                        groupTasksBySimulator(
+                                                            dayShiftTasks
+                                                        );
+                                                    return (
+                                                        <div className="simulators-row flex flex-wrap justify-between gap-4 mb-4">
+                                                            {simulators.map(
+                                                                (simulator) => {
+                                                                    const simulatorTasks =
+                                                                        tasksBySimulator[
+                                                                            simulator
+                                                                        ];
+
+                                                                    return (
+                                                                        <div
+                                                                            key={
+                                                                                simulator
+                                                                            }
+                                                                            className="simulator-column flex-1 min-w-[120px]"
+                                                                        >
+                                                                            <div className="simulator-header flex flex-row items-center justify-center gap-2 mb-4">
+                                                                                <p className="text-xs font-medium text-gray-600">
+                                                                                    {
+                                                                                        simulator
+                                                                                    }
+                                                                                </p>
+                                                                            </div>
+                                                                            <div className="simulator-tasks space-y-2">
+                                                                                {simulatorTasks.length ===
+                                                                                0 ? (
+                                                                                    <div className="text-center py-2">
+                                                                                        <span className="text-xs text-gray-400 italic"></span>
+                                                                                    </div>
+                                                                                ) : (
+                                                                                    simulatorTasks.map(
+                                                                                        (
+                                                                                            task
+                                                                                        ) => (
+                                                                                            <div
+                                                                                                key={
+                                                                                                    task.id
+                                                                                                }
+                                                                                                className="task-card-small p-2 rounded-xl border bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
+                                                                                                style={{
+                                                                                                    border: `1px solid ${getBorderColor(
+                                                                                                        task.status
+                                                                                                    )}`,
+                                                                                                }}
+                                                                                                onClick={() =>
+                                                                                                    openTaskDetails(
+                                                                                                        task
+                                                                                                    )
+                                                                                                }
+                                                                                            >
+                                                                                                <div className="task-info h-full flex flex-col justify-between">
+                                                                                                    <p className="text-gray-900 font-bold text-xs leading-tight mb-1 overflow-hidden">
+                                                                                                        {task
+                                                                                                            .title
+                                                                                                            .length >
+                                                                                                        20
+                                                                                                            ? task.title.substring(
+                                                                                                                  0,
+                                                                                                                  20
+                                                                                                              ) +
+                                                                                                              "..."
+                                                                                                            : task.title}
+                                                                                                    </p>
+                                                                                                    <div className="task-details text-xs text-gray-500 space-y-1">
+                                                                                                        <div className="text-xs">
+                                                                                                            {
+                                                                                                                task.time
+                                                                                                            }
+                                                                                                        </div>
+                                                                                                        <div className="flex items-center justify-between">
+                                                                                                            <span className="text-xs text-gray-600">
+                                                                                                                {
+                                                                                                                    task.assignedTo
+                                                                                                                }
+                                                                                                            </span>
+                                                                                                            <span
+                                                                                                                className={`px-2 py-1 rounded text-xs ${
+                                                                                                                    task.status ===
+                                                                                                                    "completato"
+                                                                                                                        ? "bg-green-100 text-green-600"
+                                                                                                                        : task.status ===
+                                                                                                                          "in corso"
+                                                                                                                        ? "bg-yellow-100 text-yellow-600"
+                                                                                                                        : task.status ===
+                                                                                                                          "non completato"
+                                                                                                                        ? "bg-red-100 text-red-600"
+                                                                                                                        : "bg-gray-100 text-gray-600"
+                                                                                                                }`}
+                                                                                                                style={{
+                                                                                                                    fontSize:
+                                                                                                                        "10px",
+                                                                                                                }}
+                                                                                                            >
+                                                                                                                {
+                                                                                                                    task.status
+                                                                                                                }
+                                                                                                            </span>
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        )
+                                                                                    )
+                                                                                )}
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                }
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })()}
                                             </div>
-                                        </li>
-                                    ))}
-                            </ul>
+                                        )}
+
+                                        {/* Night Shift Tasks Section */}
+                                        {nightShiftTasks.length > 0 && (
+                                            <div className="night-tasks-section">
+                                                <div className="flex flex-row items-center gap-16 mb-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            viewBox="0 0 24 24"
+                                                            width="20"
+                                                            height="20"
+                                                            color="oklch(44.6% 0.03 256.802)"
+                                                            fill="none"
+                                                        >
+                                                            <path
+                                                                d="M21.5 14.0784C20.3003 14.7189 18.9301 15.0821 17.4751 15.0821C12.7491 15.0821 8.91792 11.2509 8.91792 6.52485C8.91792 5.06986 9.28105 3.69968 9.92163 2.5C5.66765 3.49698 2.5 7.31513 2.5 11.8731C2.5 17.1899 6.8101 21.5 12.1269 21.5C16.6849 21.5 20.503 18.3324 21.5 14.0784Z"
+                                                                stroke="oklch(44.6% 0.03 256.802)"
+                                                                strokeWidth="1.5"
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                            />
+                                                        </svg>
+                                                        <h4 className="text-gray-600">
+                                                            Notte
+                                                        </h4>
+                                                        <span className="span">
+                                                            {
+                                                                nightShiftTasks.length
+                                                            }{" "}
+                                                            task
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                {(() => {
+                                                    const {
+                                                        tasksBySimulator,
+                                                        simulators,
+                                                    } =
+                                                        groupTasksBySimulator(
+                                                            nightShiftTasks
+                                                        );
+                                                    return (
+                                                        <div className="simulators-row flex flex-wrap justify-between gap-4 mb-4">
+                                                            {simulators.map(
+                                                                (simulator) => {
+                                                                    const simulatorTasks =
+                                                                        tasksBySimulator[
+                                                                            simulator
+                                                                        ];
+
+                                                                    return (
+                                                                        <div
+                                                                            key={
+                                                                                simulator
+                                                                            }
+                                                                            className="simulator-column flex-1 min-w-[120px]"
+                                                                        >
+                                                                            <div className="simulator-header flex flex-row items-center justify-center gap-2 mb-4">
+                                                                                <p className="text-xs font-medium text-gray-600">
+                                                                                    {
+                                                                                        simulator
+                                                                                    }
+                                                                                </p>
+                                                                            </div>
+                                                                            <div className="simulator-tasks space-y-2">
+                                                                                {simulatorTasks.length ===
+                                                                                0 ? (
+                                                                                    <div className="text-center py-2">
+                                                                                        <span className="text-xs text-gray-400 italic"></span>
+                                                                                    </div>
+                                                                                ) : (
+                                                                                    simulatorTasks.map(
+                                                                                        (
+                                                                                            task
+                                                                                        ) => (
+                                                                                            <div
+                                                                                                key={
+                                                                                                    task.id
+                                                                                                }
+                                                                                                className="task-card-small p-2 rounded-xl border bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
+                                                                                                style={{
+                                                                                                    border: `1px solid ${getBorderColor(
+                                                                                                        task.status
+                                                                                                    )}`,
+                                                                                                }}
+                                                                                                onClick={() =>
+                                                                                                    openTaskDetails(
+                                                                                                        task
+                                                                                                    )
+                                                                                                }
+                                                                                            >
+                                                                                                <div className="task-info h-full flex flex-col justify-between">
+                                                                                                    <p className="text-gray-900 font-bold text-xs leading-tight mb-1 overflow-hidden">
+                                                                                                        {task
+                                                                                                            .title
+                                                                                                            .length >
+                                                                                                        20
+                                                                                                            ? task.title.substring(
+                                                                                                                  0,
+                                                                                                                  20
+                                                                                                              ) +
+                                                                                                              "..."
+                                                                                                            : task.title}
+                                                                                                    </p>
+                                                                                                    <div className="task-details text-xs text-gray-500 space-y-1">
+                                                                                                        <div className="text-xs">
+                                                                                                            {
+                                                                                                                task.time
+                                                                                                            }
+                                                                                                        </div>
+                                                                                                        <div className="flex items-center justify-between">
+                                                                                                            <span className="text-xs text-gray-600">
+                                                                                                                {
+                                                                                                                    task.assignedTo
+                                                                                                                }
+                                                                                                            </span>
+                                                                                                            <span
+                                                                                                                className={`px-2 py-1 rounded text-xs ${
+                                                                                                                    task.status ===
+                                                                                                                    "completato"
+                                                                                                                        ? "bg-green-100 text-green-600"
+                                                                                                                        : task.status ===
+                                                                                                                          "in corso"
+                                                                                                                        ? "bg-yellow-100 text-yellow-600"
+                                                                                                                        : task.status ===
+                                                                                                                          "non completato"
+                                                                                                                        ? "bg-red-100 text-red-600"
+                                                                                                                        : "bg-gray-100 text-gray-600"
+                                                                                                                }`}
+                                                                                                                style={{
+                                                                                                                    fontSize:
+                                                                                                                        "10px",
+                                                                                                                }}
+                                                                                                            >
+                                                                                                                {
+                                                                                                                    task.status
+                                                                                                                }
+                                                                                                            </span>
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        )
+                                                                                    )
+                                                                                )}
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                }
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })()}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })()
                         )}
                     </div>
                     <div className="flex flex-row justify-between items-start gap-8">
@@ -1194,7 +1709,6 @@ export default function Logbook() {
                                 }`}
                             >
                                 <div className="separator"></div>
-
                                 <div className="filter-form flex flex-col gap-2 mt-4">
                                     <label
                                         htmlFor="searchText"
@@ -1353,12 +1867,31 @@ export default function Logbook() {
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                </div>{" "}
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </div>{" "}            <TaskDetailsModal
+                isOpen={taskDetailsModal.isOpen}
+                onClose={closeTaskDetails}
+                task={taskDetailsModal.task}
+                onToggleTask={() => {}} // Placeholder - no task editing in logbook
+                onDeleteTask={() => {}} // Placeholder - no task deletion in logbook
+                canToggleTask={canToggleTask}
+                canDeleteTasks={canDeleteTasks}
+                canEditDescription={canEditDescription}
+                onEditDescription={() => {}} // Placeholder
+                onSaveNote={handleSaveNote}
+            />
+            <Modal
+                isOpen={modal.isOpen}
+                onClose={closeModal}
+                title={modal.title}
+                message={modal.message}
+                type={modal.type}
+                onConfirm={modal.onConfirm}
+            />
         </>
     );
 }

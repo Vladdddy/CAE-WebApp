@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import "../styles/tasks.css";
 
 export default function TaskDetailsModal({
@@ -11,7 +11,11 @@ export default function TaskDetailsModal({
     canDeleteTasks,
     canEditDescription,
     onEditDescription,
+    onSaveNote,
 }) {
+    const [showNoteInput, setShowNoteInput] = useState(false);
+    const [noteText, setNoteText] = useState("");
+
     if (!isOpen || !task) return null;
 
     const handleOverlayClick = (e) => {
@@ -146,12 +150,114 @@ export default function TaskDetailsModal({
                     </div>{" "}
                     {/* Description */}
                     <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
-                            Descrizione
-                        </label>
-                        <p className="text-gray-600 text-sm">
+                        <div className="flex items-center justify-between mb-1">
+                            <label className="block text-xs font-medium text-gray-600">
+                                Descrizione
+                            </label>
+                        </div>{" "}
+                        <p className="text-gray-600 text-sm mb-2">
                             {task.description || "Nessuna descrizione"}
-                        </p>
+                        </p>{" "}
+                        {onSaveNote && (
+                            <button
+                                onClick={() => setShowNoteInput(!showNoteInput)}
+                                className="text-blue-600 p-1 rounded bg-blue-50 hover:bg-blue-100 transition-colors mt-2"
+                                title="Aggiungi nota"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    width="16"
+                                    height="16"
+                                    color="currentColor"
+                                    fill="none"
+                                >
+                                    <path
+                                        d="M12 4V20M20 12H4"
+                                        stroke="currentColor"
+                                        strokeWidth="1.5"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    />
+                                </svg>
+                            </button>
+                        )}{" "}
+                        {/* Display existing notes */}
+                        {task.notes && task.notes.length > 0 && (
+                            <div className="mt-3">
+                                <label className="block text-xs font-medium text-gray-600 mb-2">
+                                    Note aggiunte
+                                </label>
+                                <div className="space-y-2 mb-3">
+                                    {task.notes.map((note, index) => (
+                                        <div
+                                            key={index}
+                                            className="bg-gray-100 p-2 rounded-md text-xs"
+                                        >
+                                            <p className="text-gray-800 font-bold">
+                                                {note.text}
+                                            </p>
+                                            <p className="text-gray-400 mt-1 text-xs">
+                                                {note.author} -{" "}
+                                                {new Date(
+                                                    note.timestamp
+                                                ).toLocaleString("it-IT")}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                        {onSaveNote && showNoteInput && (
+                            <div className="mt-3">
+                                <textarea
+                                    value={noteText}
+                                    onChange={(e) =>
+                                        setNoteText(e.target.value)
+                                    }
+                                    className="w-full px-3 py-2 border border-gray-300 text-normal rounded-md text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    rows="3"
+                                    placeholder="Aggiungi una nota..."
+                                />{" "}
+                                <div className="flex gap-2 mt-2">
+                                    <button
+                                        onClick={() => {
+                                            if (onSaveNote && noteText.trim()) {
+                                                onSaveNote(
+                                                    task.id,
+                                                    noteText.trim()
+                                                );
+                                                setShowNoteInput(false);
+                                                setNoteText("");
+                                            } else if (!noteText.trim()) {
+                                                alert(
+                                                    "Inserisci una nota prima di salvare"
+                                                );
+                                            } else {
+                                                console.log(
+                                                    "Nota salvata:",
+                                                    noteText
+                                                );
+                                                setShowNoteInput(false);
+                                                setNoteText("");
+                                            }
+                                        }}
+                                        className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
+                                    >
+                                        Salva
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setShowNoteInput(false);
+                                            setNoteText("");
+                                        }}
+                                        className="px-3 py-1 bg-gray-200 text-gray-700 text-sm rounded hover:bg-gray-300 transition-colors"
+                                    >
+                                        Annulla
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>{" "}
                     {/* Action Buttons */}
                     {(canToggleTask(task) ||

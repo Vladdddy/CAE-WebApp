@@ -283,7 +283,16 @@ export default function Tasks() {
         })
             .then((res) => res.json())
             .then((data) => {
-                setTasks(data);
+                // Load notes from localStorage and merge with tasks
+                const savedNotes = JSON.parse(
+                    localStorage.getItem("taskNotes") || "{}"
+                );
+                const tasksWithNotes = data.map((task) => ({
+                    ...task,
+                    notes: savedNotes[task.id] || [],
+                }));
+
+                setTasks(tasksWithNotes);
                 setLoading(false);
             })
             .catch((error) => {
@@ -550,19 +559,29 @@ export default function Tasks() {
                     if (!tasksBySimulator[simulatorGroup]) {
                         tasksBySimulator[simulatorGroup] = [];
                     }
-                    tasksBySimulator[simulatorGroup].push(task);
-                }); // Render tasks grouped by simulator
-                Object.keys(tasksBySimulator).forEach((simulator) => {
+                    tasksBySimulator[simulatorGroup].push(task);                }); // Render tasks grouped by simulator in specific order
+                const simulatorOrder = [
+                    "FTD",
+                    "109FFS",
+                    "139#1",
+                    "139#3",
+                    "169",
+                    "189",
+                    "Others"
+                ];
+                
+                simulatorOrder.forEach((simulator) => {
+                    if (!tasksBySimulator[simulator]) return;
                     // Add simulator header with schedule if available
                     const simulatorHeader = document.createElement("h4");
                     let headerText = simulator;
                     if (simulatorSchedules[simulator]) {
-                        headerText += ` ${simulatorSchedules[simulator].startTime}-${simulatorSchedules[simulator].endTime}`;
+                        headerText += ` (Ora inizio ${simulatorSchedules[simulator].startTime} - Ora fine ${simulatorSchedules[simulator].endTime})`;
                     }
                     simulatorHeader.textContent = headerText;
                     simulatorHeader.style.margin = "20px 0 10px 0";
                     simulatorHeader.style.color = "#1f2937";
-                    simulatorHeader.style.fontSize = "18px";
+                    simulatorHeader.style.fontSize = "16px";
                     simulatorHeader.style.fontWeight = "bold";
                     simulatorHeader.style.borderBottom = "1px solid #d1d5db";
                     simulatorHeader.style.paddingBottom = "20px";
@@ -585,13 +604,63 @@ export default function Tasks() {
                         taskTitle.style.color = "#333";
                         taskTitle.style.fontSize = "16px";
                         taskDiv.appendChild(taskTitle);
-
                         const taskDetails = document.createElement("p");
                         taskDetails.textContent = `Orario: ${task.time} • Assegnato a: ${task.assignedTo} • Status: ${task.status}`;
                         taskDetails.style.margin = "0";
                         taskDetails.style.color = "#666";
                         taskDetails.style.fontSize = "14px";
                         taskDiv.appendChild(taskDetails);
+
+                        // Add task description if available
+                        if (task.description) {
+                            const taskDescription = document.createElement("p");
+                            taskDescription.textContent = `Descrizione: ${task.description}`;
+                            taskDescription.style.margin = "8px 0 0 0";
+                            taskDescription.style.color = "#666";
+                            taskDescription.style.fontSize = "14px";
+                            taskDescription.style.fontStyle = "italic";
+                            taskDiv.appendChild(taskDescription);
+                        }
+
+                        // Add notes if available
+                        if (task.notes && task.notes.length > 0) {
+                            const notesHeader = document.createElement("p");
+                            notesHeader.textContent = "Note:";
+                            notesHeader.style.margin = "8px 0 16px 0";
+                            notesHeader.style.color = "#333";
+                            notesHeader.style.fontSize = "14px";
+                            notesHeader.style.fontWeight = "bold";
+                            taskDiv.appendChild(notesHeader);
+
+                            task.notes.forEach((note, noteIndex) => {
+                                const noteDiv = document.createElement("div");
+                                noteDiv.style.margin = "4px 0 4px 16px";
+                                noteDiv.style.padding = "8px";
+                                noteDiv.style.backgroundColor = "#f3f4f6";
+                                noteDiv.style.borderLeft = "3px solid #3b82f6";
+                                noteDiv.style.borderRadius = "4px";
+
+                                const noteText = document.createElement("p");
+                                noteText.textContent = note.text;
+                                noteText.style.margin = "0 0 4px 0";
+                                noteText.style.color = "#333";
+                                noteText.style.fontSize = "13px";
+                                noteDiv.appendChild(noteText);
+
+                                const noteAuthor = document.createElement("p");
+                                const noteDate = new Date(
+                                    note.timestamp
+                                ).toLocaleString("it-IT");
+                                noteAuthor.textContent = `${note.author} - ${noteDate}`;
+                                noteAuthor.style.margin = "0";
+                                noteAuthor.style.color = "#666";
+                                noteAuthor.style.fontSize = "11px";
+                                noteAuthor.style.fontStyle = "italic";
+                                noteDiv.appendChild(noteAuthor);
+
+                                taskDiv.appendChild(noteDiv);
+                            });
+                        }
 
                         pdfContent.appendChild(taskDiv);
                     });
@@ -844,7 +913,7 @@ export default function Tasks() {
                     </div>
                     <div
                         ref={tasksListRef}
-                        className="tasks flex flex-col w-full border p-4 rounded-xl bg-white my-8 overflow-y-auto max-h-[60vh] flex-1 max-w-full"
+                        className="tasks flex flex-col w-full border p-4 rounded-xl bg-white my-8 overflow-y-auto max-h-[80vh] flex-1 max-w-full"
                     >
                         <div className="title flex flex-row items-center gap-2">
                             <svg
@@ -1052,55 +1121,6 @@ export default function Tasks() {
                                                                 const isToday =
                                                                     selectedDate ===
                                                                     today;
-
-                                                                return (
-                                                                    <svg
-                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                        viewBox="0 0 24 24"
-                                                                        width="16"
-                                                                        height="16"
-                                                                        color={
-                                                                            isToday
-                                                                                ? "#3b82f6"
-                                                                                : "#9ca3af"
-                                                                        }
-                                                                        fill="none"
-                                                                        className={
-                                                                            isToday
-                                                                                ? "cursor-pointer hover:scale-110 transition-transform"
-                                                                                : "cursor-not-allowed opacity-50"
-                                                                        }
-                                                                        onClick={() => {
-                                                                            if (
-                                                                                isToday
-                                                                            ) {
-                                                                                openScheduleModal(
-                                                                                    simulator
-                                                                                );
-                                                                            }
-                                                                        }}
-                                                                        title={
-                                                                            isToday
-                                                                                ? "Modifica orari"
-                                                                                : "Puoi modificare gli orari solo per oggi"
-                                                                        }
-                                                                    >
-                                                                        <path
-                                                                            d="M22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12Z"
-                                                                            stroke="currentColor"
-                                                                            stroke-width="1.5"
-                                                                            stroke-linecap="round"
-                                                                            stroke-linejoin="round"
-                                                                        />
-                                                                        <path
-                                                                            d="M12 8V16M16 12H8"
-                                                                            stroke="currentColor"
-                                                                            stroke-width="1.5"
-                                                                            stroke-linecap="round"
-                                                                            stroke-linejoin="round"
-                                                                        />
-                                                                    </svg>
-                                                                );
                                                             })()}
                                                         </div>
                                                         <div className="simulator-tasks space-y-2">
@@ -1401,6 +1421,7 @@ export default function Tasks() {
                                                                                                     )
                                                                                                 }
                                                                                             >
+                                                                                                {" "}
                                                                                                 <div className="task-info h-full flex flex-col justify-between">
                                                                                                     <p className="text-gray-900 font-bold text-xs leading-tight mb-1 overflow-hidden">
                                                                                                         {task
@@ -1420,8 +1441,7 @@ export default function Tasks() {
                                                                                                                 task.time
                                                                                                             }
                                                                                                         </div>
-                                                                                                        <div className="flex items-center">
-                                                                                                            {" "}
+                                                                                                        <div className="flex items-center justify-between">
                                                                                                             <span
                                                                                                                 className={`px-2 py-1 rounded text-xs ${
                                                                                                                     task.status ===
@@ -1444,6 +1464,30 @@ export default function Tasks() {
                                                                                                                     task.status
                                                                                                                 }
                                                                                                             </span>
+                                                                                                            {task.notes &&
+                                                                                                                task
+                                                                                                                    .notes
+                                                                                                                    .length >
+                                                                                                                    0 && (
+                                                                                                                    <div className="flex items-center gap-1 text-blue-600">
+                                                                                                                        <svg
+                                                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                                                            viewBox="0 0 24 24"
+                                                                                                                            width="12"
+                                                                                                                            height="12"
+                                                                                                                            fill="currentColor"
+                                                                                                                        >
+                                                                                                                            <path d="M20 2H4C2.9 2 2 2.9 2 4V16C2 17.1 2.9 18 4 18H6L10 22L14 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H13.2L10 19.2L6.8 16H4V4H20V16Z" />
+                                                                                                                        </svg>
+                                                                                                                        <span className="text-xs">
+                                                                                                                            {
+                                                                                                                                task
+                                                                                                                                    .notes
+                                                                                                                                    .length
+                                                                                                                            }
+                                                                                                                        </span>
+                                                                                                                    </div>
+                                                                                                                )}
                                                                                                         </div>
                                                                                                     </div>
                                                                                                 </div>
