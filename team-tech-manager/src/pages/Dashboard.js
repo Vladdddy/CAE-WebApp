@@ -465,7 +465,28 @@ export default function Dashboard() {
                 </div>
                 {isIncompleteSection && task.status === "non completato" && (
                     <div className="text-xs text-blue-600 font-medium">
-                        Clicca per riassegnare
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            width="20"
+                            height="20"
+                            color="oklch(44.6% 0.03 256.802)"
+                            fill="none"
+                        >
+                            <path
+                                d="M16.4249 4.60509L17.4149 3.6151C18.2351 2.79497 19.5648 2.79497 20.3849 3.6151C21.205 4.43524 21.205 5.76493 20.3849 6.58507L19.3949 7.57506M16.4249 4.60509L9.76558 11.2644C9.25807 11.772 8.89804 12.4078 8.72397 13.1041L8 16L10.8959 15.276C11.5922 15.102 12.228 14.7419 12.7356 14.2344L19.3949 7.57506M16.4249 4.60509L19.3949 7.57506"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                                stroke-linejoin="round"
+                            />
+                            <path
+                                d="M18.9999 13.5C18.9999 16.7875 18.9999 18.4312 18.092 19.5376C17.9258 19.7401 17.7401 19.9258 17.5375 20.092C16.4312 21 14.7874 21 11.4999 21H11C7.22876 21 5.34316 21 4.17159 19.8284C3.00003 18.6569 3 16.7712 3 13V12.5C3 9.21252 3 7.56879 3.90794 6.46244C4.07417 6.2599 4.2599 6.07417 4.46244 5.90794C5.56879 5 7.21252 5 10.5 5"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            />
+                        </svg>
                     </div>
                 )}
             </div>
@@ -828,24 +849,29 @@ export default function Dashboard() {
                 type={modal.type}
                 onConfirm={modal.onConfirm}
                 confirmText={modal.confirmText}
-            />
+            />{" "}
             {/* Reassignment Modal */}
             {reassignModal.isOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 w-96 max-w-full mx-4">
-                        <h2 className="text-xl font-bold mb-4 text-gray-800">
-                            Riassegna Task
+                <div
+                    className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                    onClick={closeReassignModal}
+                >
+                    <div
+                        className="bg-white rounded-lg p-6 w-96 max-w-full mx-4"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <h2 className="text-xl font-bold mb-2 text-gray-800">
+                            {reassignModal.task?.title}
                         </h2>
 
-                        <div className="mb-4">
-                            <h3 className="font-semibold text-gray-700 mb-2">
-                                {reassignModal.task?.title}
-                            </h3>
-                            <p className="text-sm text-gray-500">
-                                Task attualmente assegnato a:{" "}
+                        <div className="mb-2">
+                            <p className="text-sm text-gray-600">
+                                Task attualmente assegnato a{" "}
                                 {reassignModal.task?.assignedTo}
                             </p>
                         </div>
+
+                        <div className="separator"></div>
 
                         <div className="space-y-4">
                             <div>

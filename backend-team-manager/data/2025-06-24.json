@@ -10,14 +10,27 @@
     "duration": "2"
   },
   {
-    "text": "prova1",
+    "text": "prova2",
     "author": "Administrator",
     "category": "routine task",
     "subcategory": "PM",
     "extraDetail": "",
-    "simulator": "FTD",
+    "simulator": "109FFS",
     "date": "2025-06-24",
     "time": "08:00",
-    "duration": "3"
+    "duration": "3",
+    "title": "prova"
+  },
+  {
+    "text": "Prova fatto",
+    "author": "Administrator",
+    "category": "troubleshooting",
+    "subcategory": "HW",
+    "extraDetail": "ENV",
+    "simulator": "169",
+    "date": "2025-06-24",
+    "time": "08:00",
+    "duration": "4",
+    "title": "Prova logbook1"
   }
 ]

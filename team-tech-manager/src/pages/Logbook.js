@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "../styles/tasks.css";
 import TaskDetailsModal from "../components/TaskDetailsModal";
 import Modal from "../components/Modal";
+import DescriptionModal from "../components/DescriptionModal";
 
 const API = process.env.REACT_APP_API_URL;
 const categories = {
@@ -30,7 +31,8 @@ const troubleshootingDetails = [
 export default function Logbook() {
     const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
     const [entries, setEntries] = useState([]);
-    const [filteredEntries, setFilteredEntries] = useState([]);    const [text, setText] = useState("");
+    const [filteredEntries, setFilteredEntries] = useState([]);
+    const [text, setText] = useState("");
     const [author, setAuthor] = useState("");
     const [category, setCategory] = useState("");
     const [subcategory, setSubcategory] = useState("");
@@ -53,20 +55,25 @@ export default function Logbook() {
     const [showFilterResults, setShowFilterResults] = useState(false); // Accordion states
     const [isFilterAccordionOpen, setIsFilterAccordionOpen] = useState(false);
     const [isAddTaskAccordionOpen, setIsAddTaskAccordionOpen] = useState(false);
-    const [isTaskAccordionOpen, setIsTaskAccordionOpen] = useState(false);    // Task details modal state
+    const [isTaskAccordionOpen, setIsTaskAccordionOpen] = useState(false); // Task details modal state
     const [taskDetailsModal, setTaskDetailsModal] = useState({
         isOpen: false,
         task: null,
-    });
-
-    // Modal state for success/error messages
+    }); // Modal state for success/error messages
     const [modal, setModal] = useState({
         isOpen: false,
         title: "",
         message: "",
         type: "info",
         onConfirm: null,
-    });    // Get current user's name from localStorage
+    });
+
+    // Description modal state for editing logbook entries
+    const [descriptionModal, setDescriptionModal] = useState({
+        isOpen: false,
+        entry: null,
+        entryIndex: null,
+    }); // Get current user's name from localStorage
     const currentUserName =
         localStorage.getItem("userName") || "Utente Sconosciuto";
 
@@ -80,7 +87,7 @@ export default function Logbook() {
             onConfirm,
         });
     };
-    
+
     const closeModal = () => {
         setModal((prev) => ({ ...prev, isOpen: false }));
     };
@@ -224,29 +231,42 @@ export default function Logbook() {
                         tasksBySimulator[simulator] = [];
                     }
                     tasksBySimulator[simulator].push(task);
-                });                // Add logbook entries to their specified simulator
+                }); // Add logbook entries to their specified simulator
                 if (dailyEntries.length > 0) {
                     dailyEntries.forEach((entry) => {
                         const entrySimulator = entry.simulator || "Others";
                         if (!tasksBySimulator[entrySimulator]) {
                             tasksBySimulator[entrySimulator] = [];
-                        }                        // Convert entries to task-like format for consistent rendering
+                        } // Convert entries to task-like format for consistent rendering
+
+                        // Load notes for this logbook entry
+                        const logbookNoteKey = `logbook-${entry.date}-${entry.time}-${entry.author}`;
+                        const savedLogbookNotes = JSON.parse(
+                            localStorage.getItem("logbookNotes") || "{}"
+                        );
+                        const entryNotes =
+                            savedLogbookNotes[logbookNoteKey] || [];
+
                         tasksBySimulator[entrySimulator].push({
                             id: `entry-${entry.id || Math.random()}`,
                             title:
+                                entry.title ||
                                 entry.text.substring(0, 50) +
-                                (entry.text.length > 50 ? "..." : ""),
+                                    (entry.text.length > 50 ? "..." : ""),
                             time: entry.time,
                             date: entry.date, // Add the date property
                             assignedTo: entry.author,
                             status: entry.category,
                             type: "logbook-entry",
                             fullText: entry.text,
+                            description: entry.text, // Add description property for TaskDetailsModal
                             category: entry.category,
                             subcategory: entry.subcategory,
                             extraDetail: entry.extraDetail,
                             duration: entry.duration,
                             simulator: entry.simulator || entrySimulator,
+                            originalEntry: entry, // Keep reference to original entry for editing
+                            notes: entryNotes, // Add notes from localStorage
                         });
                     });
                 }
@@ -527,7 +547,8 @@ export default function Logbook() {
             setFilteredEntries(newEntries);
         }
         resetForm();
-    };    const resetForm = () => {
+    };
+    const resetForm = () => {
         setText("");
         setAuthor(currentUserName);
         setCategory("");
@@ -538,7 +559,8 @@ export default function Logbook() {
         setFormTime("08:00");
         setDuration("");
         setEditIndex(null);
-    };    const handleSubmit = async (e) => {
+    };
+    const handleSubmit = async (e) => {
         e.preventDefault();
         const entry = {
             text,
@@ -550,11 +572,24 @@ export default function Logbook() {
             date: formDate,
             time: formTime,
             duration,
+            // Store the initial title when creating the entry
+            title:
+                editIndex === null
+                    ? text.substring(0, 50) + (text.length > 50 ? "..." : "")
+                    : undefined,
         };
 
         const newEntries = [...entries];
         if (editIndex !== null) {
-            newEntries[editIndex] = entry;
+            // When editing, preserve the existing title if it exists
+            const existingEntry = newEntries[editIndex];
+            newEntries[editIndex] = {
+                ...entry,
+                title:
+                    existingEntry.title ||
+                    existingEntry.text.substring(0, 50) +
+                        (existingEntry.text.length > 50 ? "..." : ""),
+            };
         } else {
             newEntries.push(entry);
         }
@@ -566,7 +601,8 @@ export default function Logbook() {
         if (!window.confirm("Vuoi eliminare questa entry?")) return;
         const newEntries = entries.filter((_, i) => i !== index);
         await saveEntries(newEntries);
-    };    const handleEdit = (index) => {
+    };
+    const handleEdit = (index) => {
         const entry = entries[index];
         setText(entry.text);
         setAuthor(entry.author);
@@ -578,7 +614,9 @@ export default function Logbook() {
         setFormTime(entry.time);
         setDuration(entry.duration || "");
         setEditIndex(index);
-    };// Task details modal functions
+    };
+
+    // Task details modal functions
     const openTaskDetails = (task) => {
         setTaskDetailsModal({
             isOpen: true,
@@ -591,55 +629,312 @@ export default function Logbook() {
             isOpen: false,
             task: null,
         });
-    }; // Permission functions for TaskDetailsModal (read-only in logbook)
-    const canToggleTask = (task) => false; // No task editing in logbook
-    const canDeleteTasks = () => false; // No task deletion in logbook
-    const canEditDescription = (task) => false; // No description editing in logbook
+    };
 
-    // Function to handle saving notes for tasks
-    const handleSaveNote = async (taskId, noteText) => {
+    // Description modal functions for editing logbook entries
+    const openDescriptionModal = (task) => {
+        // Find the original entry index in the entries array
+        let entryIndex = -1;
+
+        console.log("Opening description modal for task:", task);
+        console.log("Current entries:", entries);
+
+        if (task.originalEntry) {
+            // Use the original entry reference if available
+            console.log(
+                "Using originalEntry to find index:",
+                task.originalEntry
+            );
+            entryIndex = entries.findIndex(
+                (entry) =>
+                    entry.text === task.originalEntry.text &&
+                    entry.date === task.originalEntry.date &&
+                    entry.time === task.originalEntry.time &&
+                    entry.author === task.originalEntry.author
+            );
+        } else {
+            // Fallback to the previous method
+            console.log("Using fallback method to find index");
+            entryIndex = entries.findIndex(
+                (entry) =>
+                    entry.text === task.fullText &&
+                    entry.date === task.date &&
+                    entry.time === task.time &&
+                    entry.author === task.assignedTo
+            );
+        }
+
+        console.log("Found entryIndex:", entryIndex);
+
+        // If we still can't find the entry, try with a more flexible approach
+        if (entryIndex === -1) {
+            console.log(
+                "Entry not found with strict matching, trying flexible matching"
+            );
+            entryIndex = entries.findIndex((entry) => {
+                const textMatch = task.originalEntry
+                    ? entry.text === task.originalEntry.text
+                    : entry.text === task.fullText ||
+                      entry.text === task.description;
+                const dateMatch = task.originalEntry
+                    ? entry.date === task.originalEntry.date
+                    : entry.date === task.date;
+                const timeMatch = task.originalEntry
+                    ? entry.time === task.originalEntry.time
+                    : entry.time === task.time;
+
+                console.log("Checking entry:", entry);
+                console.log(
+                    "Text match:",
+                    textMatch,
+                    "Date match:",
+                    dateMatch,
+                    "Time match:",
+                    timeMatch
+                );
+
+                return textMatch && dateMatch && timeMatch;
+            });
+            console.log("Flexible matching result:", entryIndex);
+        }
+
+        setDescriptionModal({
+            isOpen: true,
+            entry: task,
+            entryIndex: entryIndex,
+        });
+    };
+
+    const closeDescriptionModal = () => {
+        setDescriptionModal({
+            isOpen: false,
+            entry: null,
+            entryIndex: null,
+        });
+    };
+    const handleSaveDescriptionForLogbook = async (updatedData) => {
+        const { description, simulator } = updatedData;
+        const { entryIndex } = descriptionModal;
+
+        console.log("Saving description with entryIndex:", entryIndex);
+        console.log("Current entries state:", entries);
+        console.log("Description modal entry:", descriptionModal.entry);
+
+        if (entryIndex === -1) {
+            // If we can't find by index, try to find by originalEntry data
+            const task = descriptionModal.entry;
+            if (task && task.originalEntry) {
+                console.log("Trying to save using originalEntry data");
+                // Find the entry by matching the original entry data
+                const foundIndex = entries.findIndex(
+                    (entry) =>
+                        entry.text === task.originalEntry.text &&
+                        entry.date === task.originalEntry.date &&
+                        entry.time === task.originalEntry.time &&
+                        entry.author === task.originalEntry.author
+                );
+
+                if (foundIndex !== -1) {
+                    console.log("Found entry at index:", foundIndex);
+                    // Update using the found index
+                    const updatedEntries = [...entries];
+                    const originalEntry = updatedEntries[foundIndex];
+
+                    updatedEntries[foundIndex] = {
+                        ...originalEntry,
+                        text: description,
+                        simulator: simulator || "Others",
+                        title:
+                            originalEntry.title ||
+                            originalEntry.text.substring(0, 50) +
+                                (originalEntry.text.length > 50 ? "..." : ""),
+                    };
+
+                    try {
+                        await saveEntries(updatedEntries);
+                        closeDescriptionModal();
+                        showModal(
+                            "Successo",
+                            "Entry aggiornata con successo!",
+                            "success"
+                        );
+                        return;
+                    } catch (error) {
+                        console.error("Error saving entry:", error);
+                        showModal(
+                            "Errore",
+                            "Errore durante l'aggiornamento dell'entry",
+                            "error"
+                        );
+                        return;
+                    }
+                } else {
+                    console.log(
+                        "Could not find entry even with originalEntry data"
+                    );
+                }
+            }
+
+            showModal(
+                "Errore",
+                "Impossibile trovare l'entry da modificare",
+                "error"
+            );
+            return;
+        }
+
         try {
-            const noteData = {
-                text: noteText,
-                author: currentUserName,
-                timestamp: new Date().toISOString(),
+            // Update the entry in the entries array
+            const updatedEntries = [...entries];
+            const originalEntry = updatedEntries[entryIndex];
+
+            updatedEntries[entryIndex] = {
+                ...originalEntry,
+                text: description,
+                simulator: simulator || "Others",
+                // Keep the original title if it exists, otherwise create one from the original text
+                title:
+                    originalEntry.title ||
+                    originalEntry.text.substring(0, 50) +
+                        (originalEntry.text.length > 50 ? "..." : ""),
             };
 
-            // For now, store notes in localStorage until backend endpoint is created
-            const savedNotes = JSON.parse(
-                localStorage.getItem("taskNotes") || "{}"
-            );
-            if (!savedNotes[taskId]) {
-                savedNotes[taskId] = [];
-            }
-            savedNotes[taskId].push(noteData);
-            localStorage.setItem("taskNotes", JSON.stringify(savedNotes));
+            // Save to backend
+            await saveEntries(updatedEntries);
 
-            // Update the task in local state
-            const updatedTasks = tasks.map((task) => {
-                if (task.id === taskId) {
-                    return {
-                        ...task,
-                        notes: savedNotes[taskId],
-                    };
-                }
-                return task;
-            });
-            setTasks(updatedTasks);
-
-            console.log("Nota salvata con successo:", noteText);
-
-            // Update the task in the modal if it's the same task
-            if (taskDetailsModal.task && taskDetailsModal.task.id === taskId) {
-                const updatedTask = updatedTasks.find((t) => t.id === taskId);
+            // Update the task details modal if it's showing the same entry
+            if (
+                taskDetailsModal.isOpen &&
+                taskDetailsModal.task &&
+                taskDetailsModal.task.type === "logbook-entry"
+            ) {
+                const updatedTask = {
+                    ...taskDetailsModal.task,
+                    description: description,
+                    fullText: description,
+                    simulator: simulator || "Others",
+                    // Keep the original title, don't regenerate it from the new description
+                    title: taskDetailsModal.task.title,
+                };
                 setTaskDetailsModal({
                     ...taskDetailsModal,
                     task: updatedTask,
                 });
             }
+
+            // Close modal and show success message
+            closeDescriptionModal();
+            showModal("Successo", "Entry aggiornata con successo!", "success");
+        } catch (error) {
+            console.error("Error updating logbook entry:", error);
+            showModal(
+                "Errore",
+                "Errore durante l'aggiornamento dell'entry",
+                "error"
+            );
+        }
+    }; // Permission functions for TaskDetailsModal (read-only in logbook)
+    const canToggleTask = (task) => false; // No task editing in logbook
+    const canDeleteTasks = () => false; // No task deletion in logbook
+    const canEditDescription = (task) => task.type === "logbook-entry"; // Allow editing description for logbook entries    // Function to handle saving notes for tasks and logbook entries
+    const handleSaveNote = async (taskId, noteText) => {
+        try {
+            // Check if this is a logbook entry
+            const currentTask = taskDetailsModal.task;
+            if (currentTask && currentTask.type === "logbook-entry") {
+                console.log("Saving note for logbook entry:", currentTask);
+
+                const noteData = {
+                    text: noteText,
+                    author: currentUserName,
+                    timestamp: new Date().toISOString(),
+                };
+
+                // Store notes for logbook entries in localStorage with a special key format
+                const logbookNoteKey = `logbook-${
+                    currentTask.originalEntry?.date || currentTask.date
+                }-${currentTask.originalEntry?.time || currentTask.time}-${
+                    currentTask.originalEntry?.author || currentTask.assignedTo
+                }`;
+                const savedNotes = JSON.parse(
+                    localStorage.getItem("logbookNotes") || "{}"
+                );
+                if (!savedNotes[logbookNoteKey]) {
+                    savedNotes[logbookNoteKey] = [];
+                }
+                savedNotes[logbookNoteKey].push(noteData);
+                localStorage.setItem(
+                    "logbookNotes",
+                    JSON.stringify(savedNotes)
+                );
+
+                // Update the task details modal to show the new note
+                const updatedTask = {
+                    ...currentTask,
+                    notes: savedNotes[logbookNoteKey],
+                };
+
+                setTaskDetailsModal({
+                    ...taskDetailsModal,
+                    task: updatedTask,
+                });
+
+                console.log("Nota aggiunta alla logbook entry con successo");
+                showModal("Successo", "Nota aggiunta con successo!", "success");
+                return;
+            } else {
+                // For regular tasks, use the original localStorage approach
+                const noteData = {
+                    text: noteText,
+                    author: currentUserName,
+                    timestamp: new Date().toISOString(),
+                };
+
+                // For now, store notes in localStorage until backend endpoint is created
+                const savedNotes = JSON.parse(
+                    localStorage.getItem("taskNotes") || "{}"
+                );
+                if (!savedNotes[taskId]) {
+                    savedNotes[taskId] = [];
+                }
+                savedNotes[taskId].push(noteData);
+                localStorage.setItem("taskNotes", JSON.stringify(savedNotes));
+
+                // Update the task in local state
+                const updatedTasks = tasks.map((task) => {
+                    if (task.id === taskId) {
+                        return {
+                            ...task,
+                            notes: savedNotes[taskId],
+                        };
+                    }
+                    return task;
+                });
+                setTasks(updatedTasks);
+
+                console.log("Nota salvata con successo:", noteText);
+
+                // Update the task in the modal if it's the same task
+                if (
+                    taskDetailsModal.task &&
+                    taskDetailsModal.task.id === taskId
+                ) {
+                    const updatedTask = updatedTasks.find(
+                        (t) => t.id === taskId
+                    );
+                    setTaskDetailsModal({
+                        ...taskDetailsModal,
+                        task: updatedTask,
+                    });
+                }
+            }
         } catch (error) {
             console.error("Errore nel salvare la nota:", error);
-            alert("Errore nel salvare la nota: " + error.message);
+            showModal(
+                "Errore",
+                "Errore nel salvare la nota: " + error.message,
+                "error"
+            );
         }
     };
 
@@ -734,15 +1029,16 @@ export default function Logbook() {
         } else {
             return getBorderColor(item.status);
         }
-    };    // Function to render task cards (handles both tasks and logbook entries)
+    }; // Function to render task cards (handles both tasks and logbook entries)
     const renderTaskCard = (task) => (
         <div
             key={task.id}
             className="task-card-small p-2 rounded-xl border bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
             style={{
-                border: task.type === "logbook-entry"
-                    ? `1px solid ${getCategoryBorderColor(task.category)}`
-                    : `1px solid ${getBorderColor(task.status)}`,
+                border:
+                    task.type === "logbook-entry"
+                        ? `1px solid ${getCategoryBorderColor(task.category)}`
+                        : `1px solid ${getBorderColor(task.status)}`,
             }}
             onClick={() => openTaskDetails(task)}
         >
@@ -1120,7 +1416,10 @@ export default function Logbook() {
                                         entriesByCategory["others"].push(entry);
                                     }
                                 }); // Function to group tasks by simulator
-                                const groupTasksBySimulator = (taskList, shiftType = null) => {
+                                const groupTasksBySimulator = (
+                                    taskList,
+                                    shiftType = null
+                                ) => {
                                     const tasksBySimulator = {};
                                     const simulators = [
                                         "FTD",
@@ -1153,59 +1452,85 @@ export default function Logbook() {
                                                 task
                                             );
                                         }
-                                    });                                    // Add logbook entries to their specified simulator only for the correct shift
+                                    }); // Add logbook entries to their specified simulator only for the correct shift
                                     dateEntries.forEach((entry) => {
                                         // Check if entry time matches the shift type
                                         if (shiftType && entry.time) {
                                             const [hours, minutes] = entry.time
                                                 .split(":")
                                                 .map(Number);
-                                            const timeInMinutes = hours * 60 + minutes;
-                                            
-                                            if (shiftType === 'day') {
+                                            const timeInMinutes =
+                                                hours * 60 + minutes;
+
+                                            if (shiftType === "day") {
                                                 // Day shift: 07:01 to 18:59
-                                                if (timeInMinutes <= 420 || timeInMinutes >= 1140) {
+                                                if (
+                                                    timeInMinutes <= 420 ||
+                                                    timeInMinutes >= 1140
+                                                ) {
                                                     return; // Skip this entry for day shift
                                                 }
-                                            } else if (shiftType === 'night') {
+                                            } else if (shiftType === "night") {
                                                 // Night shift: 19:00 to 07:00
-                                                if (timeInMinutes > 420 && timeInMinutes < 1140) {
+                                                if (
+                                                    timeInMinutes > 420 &&
+                                                    timeInMinutes < 1140
+                                                ) {
                                                     return; // Skip this entry for night shift
                                                 }
                                             }
                                         }
-                                        
-                                        const entrySimulator = entry.simulator || "Others";
+                                        const entrySimulator =
+                                            entry.simulator || "Others";
                                         // Make sure the simulator exists in the list
                                         if (!tasksBySimulator[entrySimulator]) {
-                                            tasksBySimulator[entrySimulator] = [];
+                                            tasksBySimulator[entrySimulator] =
+                                                [];
                                         }
                                         // Also add the simulator to the list if it's not there
-                                        if (!simulators.includes(entrySimulator)) {
+                                        if (
+                                            !simulators.includes(entrySimulator)
+                                        ) {
                                             simulators.push(entrySimulator);
                                         }
-                                        
+
+                                        // Load notes for this logbook entry
+                                        const logbookNoteKey = `logbook-${entry.date}-${entry.time}-${entry.author}`;
+                                        const savedLogbookNotes = JSON.parse(
+                                            localStorage.getItem(
+                                                "logbookNotes"
+                                            ) || "{}"
+                                        );
+                                        const entryNotes =
+                                            savedLogbookNotes[logbookNoteKey] ||
+                                            [];
+
                                         tasksBySimulator[entrySimulator].push({
                                             id: `entry-${
                                                 entry.id || Math.random()
                                             }`,
                                             title:
+                                                entry.title ||
                                                 entry.text.substring(0, 50) +
-                                                (entry.text.length > 50
-                                                    ? "..."
-                                                    : ""),
+                                                    (entry.text.length > 50
+                                                        ? "..."
+                                                        : ""),
                                             time: entry.time,
                                             date: entry.date, // Add the date property
                                             assignedTo: entry.author,
                                             status: entry.category,
                                             type: "logbook-entry",
                                             fullText: entry.text,
+                                            description: entry.text, // Add description property for TaskDetailsModal
                                             category: entry.category,
                                             subcategory: entry.subcategory,
                                             extraDetail: entry.extraDetail,
                                             duration: entry.duration,
-                                            simulator: entry.simulator || entrySimulator,
-                                            originalEntry: entry,
+                                            simulator:
+                                                entry.simulator ||
+                                                entrySimulator,
+                                            originalEntry: entry, // Keep reference to original entry for editing
+                                            notes: entryNotes, // Add notes from localStorage
                                         });
                                     });
 
@@ -1250,14 +1575,14 @@ export default function Logbook() {
                                                         </span>
                                                     </div>
                                                 </div>
-                                                {(() => {                                                    const {
+                                                {(() => {
+                                                    const {
                                                         tasksBySimulator,
                                                         simulators,
-                                                    } =
-                                                        groupTasksBySimulator(
-                                                            dayShiftTasks,
-                                                            'day'
-                                                        );
+                                                    } = groupTasksBySimulator(
+                                                        dayShiftTasks,
+                                                        "day"
+                                                    );
                                                     return (
                                                         <div className="simulators-row flex flex-wrap justify-between gap-4 mb-4">
                                                             {simulators.map(
@@ -1335,14 +1660,14 @@ export default function Logbook() {
                                                         </span>
                                                     </div>
                                                 </div>
-                                                {(() => {                                                    const {
+                                                {(() => {
+                                                    const {
                                                         tasksBySimulator,
                                                         simulators,
-                                                    } =
-                                                        groupTasksBySimulator(
-                                                            nightShiftTasks,
-                                                            'night'
-                                                        );
+                                                    } = groupTasksBySimulator(
+                                                        nightShiftTasks,
+                                                        "night"
+                                                    );
                                                     return (
                                                         <div className="simulators-row flex flex-wrap justify-between gap-4 mb-4">
                                                             {simulators.map(
@@ -1571,7 +1896,8 @@ export default function Logbook() {
                                                             {d}
                                                         </option>
                                                     )
-                                                )}                                            </select>
+                                                )}{" "}
+                                            </select>
                                         </>
                                     )}
                                     <label
@@ -1918,7 +2244,8 @@ export default function Logbook() {
                             </div>
                         </div>
                     </div>
-                </div>            </div>{" "}
+                </div>{" "}
+            </div>{" "}
             <Modal
                 isOpen={modal.isOpen}
                 onClose={closeModal}
@@ -1926,7 +2253,7 @@ export default function Logbook() {
                 message={modal.message}
                 type={modal.type}
                 onConfirm={modal.onConfirm}
-            />
+            />{" "}
             <TaskDetailsModal
                 isOpen={taskDetailsModal.isOpen}
                 onClose={closeTaskDetails}
@@ -1936,8 +2263,16 @@ export default function Logbook() {
                 canToggleTask={canToggleTask}
                 canDeleteTasks={canDeleteTasks}
                 canEditDescription={canEditDescription}
-                onEditDescription={() => {}} // Placeholder
+                onEditDescription={openDescriptionModal}
                 onSaveNote={handleSaveNote}
+            />{" "}
+            <DescriptionModal
+                isOpen={descriptionModal.isOpen}
+                onClose={closeDescriptionModal}
+                onSave={handleSaveDescriptionForLogbook}
+                currentDescription={descriptionModal.entry?.fullText || ""}
+                currentSimulator={descriptionModal.entry?.simulator || ""}
+                isEditing={true}
             />
         </>
     );

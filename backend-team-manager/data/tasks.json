@@ -115,9 +115,9 @@
     "id": 29,
     "title": "Notturno",
     "assignedTo": "Gianluca",
-    "status": "non completato",
-    "date": "2025-06-19",
-    "time": "20:25",
+    "status": "riassegnato",
+    "date": "2025-06-24",
+    "time": "16:25",
     "description": "",
     "simulator": "109FFS"
   },
@@ -170,7 +170,7 @@
   {
     "id": 36,
     "title": "Ciao",
-    "assignedTo": "Luca",
+    "assignedTo": "Mario",
     "status": "in corso",
     "date": "2025-06-24",
     "time": "08:00"

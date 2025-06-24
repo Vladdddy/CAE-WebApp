@@ -139,21 +139,29 @@ export default function TaskDetailsModal({
                             </label>
                             <p className="text-gray-600 text-md">{task.time}</p>
                         </div>{" "}
-                    </div>
-                    {/* Subcategory - only for logbook entries */}
-                    {task.type === "logbook-entry" &&
-                        (task.subcategory || task.extraDetail) && (
-                            <div>
-                                <label className="block text-xs font-medium text-gray-600 mb-1">
-                                    Sotto-categoria
-                                </label>
-                                <p className="text-gray-600 text-sm">
-                                    {task.subcategory ||
-                                        task.extraDetail ||
-                                        "N/A"}
-                                </p>
-                            </div>
-                        )}
+                    </div>                    {/* Subcategory - only for logbook entries */}
+                    {task.type === "logbook-entry" && task.subcategory && (
+                        <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">
+                                Sotto-categoria
+                            </label>
+                            <p className="text-gray-600 text-sm">
+                                {task.subcategory}
+                            </p>
+                        </div>
+                    )}
+                    
+                    {/* Extra Detail - only for logbook entries */}
+                    {task.type === "logbook-entry" && task.extraDetail && (
+                        <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">
+                                Dettaglio extra
+                            </label>
+                            <p className="text-gray-600 text-sm">
+                                {task.extraDetail}
+                            </p>
+                        </div>
+                    )}
                     {/* Status */}
                     <div className="separator"></div>
                     {/* Simulator */}
