@@ -111,6 +111,20 @@ export default function TaskDetailsModal({
                     <div className="flex justify-between">
                         <div>
                             <label className="block text-xs font-medium text-gray-600 mb-1">
+                                {task.type === "logbook-entry"
+                                    ? "Categoria"
+                                    : "Stato"}
+                            </label>
+                            <span
+                                className={`inline-flex px-4 py-1 text-xs font-medium rounded-md capitalize ${getStatusColor(
+                                    task.status
+                                )}`}
+                            >
+                                {task.status}
+                            </span>{" "}
+                        </div>
+                        <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">
                                 Data
                             </label>
                             <p className="text-gray-600 text-md">
@@ -124,22 +138,25 @@ export default function TaskDetailsModal({
                                 Orario
                             </label>
                             <p className="text-gray-600 text-md">{task.time}</p>
-                        </div>
-                        <div>
-                            <label className="block text-xs font-medium text-gray-600 mb-1">
-                                Stato
-                            </label>
-                            <span
-                                className={`inline-flex px-4 py-1 text-xs font-medium rounded-md capitalize ${getStatusColor(
-                                    task.status
-                                )}`}
-                            >
-                                {task.status}
-                            </span>
-                        </div>
+                        </div>{" "}
                     </div>
+                    {/* Subcategory - only for logbook entries */}
+                    {task.type === "logbook-entry" &&
+                        (task.subcategory || task.extraDetail) && (
+                            <div>
+                                <label className="block text-xs font-medium text-gray-600 mb-1">
+                                    Sotto-categoria
+                                </label>
+                                <p className="text-gray-600 text-sm">
+                                    {task.subcategory ||
+                                        task.extraDetail ||
+                                        "N/A"}
+                                </p>
+                            </div>
+                        )}
                     {/* Status */}
-                    <div className="separator"></div> {/* Simulator */}
+                    <div className="separator"></div>
+                    {/* Simulator */}
                     <div>
                         <label className="block text-xs font-medium text-gray-600 mb-1">
                             Simulatore
@@ -188,7 +205,7 @@ export default function TaskDetailsModal({
                                 <label className="block text-xs font-medium text-gray-600 mb-2">
                                     Note aggiunte
                                 </label>
-                                <div className="space-y-2 mb-3">
+                                <div className="space-y-2 mb-3 max-h-48 overflow-y-auto">
                                     {task.notes.map((note, index) => (
                                         <div
                                             key={index}

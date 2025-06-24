@@ -236,9 +236,19 @@ export default function Tasks() {
             }
             if (res.ok) {
                 const updated = await res.json();
+
+                // Load notes from localStorage and merge with the updated task
+                const savedNotes = JSON.parse(
+                    localStorage.getItem("taskNotes") || "{}"
+                );
+                const updatedWithNotes = {
+                    ...updated,
+                    notes: savedNotes[updated.id] || [],
+                };
+
                 setTasks(
                     tasks.map((t) =>
-                        t.id === descriptionModal.taskId ? updated : t
+                        t.id === descriptionModal.taskId ? updatedWithNotes : t
                     )
                 );
 
@@ -250,7 +260,7 @@ export default function Tasks() {
                 ) {
                     setTaskDetailsModal((prev) => ({
                         ...prev,
-                        task: updated,
+                        task: updatedWithNotes,
                     }));
                 }
 
@@ -417,7 +427,19 @@ export default function Tasks() {
             }
             if (res.ok) {
                 const updated = await res.json();
-                setTasks(tasks.map((t) => (t.id === id ? updated : t)));
+
+                // Load notes from localStorage and merge with the updated task
+                const savedNotes = JSON.parse(
+                    localStorage.getItem("taskNotes") || "{}"
+                );
+                const updatedWithNotes = {
+                    ...updated,
+                    notes: savedNotes[updated.id] || [],
+                };
+
+                setTasks(
+                    tasks.map((t) => (t.id === id ? updatedWithNotes : t))
+                );
 
                 // Update the modal if it's open and showing the same task
                 if (
@@ -427,7 +449,7 @@ export default function Tasks() {
                 ) {
                     setTaskDetailsModal((prev) => ({
                         ...prev,
-                        task: updated,
+                        task: updatedWithNotes,
                     }));
                 }
             } else {
@@ -443,6 +465,7 @@ export default function Tasks() {
             showModal("Errore", "Errore durante la modifica del task", "error");
         }
     };
+
     const deleteTask = async (id) => {
         showModal(
             "Conferma eliminazione",
@@ -468,8 +491,17 @@ export default function Tasks() {
                         );
                         return;
                     }
-
                     if (res.ok) {
+                        // Clean up notes for the deleted task
+                        const savedNotes = JSON.parse(
+                            localStorage.getItem("taskNotes") || "{}"
+                        );
+                        delete savedNotes[id];
+                        localStorage.setItem(
+                            "taskNotes",
+                            JSON.stringify(savedNotes)
+                        );
+
                         setTasks(tasks.filter((t) => t.id !== id));
                         showModal(
                             "Successo",
@@ -559,7 +591,8 @@ export default function Tasks() {
                     if (!tasksBySimulator[simulatorGroup]) {
                         tasksBySimulator[simulatorGroup] = [];
                     }
-                    tasksBySimulator[simulatorGroup].push(task);                }); // Render tasks grouped by simulator in specific order
+                    tasksBySimulator[simulatorGroup].push(task);
+                }); // Render tasks grouped by simulator in specific order
                 const simulatorOrder = [
                     "FTD",
                     "109FFS",
@@ -567,9 +600,9 @@ export default function Tasks() {
                     "139#3",
                     "169",
                     "189",
-                    "Others"
+                    "Others",
                 ];
-                
+
                 simulatorOrder.forEach((simulator) => {
                     if (!tasksBySimulator[simulator]) return;
                     // Add simulator header with schedule if available
@@ -725,6 +758,8 @@ export default function Tasks() {
                 return "#f6ad1020";
             case "non completato":
                 return "#dc262620";
+            case "riassegnato":
+                return "#8b5cf620";
             default:
                 return "#e5e7eb";
         }
@@ -1741,6 +1776,8 @@ export default function Tasks() {
                                         d="M12 17C12 16.0681 12 15.6022 12.1522 15.2346C12.3552 14.7446 12.7446 14.3552 13.2346 14.1522C13.6022 14 14.0681 14 15 14C15.9319 14 16.3978 14 16.7654 14.1522C17.2554 14.3552 17.6448 14.7446 17.8478 15.2346C18 15.6022 18 16.0681 18 17C18 17.9319 18 18.3978 17.8478 18.7654C17.6448 19.2554 17.2554 19.6448 16.7654 19.8478C16.3978 20 15.9319 20 15 20C14.0681 20 13.6022 20 13.2346 19.8478C12.7446 19.6448 12.3552 19.2554 12.1522 18.7654C12 18.3978 12 17.9319 12 17Z"
                                         stroke="currentColor"
                                         stroke-width="1.5"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
                                     />
                                 </svg>
 

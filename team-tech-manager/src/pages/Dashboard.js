@@ -1,10 +1,11 @@
 import "../styles/dashboard.css";
 import Logo from "../assets/logo.png";
 import Modal from "../components/Modal";
-import DescriptionModal from "../components/DescriptionModal";
 import { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
+    const navigate = useNavigate();
     const today = new Date().toISOString().split("T")[0];
     const token = localStorage.getItem("authToken");
     let userEmail = (localStorage.getItem("userEmail") || "Utente")[0];
@@ -44,18 +45,29 @@ export default function Dashboard() {
                 Authorization: `Bearer ${token}`,
             },
         })
-            .then((res) => res.json())
+            .then((res) => {
+                if (res.status === 401 || res.status === 403) {
+                    // Token is invalid, redirect to login
+                    localStorage.removeItem("authToken");
+                    localStorage.removeItem("userEmail");
+                    navigate("/login");
+                    return;
+                }
+                return res.json();
+            })
             .then((data) => {
-                setTasks(data);
+                if (data) {
+                    // Ensure data is an array before setting tasks
+                    setTasks(Array.isArray(data) ? data : []);
+                }
                 setLoading(false);
             })
             .catch((error) => {
                 console.error("Error fetching tasks:", error);
+                setTasks([]); // Set to empty array on error
                 setLoading(false);
             });
-    }, []);
-
-    // Fetcha tutti i dipendenti
+    }, [navigate]); // Fetcha tutti i dipendenti
     const [users, setUsers] = useState([]);
     useEffect(() => {
         fetch(`${API}/api/users`, {
@@ -64,17 +76,23 @@ export default function Dashboard() {
             },
         })
             .then((res) => {
+                if (res.status === 401 || res.status === 403) {
+                    localStorage.removeItem("authToken");
+                    localStorage.removeItem("userEmail");
+                    navigate("/login");
+                    return;
+                }
                 return res.json();
             })
             .then((data) => {
-                setUsers(data);
+                if (data) {
+                    setUsers(Array.isArray(data) ? data : []);
+                }
             })
             .catch((error) => {
                 console.error("Error fetching users:", error);
             });
-    }, []);
-
-    // Fetcha tutti i turni del mese corrente
+    }, [navigate]); // Fetcha tutti i turni del mese corrente
     const [shifts, setShifts] = useState({});
     useEffect(() => {
         const currentDate = new Date();
@@ -87,15 +105,23 @@ export default function Dashboard() {
             },
         })
             .then((res) => {
+                if (res.status === 401 || res.status === 403) {
+                    localStorage.removeItem("authToken");
+                    localStorage.removeItem("userEmail");
+                    navigate("/login");
+                    return;
+                }
                 return res.json();
             })
             .then((data) => {
-                setShifts(data);
+                if (data) {
+                    setShifts(data || {});
+                }
             })
             .catch((error) => {
                 console.error("Error fetching shifts:", error);
             });
-    }, []);
+    }, [navigate]);
 
     // Gestione dei modali
     const [modal, setModal] = useState({
@@ -110,6 +136,196 @@ export default function Dashboard() {
         setModal((prev) => ({ ...prev, isOpen: false }));
     };
 
+    // Reassignment modal state
+    const [reassignModal, setReassignModal] = useState({
+        isOpen: false,
+        task: null,
+        date: "",
+        time: "",
+        assignedTo: "",
+        availableEmployees: [],
+        loading: false,
+    });
+    const closeReassignModal = () => {
+        setReassignModal({
+            isOpen: false,
+            task: null,
+            date: "",
+            time: "",
+            assignedTo: "",
+            availableEmployees: [],
+            loading: false,
+        });
+    };
+
+    // Open reassignment modal for "non completato" tasks
+    const openReassignModal = (task) => {
+        setReassignModal({
+            isOpen: true,
+            task: task,
+            date: task.date,
+            time: task.time,
+            assignedTo: task.assignedTo,
+            availableEmployees: [],
+            loading: false,
+        });
+        // Fetch available employees for the current date/time
+        fetchAvailableEmployees(task.date, task.time);
+    };
+
+    // Fetch available employees for reassignment
+    const fetchAvailableEmployees = async (date, time) => {
+        try {
+            const response = await fetch(
+                `${API}/api/tasks/available-employees?date=${date}&time=${time}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            if (response.ok) {
+                const data = await response.json();
+                setReassignModal((prev) => ({
+                    ...prev,
+                    availableEmployees: data.availableEmployees,
+                }));
+            }
+        } catch (error) {
+            console.error("Error fetching available employees:", error);
+        }
+    };
+
+    // Handle reassignment form submission
+    const handleReassignTask = async () => {
+        if (
+            !reassignModal.date ||
+            !reassignModal.time ||
+            !reassignModal.assignedTo
+        ) {
+            setModal({
+                isOpen: true,
+                title: "Errore",
+                message:
+                    "Tutti i campi sono obbligatori per la riassegnazione.",
+                type: "error",
+                onConfirm: null,
+                confirmText: "OK",
+            });
+            return;
+        }
+
+        setReassignModal((prev) => ({ ...prev, loading: true }));
+
+        console.log("Reassigning task:", {
+            taskId: reassignModal.task.id,
+            date: reassignModal.date,
+            time: reassignModal.time,
+            assignedTo: reassignModal.assignedTo,
+            apiUrl: `${API}/api/tasks/${reassignModal.task.id}/reassign`,
+        });
+
+        try {
+            const response = await fetch(
+                `${API}/api/tasks/${reassignModal.task.id}/reassign`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        date: reassignModal.date,
+                        time: reassignModal.time,
+                        assignedTo: reassignModal.assignedTo,
+                    }),
+                }
+            );
+
+            console.log("Response status:", response.status);
+            console.log("Response ok:", response.ok);
+
+            if (response.ok) {
+                const updatedTask = await response.json();
+                console.log("Task updated successfully:", updatedTask);
+                // Update the tasks state
+                setTasks((prevTasks) =>
+                    prevTasks.map((task) =>
+                        task.id === updatedTask.id ? updatedTask : task
+                    )
+                );
+                closeReassignModal();
+                setModal({
+                    isOpen: true,
+                    title: "Successo",
+                    message: "Task riassegnato con successo!",
+                    type: "success",
+                    onConfirm: null,
+                    confirmText: "OK",
+                });
+            } else {
+                // Try to get error response as text first, then parse as JSON if possible
+                const responseText = await response.text();
+                console.log("Error response text:", responseText);
+
+                let errorData;
+                try {
+                    errorData = JSON.parse(responseText);
+                } catch (e) {
+                    // If it's not JSON, it's likely an HTML error page
+                    errorData = {
+                        message: `Server error (${
+                            response.status
+                        }): ${responseText.substring(0, 200)}...`,
+                    };
+                }
+
+                console.log("Error response:", errorData);
+                setModal({
+                    isOpen: true,
+                    title: "Errore",
+                    message:
+                        errorData.message ||
+                        "Errore durante la riassegnazione del task.",
+                    type: "error",
+                    onConfirm: null,
+                    confirmText: "OK",
+                });
+            }
+        } catch (error) {
+            console.error("Error reassigning task:", error);
+            console.error("Error details:", {
+                name: error.name,
+                message: error.message,
+                stack: error.stack,
+            });
+            setModal({
+                isOpen: true,
+                title: "Errore",
+                message: `Errore di connessione durante la riassegnazione del task: ${error.message}`,
+                type: "error",
+                onConfirm: null,
+                confirmText: "OK",
+            });
+        } finally {
+            setReassignModal((prev) => ({ ...prev, loading: false }));
+        }
+    };
+
+    // Handle date/time change in reassignment modal
+    const handleReassignFormChange = async (field, value) => {
+        setReassignModal((prev) => ({ ...prev, [field]: value }));
+
+        // If date or time changes, refetch available employees
+        if (field === "date" || field === "time") {
+            const date = field === "date" ? value : reassignModal.date;
+            const time = field === "time" ? value : reassignModal.time;
+            if (date && time) {
+                await fetchAvailableEmployees(date, time);
+            }
+        }
+    };
+
     // Imposta il colore del bordo in base allo stato del task
     const getBorderColor = (status) => {
         switch (status) {
@@ -119,18 +335,20 @@ export default function Dashboard() {
                 return "#f6ad1020";
             case "non completato":
                 return "#dc262620";
+            case "riassegnato":
+                return "#8b5cf620";
             default:
                 return "#e5e7eb";
         }
-    };
-
-    // Filtra le task (prende le task di oggi)
-    const dailyTasks = tasks.filter((t) => t.date === today);
+    }; // Filtra le task (prende le task di oggi)
+    const dailyTasks = Array.isArray(tasks)
+        ? tasks.filter((t) => t.date === today)
+        : [];
 
     // Filtra i task incompleti
-    const incompleteTasks = tasks.filter(
-        (task) => task.status === "non completato"
-    );
+    const incompleteTasks = Array.isArray(tasks)
+        ? tasks.filter((task) => task.status === "non completato")
+        : [];
 
     // Prende le task del turno diurno
     const dayTasks = dailyTasks.filter((task) => {
@@ -208,15 +426,27 @@ export default function Dashboard() {
                 </div>
             );
         }
-
         return taskList.map((task) => (
             <div
                 key={task.id}
-                className="display-task flex items-center justify-between dashboard-content p-3 rounded mt-3 bg-gray-100"
+                className={`display-task flex items-center justify-between dashboard-content p-3 rounded mt-3 bg-gray-100 ${
+                    isIncompleteSection && task.status === "non completato"
+                        ? "cursor-pointer hover:bg-gray-200 transition-colors"
+                        : ""
+                }`}
                 style={{
                     border: `2px solid ${getBorderColor(task.status)}`,
                 }}
+                onClick={() => {
+                    if (
+                        isIncompleteSection &&
+                        task.status === "non completato"
+                    ) {
+                        openReassignModal(task);
+                    }
+                }}
             >
+                {" "}
                 <div className="task-info">
                     <p className="text-gray-600 max-w-md font-semibold text-sm">
                         {task.title}
@@ -232,7 +462,12 @@ export default function Dashboard() {
                         )}
                         {task.time} • {task.assignedTo} • {task.status}
                     </div>
-                </div>{" "}
+                </div>
+                {isIncompleteSection && task.status === "non completato" && (
+                    <div className="text-xs text-blue-600 font-medium">
+                        Clicca per riassegnare
+                    </div>
+                )}
             </div>
         ));
     };
@@ -584,8 +819,7 @@ export default function Dashboard() {
                         </div>
                     ))}
                 </div>
-            </div>
-
+            </div>{" "}
             <Modal
                 isOpen={modal.isOpen}
                 onClose={closeModal}
@@ -595,6 +829,123 @@ export default function Dashboard() {
                 onConfirm={modal.onConfirm}
                 confirmText={modal.confirmText}
             />
+            {/* Reassignment Modal */}
+            {reassignModal.isOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 w-96 max-w-full mx-4">
+                        <h2 className="text-xl font-bold mb-4 text-gray-800">
+                            Riassegna Task
+                        </h2>
+
+                        <div className="mb-4">
+                            <h3 className="font-semibold text-gray-700 mb-2">
+                                {reassignModal.task?.title}
+                            </h3>
+                            <p className="text-sm text-gray-500">
+                                Task attualmente assegnato a:{" "}
+                                {reassignModal.task?.assignedTo}
+                            </p>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Nuova Data
+                                </label>
+                                <input
+                                    type="date"
+                                    value={reassignModal.date}
+                                    onChange={(e) =>
+                                        handleReassignFormChange(
+                                            "date",
+                                            e.target.value
+                                        )
+                                    }
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Nuovo Orario
+                                </label>
+                                <input
+                                    type="time"
+                                    value={reassignModal.time}
+                                    onChange={(e) =>
+                                        handleReassignFormChange(
+                                            "time",
+                                            e.target.value
+                                        )
+                                    }
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Nuovo Dipendente
+                                </label>
+                                <select
+                                    value={reassignModal.assignedTo}
+                                    onChange={(e) =>
+                                        handleReassignFormChange(
+                                            "assignedTo",
+                                            e.target.value
+                                        )
+                                    }
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    <option value="">
+                                        Seleziona dipendente...
+                                    </option>
+                                    {reassignModal.availableEmployees.map(
+                                        (employee) => (
+                                            <option
+                                                key={employee}
+                                                value={employee}
+                                            >
+                                                {employee}
+                                            </option>
+                                        )
+                                    )}
+                                </select>
+                                {reassignModal.availableEmployees.length ===
+                                    0 && (
+                                    <p className="text-xs text-orange-600 mt-1">
+                                        Nessun dipendente disponibile per questa
+                                        data/ora
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end space-x-3 mt-6">
+                            <button
+                                onClick={closeReassignModal}
+                                disabled={reassignModal.loading}
+                                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+                            >
+                                Annulla
+                            </button>
+                            <button
+                                onClick={handleReassignTask}
+                                disabled={
+                                    reassignModal.loading ||
+                                    !reassignModal.date ||
+                                    !reassignModal.time ||
+                                    !reassignModal.assignedTo
+                                }
+                                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                            >
+                                {reassignModal.loading
+                                    ? "Riassegnando..."
+                                    : "Riassegna"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 }

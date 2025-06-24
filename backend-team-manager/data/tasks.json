@@ -10,9 +10,9 @@
   {
     "id": 2,
     "title": "Test di una scheda grafica",
-    "assignedTo": "Mario",
-    "status": "non completato",
-    "date": "2025-04-30",
+    "assignedTo": "Luca",
+    "status": "riassegnato",
+    "date": "2025-06-25",
     "time": "08:00"
   },
   {
@@ -166,5 +166,21 @@
     "time": "23:00",
     "description": "",
     "simulator": "109FFS"
+  },
+  {
+    "id": 36,
+    "title": "Ciao",
+    "assignedTo": "Luca",
+    "status": "in corso",
+    "date": "2025-06-24",
+    "time": "08:00"
+  },
+  {
+    "id": 39,
+    "title": "nhn",
+    "assignedTo": "Simone",
+    "status": "non iniziato",
+    "date": "2025-06-24",
+    "time": "05:00"
   }
 ]

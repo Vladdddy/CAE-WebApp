@@ -90,10 +90,10 @@ exports.createTask = (req, res) => {
                 });
             }
         }
-    }
-
+    } // Generate a unique ID that won't be reused even if tasks are deleted
+    const maxId = tasks.length > 0 ? Math.max(...tasks.map((t) => t.id)) : 0;
     const newTask = {
-        id: tasks.length ? tasks[tasks.length - 1].id + 1 : 1,
+        id: maxId + 1,
         title,
         assignedTo,
         status: "non iniziato",
@@ -125,6 +125,7 @@ exports.toggleTask = (req, res) => {
         "in corso": "completato",
         completato: "non completato",
         "non completato": "completato",
+        riassegnato: "in corso",
     };
 
     task.status = nextStatus[task.status] || "non iniziato";
@@ -246,4 +247,84 @@ exports.getAvailableEmployees = (req, res) => {
         date,
         time,
     });
+};
+
+// Reassign a task with "non completato" status
+exports.reassignTask = (req, res) => {
+    const id = parseInt(req.params.id);
+    const { date, time, assignedTo } = req.body;
+    const task = tasks.find((t) => t.id === id);
+
+    if (!task) {
+        return res.status(404).json({ message: "Task non trovato" });
+    }
+
+    // Only allow reassignment of "non completato" tasks
+    if (task.status !== "non completato") {
+        return res.status(400).json({
+            message:
+                "Solo i task con stato 'non completato' possono essere riassegnati.",
+        });
+    }
+
+    // Check permissions - employees cannot reassign tasks
+    if (req.user.role === "employee") {
+        return res.status(403).json({
+            message:
+                "Non hai i permessi per riassegnare i task. Solo amministratori, manager e supervisori possono riassegnare i task.",
+        });
+    }
+
+    // Validate the new assignment
+    if (!date || !time || !assignedTo) {
+        return res.status(400).json({
+            message:
+                "Data, ora e dipendente assegnato sono obbligatori per la riassegnazione.",
+        });
+    }
+
+    // Check if the assigned employee exists in users.json and is active
+    const activeEmployees = getActiveEmployees();
+    const assignedEmployee = activeEmployees.find(
+        (emp) => emp.name === assignedTo
+    );
+
+    if (!assignedEmployee) {
+        return res.status(400).json({
+            message: `${assignedTo} non è un dipendente attivo nel sistema.`,
+        });
+    }
+
+    // Get the required shift for the task
+    const requiredShift = getShiftFromTime(time);
+
+    // Get shift data for the specific date
+    const taskDate = new Date(date);
+    const year = taskDate.getFullYear();
+    const month = taskDate.getMonth() + 1;
+    const shiftFilePath = getShiftDataPath(year, month);
+
+    if (fs.existsSync(shiftFilePath)) {
+        const shiftData = JSON.parse(fs.readFileSync(shiftFilePath));
+        const dayData = shiftData[date];
+
+        if (dayData) {
+            // Check if the assigned employee is working the required shift on this date
+            const employeeData = dayData[assignedTo];
+            if (!employeeData || employeeData.shift !== requiredShift) {
+                return res.status(400).json({
+                    message: `${assignedTo} non è in servizio nel turno richiesto (${requiredShift}) per la data ${date}. Controlla i turni prima di riassegnare il task.`,
+                });
+            }
+        }
+    }
+
+    // Update the task
+    task.date = date;
+    task.time = time;
+    task.assignedTo = assignedTo;
+    task.status = "riassegnato";
+
+    saveTasksToFile();
+    res.json(task);
 };

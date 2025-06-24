@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import "../styles/tasks.css";
-import Modal from "../components/Modal";
 import TaskDetailsModal from "../components/TaskDetailsModal";
-import html2pdf from "html2pdf.js";
+import Modal from "../components/Modal";
 
 const API = process.env.REACT_APP_API_URL;
 const categories = {
@@ -31,13 +30,12 @@ const troubleshootingDetails = [
 export default function Logbook() {
     const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
     const [entries, setEntries] = useState([]);
-    const [filteredEntries, setFilteredEntries] = useState([]);
-
-    const [text, setText] = useState("");
+    const [filteredEntries, setFilteredEntries] = useState([]);    const [text, setText] = useState("");
     const [author, setAuthor] = useState("");
     const [category, setCategory] = useState("");
     const [subcategory, setSubcategory] = useState("");
     const [extraDetail, setExtraDetail] = useState("");
+    const [simulator, setSimulator] = useState("");
     const [formDate, setFormDate] = useState(date);
     const [formTime, setFormTime] = useState("08:00");
     const [duration, setDuration] = useState("");
@@ -61,7 +59,7 @@ export default function Logbook() {
         task: null,
     });
 
-    // Modal state for notifications
+    // Modal state for success/error messages
     const [modal, setModal] = useState({
         isOpen: false,
         title: "",
@@ -72,7 +70,7 @@ export default function Logbook() {
     const currentUserName =
         localStorage.getItem("userName") || "Utente Sconosciuto";
 
-    // Modal functions
+    // Helper functions for modal
     const showModal = (title, message, type = "info", onConfirm = null) => {
         setModal({
             isOpen: true,
@@ -82,7 +80,7 @@ export default function Logbook() {
             onConfirm,
         });
     };
-
+    
     const closeModal = () => {
         setModal((prev) => ({ ...prev, isOpen: false }));
     };
@@ -175,7 +173,8 @@ export default function Logbook() {
             all.push(...data.map((e) => ({ ...e, date: d })));
         }
         return all;
-    };    const handleExportPDF = () => {
+    };
+    const handleExportPDF = () => {
         try {
             // Create a clean version of the content for PDF
             const formattedDate = new Date(selectedDate).toLocaleDateString(
@@ -187,8 +186,13 @@ export default function Logbook() {
                 }
             );
 
-            // Get the entries to export (use filtered entries if filters are applied, otherwise use all entries)
-            const entriesToExport = showFilterResults ? filteredEntries : entries;
+            // Get tasks and entries for the selected date
+            const dailyTasks = tasks.filter(
+                (task) => task.date === selectedDate
+            );
+            const dailyEntries = entries.filter(
+                (entry) => entry.date === selectedDate
+            );
 
             // Create a temporary div with clean styling for PDF
             const pdfContent = document.createElement("div");
@@ -198,97 +202,156 @@ export default function Logbook() {
 
             // Add title
             const title = document.createElement("h2");
-            title.textContent = `Logbook per il ${formattedDate}`;
+            title.textContent = `Task e Logbook per il ${formattedDate}`;
             title.style.marginBottom = "20px";
             title.style.color = "#333";
             title.style.borderBottom = "2px solid #3b82f6";
             title.style.paddingBottom = "10px";
             pdfContent.appendChild(title);
-            
-            if (entriesToExport.length === 0) {
-                const noEntries = document.createElement("p");
-                noEntries.textContent = "Nessuna voce per questa data";
-                noEntries.style.color = "#666";
-                noEntries.style.fontStyle = "italic";
-                pdfContent.appendChild(noEntries);
+
+            if (dailyTasks.length === 0 && dailyEntries.length === 0) {
+                const noContent = document.createElement("p");
+                noContent.textContent = "Nessun task o entry per questa data";
+                noContent.style.color = "#666";
+                noContent.style.fontStyle = "italic";
+                pdfContent.appendChild(noContent);
             } else {
-                // Group entries by category
-                const entriesByCategory = {};
-                entriesToExport.forEach((entry) => {
-                    const category = entry.category || "Altri";
-                    if (!entriesByCategory[category]) {
-                        entriesByCategory[category] = [];
+                // Group tasks by simulator
+                const tasksBySimulator = {};
+                dailyTasks.forEach((task) => {
+                    const simulator = task.simulator || "Nessun Simulatore";
+                    if (!tasksBySimulator[simulator]) {
+                        tasksBySimulator[simulator] = [];
                     }
-                    entriesByCategory[category].push(entry);
-                });
+                    tasksBySimulator[simulator].push(task);
+                });                // Add logbook entries to their specified simulator
+                if (dailyEntries.length > 0) {
+                    dailyEntries.forEach((entry) => {
+                        const entrySimulator = entry.simulator || "Others";
+                        if (!tasksBySimulator[entrySimulator]) {
+                            tasksBySimulator[entrySimulator] = [];
+                        }                        // Convert entries to task-like format for consistent rendering
+                        tasksBySimulator[entrySimulator].push({
+                            id: `entry-${entry.id || Math.random()}`,
+                            title:
+                                entry.text.substring(0, 50) +
+                                (entry.text.length > 50 ? "..." : ""),
+                            time: entry.time,
+                            date: entry.date, // Add the date property
+                            assignedTo: entry.author,
+                            status: entry.category,
+                            type: "logbook-entry",
+                            fullText: entry.text,
+                            category: entry.category,
+                            subcategory: entry.subcategory,
+                            extraDetail: entry.extraDetail,
+                            duration: entry.duration,
+                            simulator: entry.simulator || entrySimulator,
+                        });
+                    });
+                }
 
-                // Render entries grouped by category
-                Object.keys(entriesByCategory).forEach((category) => {
-                    // Add category header
-                    const categoryHeader = document.createElement("h4");
-                    categoryHeader.textContent = category.charAt(0).toUpperCase() + category.slice(1);
-                    categoryHeader.style.margin = "20px 0 10px 0";
-                    categoryHeader.style.color = "#1f2937";
-                    categoryHeader.style.fontSize = "18px";
-                    categoryHeader.style.fontWeight = "bold";
-                    categoryHeader.style.borderBottom = "1px solid #d1d5db";
-                    categoryHeader.style.paddingBottom = "5px";
-                    pdfContent.appendChild(categoryHeader);
-
-                    // Add entries for this category
-                    entriesByCategory[category].forEach((entry, index) => {
-                        const entryDiv = document.createElement("div");
-                        entryDiv.style.marginBottom = "15px";
-                        entryDiv.style.padding = "15px";
-                        entryDiv.style.border = "1px solid #d1d5db";
-                        entryDiv.style.borderRadius = "8px";
-                        entryDiv.style.backgroundColor = "#f9f9f9";
-
-                        const entryHeader = document.createElement("h5");
-                        entryHeader.textContent = `${index + 1}. ${entry.time || 'N/A'} - ${entry.author || 'N/A'}`;
-                        entryHeader.style.margin = "0 0 8px 0";
-                        entryHeader.style.color = "#333";
-                        entryHeader.style.fontSize = "16px";
-                        entryDiv.appendChild(entryHeader);
-
-                        const entryText = document.createElement("p");
-                        entryText.textContent = entry.text || '';
-                        entryText.style.margin = "0 0 8px 0";
-                        entryText.style.color = "#666";
-                        entryText.style.fontSize = "14px";
-                        entryDiv.appendChild(entryText);
-
-                        if (entry.subcategory) {
-                            const subcategoryText = document.createElement("p");
-                            subcategoryText.textContent = `Sottocategoria: ${entry.subcategory}`;
-                            subcategoryText.style.margin = "0";
-                            subcategoryText.style.color = "#888";
-                            subcategoryText.style.fontSize = "12px";
-                            subcategoryText.style.fontStyle = "italic";
-                            entryDiv.appendChild(subcategoryText);
+                // Render tasks grouped by simulator
+                Object.keys(tasksBySimulator).forEach((simulator) => {
+                    // Add simulator header
+                    const simulatorHeader = document.createElement("h4");
+                    simulatorHeader.textContent = simulator;
+                    simulatorHeader.style.margin = "20px 0 10px 0";
+                    simulatorHeader.style.color = "#1f2937";
+                    simulatorHeader.style.fontSize = "18px";
+                    simulatorHeader.style.fontWeight = "bold";
+                    simulatorHeader.style.borderBottom = "1px solid #d1d5db";
+                    simulatorHeader.style.paddingBottom = "20px";
+                    pdfContent.appendChild(simulatorHeader); // Add tasks for this simulator
+                    tasksBySimulator[simulator].forEach((task, index) => {
+                        const taskDiv = document.createElement("div");
+                        taskDiv.style.marginBottom = "15px";
+                        taskDiv.style.padding = "15px";
+                        // Different styling for logbook entries vs tasks
+                        if (task.type === "logbook-entry") {
+                            // Use solid colors for PDF borders
+                            let borderColor = "#e5e7eb"; // default
+                            switch (task.category) {
+                                case "routine task":
+                                    borderColor = "#3b82f6";
+                                    break;
+                                case "troubleshooting":
+                                    borderColor = "#dc2626";
+                                    break;
+                                case "others":
+                                    borderColor = "#f6ad10";
+                                    break;
+                            }
+                            taskDiv.style.border = `2px solid ${borderColor}`;
+                            taskDiv.style.borderRadius = "8px";
+                            taskDiv.style.backgroundColor = "#fafafa";
+                        } else {
+                            // Use solid colors for PDF borders
+                            let borderColor = "#e5e7eb"; // default
+                            switch (task.status) {
+                                case "completato":
+                                    borderColor = "#139d54";
+                                    break;
+                                case "in corso":
+                                    borderColor = "#f6ad10";
+                                    break;
+                                case "non completato":
+                                    borderColor = "#dc2626";
+                                    break;
+                            }
+                            taskDiv.style.border = `2px solid ${borderColor}`;
+                            taskDiv.style.borderRadius = "8px";
+                            taskDiv.style.backgroundColor = "#f9f9f9";
                         }
 
-                        if (entry.extraDetail) {
-                            const extraDetailText = document.createElement("p");
-                            extraDetailText.textContent = `Dettagli extra: ${entry.extraDetail}`;
-                            extraDetailText.style.margin = "0";
-                            extraDetailText.style.color = "#888";
-                            extraDetailText.style.fontSize = "12px";
-                            extraDetailText.style.fontStyle = "italic";
-                            entryDiv.appendChild(extraDetailText);
-                        }
+                        const taskTitle = document.createElement("h5");
+                        taskTitle.textContent = `${index + 1}. ${task.title}`;
+                        taskTitle.style.margin = "0 0 8px 0";
+                        taskTitle.style.color = "#333";
+                        taskTitle.style.fontSize = "16px";
+                        taskDiv.appendChild(taskTitle);
 
-                        pdfContent.appendChild(entryDiv);
+                        const taskDetails = document.createElement("p");
+                        if (task.type === "logbook-entry") {
+                            taskDetails.textContent = `Orario: ${
+                                task.time
+                            } • Autore: ${task.assignedTo} • Categoria: ${
+                                task.category
+                            }${task.subcategory ? "/" + task.subcategory : ""}${
+                                task.extraDetail ? "/" + task.extraDetail : ""
+                            } • Durata: ${task.duration || "N/A"}`;
+
+                            // Add full text for logbook entries
+                            if (task.fullText && task.fullText !== task.title) {
+                                const fullTextP = document.createElement("p");
+                                fullTextP.textContent = task.fullText;
+                                fullTextP.style.margin = "8px 0 0 0";
+                                fullTextP.style.color = "#444";
+                                fullTextP.style.fontSize = "14px";
+                                fullTextP.style.fontStyle = "italic";
+                                taskDiv.appendChild(fullTextP);
+                            }
+                        } else {
+                            taskDetails.textContent = `Orario: ${task.time} • Assegnato a: ${task.assignedTo} • Status: ${task.status}`;
+                        }
+                        taskDetails.style.margin = "0";
+                        taskDetails.style.color = "#666";
+                        taskDetails.style.fontSize = "14px";
+                        taskDiv.appendChild(taskDetails);
+
+                        pdfContent.appendChild(taskDiv);
                     });
                 });
             }
 
             // Temporarily add to body
             document.body.appendChild(pdfContent);
-
             const opt = {
                 margin: 0.5,
-                filename: `logbook-${formattedDate.replace(/\//g, "-")}.pdf`,
+                filename: `tasks-logbook-${formattedDate.replace(
+                    /\//g,
+                    "-"
+                )}.pdf`,
                 image: { type: "jpeg", quality: 0.98 },
                 html2canvas: {
                     scale: 2,
@@ -307,6 +370,7 @@ export default function Logbook() {
                 .save()
                 .then(() => {
                     document.body.removeChild(pdfContent);
+                    closeModal();
                     showModal(
                         "Successo",
                         "PDF esportato con successo!",
@@ -316,6 +380,7 @@ export default function Logbook() {
                 .catch((error) => {
                     console.error("PDF Export Error:", error);
                     document.body.removeChild(pdfContent);
+                    closeModal();
                     showModal(
                         "Errore",
                         "Errore durante l'esportazione del PDF",
@@ -462,20 +527,18 @@ export default function Logbook() {
             setFilteredEntries(newEntries);
         }
         resetForm();
-    };
-    const resetForm = () => {
+    };    const resetForm = () => {
         setText("");
         setAuthor(currentUserName);
         setCategory("");
         setSubcategory("");
         setExtraDetail("");
+        setSimulator("");
         setFormDate(date);
         setFormTime("08:00");
         setDuration("");
         setEditIndex(null);
-    };
-
-    const handleSubmit = async (e) => {
+    };    const handleSubmit = async (e) => {
         e.preventDefault();
         const entry = {
             text,
@@ -483,6 +546,7 @@ export default function Logbook() {
             category,
             subcategory,
             extraDetail: category === "troubleshooting" ? extraDetail : "",
+            simulator: simulator || "Others",
             date: formDate,
             time: formTime,
             duration,
@@ -502,20 +566,19 @@ export default function Logbook() {
         if (!window.confirm("Vuoi eliminare questa entry?")) return;
         const newEntries = entries.filter((_, i) => i !== index);
         await saveEntries(newEntries);
-    };
-
-    const handleEdit = (index) => {
+    };    const handleEdit = (index) => {
         const entry = entries[index];
         setText(entry.text);
         setAuthor(entry.author);
         setCategory(entry.category);
         setSubcategory(entry.subcategory);
         setExtraDetail(entry.extraDetail || "");
+        setSimulator(entry.simulator || "");
         setFormDate(entry.date);
         setFormTime(entry.time);
         setDuration(entry.duration || "");
         setEditIndex(index);
-    }; // Task details modal functions
+    };// Task details modal functions
     const openTaskDetails = (task) => {
         setTaskDetailsModal({
             isOpen: true,
@@ -663,6 +726,63 @@ export default function Logbook() {
                 setLoading(false);
             });
     }, []);
+
+    // Helper function to get border color for both tasks and logbook entries
+    const getCardBorderColor = (item) => {
+        if (item.type === "logbook-entry") {
+            return getCategoryBorderColor(item.category);
+        } else {
+            return getBorderColor(item.status);
+        }
+    };    // Function to render task cards (handles both tasks and logbook entries)
+    const renderTaskCard = (task) => (
+        <div
+            key={task.id}
+            className="task-card-small p-2 rounded-xl border bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
+            style={{
+                border: task.type === "logbook-entry"
+                    ? `1px solid ${getCategoryBorderColor(task.category)}`
+                    : `1px solid ${getBorderColor(task.status)}`,
+            }}
+            onClick={() => openTaskDetails(task)}
+        >
+            <div className="task-info h-full flex flex-col justify-between">
+                <p className="text-gray-900 font-bold text-xs leading-tight mb-1 overflow-hidden">
+                    {task.title.length > 20
+                        ? task.title.substring(0, 20) + "..."
+                        : task.title}
+                </p>
+                <div className="task-details text-xs text-gray-500 space-y-1">
+                    <div className="text-xs">{task.time}</div>
+                    <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-600">
+                            {task.assignedTo}
+                        </span>
+                        <span
+                            className={
+                                task.type === "logbook-entry"
+                                    ? "px-2 py-1 rounded text-xs bg-blue-100 text-blue-600"
+                                    : `px-2 py-1 rounded text-xs ${
+                                          task.status === "completato"
+                                              ? "bg-green-100 text-green-600"
+                                              : task.status === "in corso"
+                                              ? "bg-yellow-100 text-yellow-600"
+                                              : task.status === "non completato"
+                                              ? "bg-red-100 text-red-600"
+                                              : "bg-gray-100 text-gray-600"
+                                      }`
+                            }
+                            style={{ fontSize: "10px" }}
+                        >
+                            {task.type === "logbook-entry"
+                                ? "logbook"
+                                : task.status}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
 
     return (
         <>
@@ -999,10 +1119,8 @@ export default function Logbook() {
                                         }
                                         entriesByCategory["others"].push(entry);
                                     }
-                                });
-
-                                // Function to group tasks by simulator
-                                const groupTasksBySimulator = (taskList) => {
+                                }); // Function to group tasks by simulator
+                                const groupTasksBySimulator = (taskList, shiftType = null) => {
                                     const tasksBySimulator = {};
                                     const simulators = [
                                         "FTD",
@@ -1035,6 +1153,60 @@ export default function Logbook() {
                                                 task
                                             );
                                         }
+                                    });                                    // Add logbook entries to their specified simulator only for the correct shift
+                                    dateEntries.forEach((entry) => {
+                                        // Check if entry time matches the shift type
+                                        if (shiftType && entry.time) {
+                                            const [hours, minutes] = entry.time
+                                                .split(":")
+                                                .map(Number);
+                                            const timeInMinutes = hours * 60 + minutes;
+                                            
+                                            if (shiftType === 'day') {
+                                                // Day shift: 07:01 to 18:59
+                                                if (timeInMinutes <= 420 || timeInMinutes >= 1140) {
+                                                    return; // Skip this entry for day shift
+                                                }
+                                            } else if (shiftType === 'night') {
+                                                // Night shift: 19:00 to 07:00
+                                                if (timeInMinutes > 420 && timeInMinutes < 1140) {
+                                                    return; // Skip this entry for night shift
+                                                }
+                                            }
+                                        }
+                                        
+                                        const entrySimulator = entry.simulator || "Others";
+                                        // Make sure the simulator exists in the list
+                                        if (!tasksBySimulator[entrySimulator]) {
+                                            tasksBySimulator[entrySimulator] = [];
+                                        }
+                                        // Also add the simulator to the list if it's not there
+                                        if (!simulators.includes(entrySimulator)) {
+                                            simulators.push(entrySimulator);
+                                        }
+                                        
+                                        tasksBySimulator[entrySimulator].push({
+                                            id: `entry-${
+                                                entry.id || Math.random()
+                                            }`,
+                                            title:
+                                                entry.text.substring(0, 50) +
+                                                (entry.text.length > 50
+                                                    ? "..."
+                                                    : ""),
+                                            time: entry.time,
+                                            date: entry.date, // Add the date property
+                                            assignedTo: entry.author,
+                                            status: entry.category,
+                                            type: "logbook-entry",
+                                            fullText: entry.text,
+                                            category: entry.category,
+                                            subcategory: entry.subcategory,
+                                            extraDetail: entry.extraDetail,
+                                            duration: entry.duration,
+                                            simulator: entry.simulator || entrySimulator,
+                                            originalEntry: entry,
+                                        });
                                     });
 
                                     return { tasksBySimulator, simulators };
@@ -1078,13 +1250,13 @@ export default function Logbook() {
                                                         </span>
                                                     </div>
                                                 </div>
-                                                {(() => {
-                                                    const {
+                                                {(() => {                                                    const {
                                                         tasksBySimulator,
                                                         simulators,
                                                     } =
                                                         groupTasksBySimulator(
-                                                            dayShiftTasks
+                                                            dayShiftTasks,
+                                                            'day'
                                                         );
                                                     return (
                                                         <div className="simulators-row flex flex-wrap justify-between gap-4 mb-4">
@@ -1117,77 +1289,7 @@ export default function Logbook() {
                                                                                     </div>
                                                                                 ) : (
                                                                                     simulatorTasks.map(
-                                                                                        (
-                                                                                            task
-                                                                                        ) => (
-                                                                                            <div
-                                                                                                key={
-                                                                                                    task.id
-                                                                                                }
-                                                                                                className="task-card-small p-2 rounded-xl border bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
-                                                                                                style={{
-                                                                                                    border: `1px solid ${getBorderColor(
-                                                                                                        task.status
-                                                                                                    )}`,
-                                                                                                }}
-                                                                                                onClick={() =>
-                                                                                                    openTaskDetails(
-                                                                                                        task
-                                                                                                    )
-                                                                                                }
-                                                                                            >
-                                                                                                <div className="task-info h-full flex flex-col justify-between">
-                                                                                                    <p className="text-gray-900 font-bold text-xs leading-tight mb-1 overflow-hidden">
-                                                                                                        {task
-                                                                                                            .title
-                                                                                                            .length >
-                                                                                                        20
-                                                                                                            ? task.title.substring(
-                                                                                                                  0,
-                                                                                                                  20
-                                                                                                              ) +
-                                                                                                              "..."
-                                                                                                            : task.title}
-                                                                                                    </p>
-                                                                                                    <div className="task-details text-xs text-gray-500 space-y-1">
-                                                                                                        <div className="text-xs">
-                                                                                                            {
-                                                                                                                task.time
-                                                                                                            }
-                                                                                                        </div>
-                                                                                                        <div className="flex items-center justify-between">
-                                                                                                            <span className="text-xs text-gray-600">
-                                                                                                                {
-                                                                                                                    task.assignedTo
-                                                                                                                }
-                                                                                                            </span>
-                                                                                                            <span
-                                                                                                                className={`px-2 py-1 rounded text-xs ${
-                                                                                                                    task.status ===
-                                                                                                                    "completato"
-                                                                                                                        ? "bg-green-100 text-green-600"
-                                                                                                                        : task.status ===
-                                                                                                                          "in corso"
-                                                                                                                        ? "bg-yellow-100 text-yellow-600"
-                                                                                                                        : task.status ===
-                                                                                                                          "non completato"
-                                                                                                                        ? "bg-red-100 text-red-600"
-                                                                                                                        : "bg-gray-100 text-gray-600"
-                                                                                                                }`}
-                                                                                                                style={{
-                                                                                                                    fontSize:
-                                                                                                                        "10px",
-                                                                                                                }}
-                                                                                                            >
-                                                                                                                {
-                                                                                                                    task.status
-                                                                                                                }
-                                                                                                            </span>
-                                                                                                        </div>
-                                                                                                    </div>
-                                                                                                </div>
-                                                                                            </div>
-                                                                                        )
+                                                                                        renderTaskCard
                                                                                     )
                                                                                 )}
                                                                             </div>
@@ -1221,7 +1323,7 @@ export default function Logbook() {
                                                                 strokeLinecap="round"
                                                                 strokeLinejoin="round"
                                                             />
-                                                        </svg>
+                                                        </svg>{" "}
                                                         <h4 className="text-gray-600">
                                                             Notte
                                                         </h4>
@@ -1233,13 +1335,13 @@ export default function Logbook() {
                                                         </span>
                                                     </div>
                                                 </div>
-                                                {(() => {
-                                                    const {
+                                                {(() => {                                                    const {
                                                         tasksBySimulator,
                                                         simulators,
                                                     } =
                                                         groupTasksBySimulator(
-                                                            nightShiftTasks
+                                                            nightShiftTasks,
+                                                            'night'
                                                         );
                                                     return (
                                                         <div className="simulators-row flex flex-wrap justify-between gap-4 mb-4">
@@ -1272,77 +1374,7 @@ export default function Logbook() {
                                                                                     </div>
                                                                                 ) : (
                                                                                     simulatorTasks.map(
-                                                                                        (
-                                                                                            task
-                                                                                        ) => (
-                                                                                            <div
-                                                                                                key={
-                                                                                                    task.id
-                                                                                                }
-                                                                                                className="task-card-small p-2 rounded-xl border bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
-                                                                                                style={{
-                                                                                                    border: `1px solid ${getBorderColor(
-                                                                                                        task.status
-                                                                                                    )}`,
-                                                                                                }}
-                                                                                                onClick={() =>
-                                                                                                    openTaskDetails(
-                                                                                                        task
-                                                                                                    )
-                                                                                                }
-                                                                                            >
-                                                                                                <div className="task-info h-full flex flex-col justify-between">
-                                                                                                    <p className="text-gray-900 font-bold text-xs leading-tight mb-1 overflow-hidden">
-                                                                                                        {task
-                                                                                                            .title
-                                                                                                            .length >
-                                                                                                        20
-                                                                                                            ? task.title.substring(
-                                                                                                                  0,
-                                                                                                                  20
-                                                                                                              ) +
-                                                                                                              "..."
-                                                                                                            : task.title}
-                                                                                                    </p>
-                                                                                                    <div className="task-details text-xs text-gray-500 space-y-1">
-                                                                                                        <div className="text-xs">
-                                                                                                            {
-                                                                                                                task.time
-                                                                                                            }
-                                                                                                        </div>
-                                                                                                        <div className="flex items-center justify-between">
-                                                                                                            <span className="text-xs text-gray-600">
-                                                                                                                {
-                                                                                                                    task.assignedTo
-                                                                                                                }
-                                                                                                            </span>
-                                                                                                            <span
-                                                                                                                className={`px-2 py-1 rounded text-xs ${
-                                                                                                                    task.status ===
-                                                                                                                    "completato"
-                                                                                                                        ? "bg-green-100 text-green-600"
-                                                                                                                        : task.status ===
-                                                                                                                          "in corso"
-                                                                                                                        ? "bg-yellow-100 text-yellow-600"
-                                                                                                                        : task.status ===
-                                                                                                                          "non completato"
-                                                                                                                        ? "bg-red-100 text-red-600"
-                                                                                                                        : "bg-gray-100 text-gray-600"
-                                                                                                                }`}
-                                                                                                                style={{
-                                                                                                                    fontSize:
-                                                                                                                        "10px",
-                                                                                                                }}
-                                                                                                            >
-                                                                                                                {
-                                                                                                                    task.status
-                                                                                                                }
-                                                                                                            </span>
-                                                                                                        </div>
-                                                                                                    </div>
-                                                                                                </div>
-                                                                                            </div>
-                                                                                        )
+                                                                                        renderTaskCard
                                                                                     )
                                                                                 )}
                                                                             </div>
@@ -1539,10 +1571,25 @@ export default function Logbook() {
                                                             {d}
                                                         </option>
                                                     )
-                                                )}
-                                            </select>
+                                                )}                                            </select>
                                         </>
                                     )}
+                                    <label
+                                        htmlFor="simulator"
+                                        className="text-xs text-gray-500"
+                                    >
+                                        Simulatore
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="simulator"
+                                        value={simulator}
+                                        onChange={(e) =>
+                                            setSimulator(e.target.value)
+                                        }
+                                        placeholder="Inserisci nome simulatore (es. SIM1, SIM2...)"
+                                        className="border px-3 py-2 rounded mb-4 text-gray-600 text-sm focus:outline-none"
+                                    />
                                     <div className="flex gap-2">
                                         <div className="flex flex-col flex-1">
                                             <label
@@ -1871,8 +1918,16 @@ export default function Logbook() {
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>{" "}            <TaskDetailsModal
+                </div>            </div>{" "}
+            <Modal
+                isOpen={modal.isOpen}
+                onClose={closeModal}
+                title={modal.title}
+                message={modal.message}
+                type={modal.type}
+                onConfirm={modal.onConfirm}
+            />
+            <TaskDetailsModal
                 isOpen={taskDetailsModal.isOpen}
                 onClose={closeTaskDetails}
                 task={taskDetailsModal.task}
@@ -1883,14 +1938,6 @@ export default function Logbook() {
                 canEditDescription={canEditDescription}
                 onEditDescription={() => {}} // Placeholder
                 onSaveNote={handleSaveNote}
-            />
-            <Modal
-                isOpen={modal.isOpen}
-                onClose={closeModal}
-                title={modal.title}
-                message={modal.message}
-                type={modal.type}
-                onConfirm={modal.onConfirm}
             />
         </>
     );
