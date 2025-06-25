@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "../styles/sidebar.css";
 import logo from "../assets/cae2.png";
 import Modal from "./Modal";
@@ -8,6 +8,68 @@ export default function Sidebar() {
     const location = useLocation();
     const navigate = useNavigate();
     const [showLogoutModal, setShowLogoutModal] = useState(false);
+    const [todayTaskCount, setTodayTaskCount] = useState(0);
+
+    // Get today's date in YYYY-MM-DD format
+    const getTodayDate = () => {
+        const today = new Date();
+        return today.toISOString().split("T")[0];
+    };
+
+    // Fetch today's tasks count
+    const fetchTodayTasksCount = async () => {
+        try {
+            const token = localStorage.getItem("authToken");
+            if (!token) return;
+
+            const response = await fetch("http://localhost:5000/api/tasks", {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (response.ok) {
+                const tasks = await response.json();
+                const today = getTodayDate();
+                const todayTasks = tasks.filter((task) => task.date === today);
+                setTodayTaskCount(todayTasks.length);
+            }
+        } catch (error) {
+            console.error("Error fetching today's tasks:", error);
+        }
+    };
+    useEffect(() => {
+        fetchTodayTasksCount();
+
+        // Refresh task count when user returns to the app
+        const handleVisibilityChange = () => {
+            if (!document.hidden) {
+                fetchTodayTasksCount();
+            }
+        };
+
+        // Refresh task count when user clicks anywhere (to catch task updates)
+        const handleClick = () => {
+            fetchTodayTasksCount();
+        };
+
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+        document.addEventListener("click", handleClick);
+
+        return () => {
+            document.removeEventListener(
+                "visibilitychange",
+                handleVisibilityChange
+            );
+            document.removeEventListener("click", handleClick);
+        };
+    }, []);
+
+    // Refresh task count when location changes (user navigates)
+    useEffect(() => {
+        fetchTodayTasksCount();
+    }, [location.pathname]);
 
     // Get current user info from token
     const getCurrentUser = () => {
@@ -144,7 +206,14 @@ export default function Sidebar() {
                                 strokeLinejoin="round"
                             ></path>
                         </svg>
-                        <p className="text-l">Tasks</p>
+                        <div className="flex items-center justify-between w-full">
+                            <p className="text-l">Tasks</p>{" "}
+                            {todayTaskCount > 0 && (
+                                <span className="bg-blue-400 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center min-w-[20px]">
+                                    {todayTaskCount}
+                                </span>
+                            )}
+                        </div>
                     </Link>
                 </li>{" "}
                 <li>

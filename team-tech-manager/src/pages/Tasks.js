@@ -9,11 +9,38 @@ import {
     migrateNotesFromLocalStorage,
 } from "../utils/notesService";
 
+// Categories and troubleshooting details for task classification
+const categories = {
+    "routine task": ["PM", "MR"],
+    troubleshooting: ["HW", "SW"],
+    others: [],
+};
+
+const troubleshootingDetails = [
+    "VISUAL",
+    "COMPUTER",
+    "AVIONIC",
+    "ENV",
+    "BUILDING",
+    "POWER LOSS",
+    "MOTION",
+    "INTERFACE",
+    "CONTROLS",
+    "VIBRATION",
+    "SOUND",
+    "COMMS",
+    "IOS",
+    "OTHERS",
+];
+
 export default function Tasks() {
     const [tasks, setTasks] = useState([]);
     const [title, setTitle] = useState("");
     const [assignedTo, setAssignedTo] = useState("");
     const [simulator, setSimulator] = useState("");
+    const [category, setCategory] = useState("");
+    const [subcategory, setSubcategory] = useState("");
+    const [extraDetail, setExtraDetail] = useState("");
     const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
     const [time, setTime] = useState("08:00");
     const [loading, setLoading] = useState(true);
@@ -410,6 +437,9 @@ export default function Tasks() {
                     title,
                     assignedTo,
                     simulator,
+                    category,
+                    subcategory,
+                    extraDetail,
                     date,
                     time,
                 }),
@@ -421,6 +451,9 @@ export default function Tasks() {
                 setTitle("");
                 setAssignedTo("");
                 setSimulator("");
+                setCategory("");
+                setSubcategory("");
+                setExtraDetail("");
                 setDate(selectedDate);
                 setTime("08:00");
             } else {
@@ -1748,7 +1781,7 @@ export default function Tasks() {
                                     <div
                                         className={`accordion-content overflow-hidden transition-all duration-300 ease-in-out ${
                                             isAddTaskAccordionOpen
-                                                ? "max-h-[600px] opacity-100"
+                                                ? "max-h-[800px] opacity-100"
                                                 : "max-h-0 opacity-0"
                                         }`}
                                     >
@@ -1773,6 +1806,141 @@ export default function Tasks() {
                                                 placeholder="Inserisci un titolo"
                                                 required
                                             />
+                                            <label
+                                                htmlFor="category"
+                                                className="text-xs text-gray-500"
+                                            >
+                                                Categoria
+                                            </label>
+                                            <select
+                                                id="category"
+                                                value={category}
+                                                onChange={(e) => {
+                                                    setCategory(e.target.value);
+                                                    setSubcategory("");
+                                                    setExtraDetail("");
+                                                }}
+                                                className="border px-3 py-2 rounded mb-4 text-gray-600 text-sm"
+                                                required
+                                            >
+                                                <option value="">
+                                                    Seleziona categoria
+                                                </option>
+                                                {Object.keys(categories).map(
+                                                    (c) => (
+                                                        <option
+                                                            key={c}
+                                                            value={c}
+                                                        >
+                                                            {c}
+                                                        </option>
+                                                    )
+                                                )}
+                                            </select>
+                                            {category && (
+                                                <>
+                                                    <label
+                                                        htmlFor="subcategory"
+                                                        className="text-xs text-gray-500"
+                                                    >
+                                                        Sotto-categoria
+                                                    </label>
+                                                    <select
+                                                        id="subcategory"
+                                                        value={subcategory}
+                                                        onChange={(e) =>
+                                                            setSubcategory(
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        className="border px-3 py-2 rounded mb-4 text-gray-600 text-sm"
+                                                    >
+                                                        <option value="">
+                                                            Seleziona
+                                                            sotto-categoria
+                                                        </option>
+                                                        {(
+                                                            categories[
+                                                                category
+                                                            ] || []
+                                                        ).map((sc) => (
+                                                            <option
+                                                                key={sc}
+                                                                value={sc}
+                                                            >
+                                                                {sc}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </>
+                                            )}
+                                            {category === "troubleshooting" && (
+                                                <>
+                                                    <label
+                                                        htmlFor="extraDetail"
+                                                        className="text-xs text-gray-500"
+                                                    >
+                                                        Dettaglio extra
+                                                    </label>
+                                                    <select
+                                                        id="extraDetail"
+                                                        value={extraDetail}
+                                                        onChange={(e) =>
+                                                            setExtraDetail(
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        className="border px-3 py-2 rounded mb-4 text-gray-600 text-sm"
+                                                    >
+                                                        <option value="">
+                                                            Seleziona dettaglio
+                                                        </option>
+                                                        {troubleshootingDetails.map(
+                                                            (d) => (
+                                                                <option
+                                                                    key={d}
+                                                                    value={d}
+                                                                >
+                                                                    {d}
+                                                                </option>
+                                                            )
+                                                        )}
+                                                    </select>
+                                                </>
+                                            )}
+                                            <label
+                                                htmlFor="simulator"
+                                                className="text-xs text-gray-500"
+                                            >
+                                                Simulatore
+                                            </label>
+                                            <select
+                                                id="simulator"
+                                                value={simulator}
+                                                onChange={(e) =>
+                                                    setSimulator(e.target.value)
+                                                }
+                                                className="border px-3 py-2 rounded mb-4 text-gray-600 text-sm"
+                                            >
+                                                <option value="">
+                                                    Seleziona simulatore...
+                                                </option>
+                                                <option value="FTD">FTD</option>
+                                                <option value="109FFS">
+                                                    109FFS
+                                                </option>
+                                                <option value="139#1">
+                                                    139#1
+                                                </option>
+                                                <option value="139#3">
+                                                    139#3
+                                                </option>
+                                                <option value="169">169</option>
+                                                <option value="189">189</option>
+                                                <option value="Others">
+                                                    Others
+                                                </option>
+                                            </select>
                                             <label
                                                 htmlFor="assignedTo"
                                                 className="text-xs text-gray-500"

@@ -54,7 +54,16 @@ exports.getTasks = (req, res) => {
 };
 
 exports.createTask = (req, res) => {
-    const { title, assignedTo, date, time } = req.body;
+    const {
+        title,
+        assignedTo,
+        simulator,
+        category,
+        subcategory,
+        extraDetail,
+        date,
+        time,
+    } = req.body;
 
     // Check if the assigned employee exists in users.json and is active
     const activeEmployees = getActiveEmployees();
@@ -96,6 +105,10 @@ exports.createTask = (req, res) => {
         id: maxId + 1,
         title,
         assignedTo,
+        simulator: simulator || "",
+        category: category || "",
+        subcategory: subcategory || "",
+        extraDetail: extraDetail || "",
         status: "non iniziato",
         date,
         time,

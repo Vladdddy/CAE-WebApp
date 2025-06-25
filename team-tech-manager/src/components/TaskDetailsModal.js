@@ -108,14 +108,12 @@ export default function TaskDetailsModal({
                             <p className="text-black font-bold text-xl">
                                 {task.title}
                             </p>
-                        </div>
+                        </div>{" "}
                         {/* Date and Time */}
                         <div className="flex justify-between">
                             <div>
                                 <label className="block text-xs font-medium text-gray-600 mb-1">
-                                    {task.type === "logbook-entry"
-                                        ? "Categoria"
-                                        : "Stato"}
+                                    Stato
                                 </label>
                                 <span
                                     className={`inline-flex px-4 py-1 text-xs font-medium rounded-md capitalize ${getStatusColor(
@@ -144,8 +142,19 @@ export default function TaskDetailsModal({
                                 </p>
                             </div>{" "}
                         </div>{" "}
-                        {/* Subcategory - only for logbook entries */}
-                        {task.type === "logbook-entry" && task.subcategory && (
+                        {/* Category */}
+                        {task.category && (
+                            <div>
+                                <label className="block text-xs font-medium text-gray-600 mb-1">
+                                    Categoria
+                                </label>
+                                <p className="text-gray-600 text-sm">
+                                    {task.category}
+                                </p>
+                            </div>
+                        )}
+                        {/* Subcategory */}
+                        {task.subcategory && (
                             <div>
                                 <label className="block text-xs font-medium text-gray-600 mb-1">
                                     Sotto-categoria
@@ -155,8 +164,8 @@ export default function TaskDetailsModal({
                                 </p>
                             </div>
                         )}
-                        {/* Extra Detail - only for logbook entries */}
-                        {task.type === "logbook-entry" && task.extraDetail && (
+                        {/* Extra Detail */}
+                        {task.extraDetail && (
                             <div>
                                 <label className="block text-xs font-medium text-gray-600 mb-1">
                                     Dettaglio extra

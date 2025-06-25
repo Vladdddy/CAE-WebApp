@@ -132,16 +132,6 @@
     "time": "08:00"
   },
   {
-    "id": 31,
-    "title": "fjgnf",
-    "assignedTo": "Gianluca",
-    "status": "in corso",
-    "date": "2025-06-25",
-    "time": "17:00",
-    "description": "Desc",
-    "simulator": "169"
-  },
-  {
     "id": 32,
     "title": "Prova 23/06",
     "assignedTo": "Luca",
@@ -186,5 +176,18 @@
     "status": "non iniziato",
     "date": "2025-06-24",
     "time": "05:00"
+  },
+  {
+    "id": 41,
+    "title": "try2",
+    "assignedTo": "Mario",
+    "simulator": "FTD",
+    "category": "troubleshooting",
+    "subcategory": "HW",
+    "extraDetail": "OTHERS",
+    "status": "completato",
+    "date": "2025-06-25",
+    "time": "08:00",
+    "description": "dgdfgd"
   }
 ]
