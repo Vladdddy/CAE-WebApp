@@ -3,6 +3,7 @@ import "../styles/tasks.css";
 import TaskDetailsModal from "../components/TaskDetailsModal";
 import Modal from "../components/Modal";
 import DescriptionModal from "../components/DescriptionModal";
+import html2pdf from "html2pdf.js";
 import {
     notesService,
     migrateNotesFromLocalStorage,
@@ -300,9 +301,7 @@ export default function Logbook() {
                             notes: entryNotes, // Add notes from localStorage
                         });
                     });
-                }
-
-                // Render tasks grouped by simulator
+                } // Render tasks grouped by simulator
                 Object.keys(tasksBySimulator).forEach((simulator) => {
                     // Add simulator header
                     const simulatorHeader = document.createElement("h4");
@@ -315,6 +314,11 @@ export default function Logbook() {
                     simulatorHeader.style.paddingBottom = "20px";
                     pdfContent.appendChild(simulatorHeader); // Add tasks for this simulator
                     tasksBySimulator[simulator].forEach((task, index) => {
+                        // Load notes for regular tasks if they don't have notes already
+                        if (task.type !== "logbook-entry" && !task.notes) {
+                            task.notes = taskNotes[task.id] || [];
+                        }
+
                         const taskDiv = document.createElement("div");
                         taskDiv.style.marginBottom = "15px";
                         taskDiv.style.padding = "15px";
@@ -361,7 +365,6 @@ export default function Logbook() {
                         taskTitle.style.color = "#333";
                         taskTitle.style.fontSize = "16px";
                         taskDiv.appendChild(taskTitle);
-
                         const taskDetails = document.createElement("p");
                         if (task.type === "logbook-entry") {
                             taskDetails.textContent = `Orario: ${
@@ -382,8 +385,76 @@ export default function Logbook() {
                                 fullTextP.style.fontStyle = "italic";
                                 taskDiv.appendChild(fullTextP);
                             }
+
+                            // Add notes for logbook entries if they exist
+                            if (task.notes && task.notes.length > 0) {
+                                const notesHeader = document.createElement("p");
+                                notesHeader.textContent = "Note:";
+                                notesHeader.style.margin = "12px 0 4px 0";
+                                notesHeader.style.color = "#333";
+                                notesHeader.style.fontSize = "14px";
+                                notesHeader.style.fontWeight = "bold";
+                                taskDiv.appendChild(notesHeader);
+
+                                task.notes.forEach((note, noteIndex) => {
+                                    const noteP = document.createElement("p");
+                                    const noteTimestamp = new Date(
+                                        note.timestamp
+                                    ).toLocaleDateString("it-IT", {
+                                        year: "numeric",
+                                        month: "2-digit",
+                                        day: "2-digit",
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                    });
+                                    noteP.textContent = `${
+                                        noteIndex + 1
+                                    }. [${noteTimestamp}] ${note.text}`;
+                                    noteP.style.margin = "4px 0 0 16px";
+                                    noteP.style.color = "#555";
+                                    noteP.style.fontSize = "13px";
+                                    noteP.style.borderLeft =
+                                        "3px solid #3b82f6";
+                                    noteP.style.paddingLeft = "8px";
+                                    taskDiv.appendChild(noteP);
+                                });
+                            }
                         } else {
                             taskDetails.textContent = `Orario: ${task.time} • Assegnato a: ${task.assignedTo} • Status: ${task.status}`;
+
+                            // Add notes for regular tasks if they exist
+                            if (task.notes && task.notes.length > 0) {
+                                const notesHeader = document.createElement("p");
+                                notesHeader.textContent = "Note:";
+                                notesHeader.style.margin = "12px 0 4px 0";
+                                notesHeader.style.color = "#333";
+                                notesHeader.style.fontSize = "14px";
+                                notesHeader.style.fontWeight = "bold";
+                                taskDiv.appendChild(notesHeader);
+
+                                task.notes.forEach((note, noteIndex) => {
+                                    const noteP = document.createElement("p");
+                                    const noteTimestamp = new Date(
+                                        note.timestamp
+                                    ).toLocaleDateString("it-IT", {
+                                        year: "numeric",
+                                        month: "2-digit",
+                                        day: "2-digit",
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                    });
+                                    noteP.textContent = `${
+                                        noteIndex + 1
+                                    }. [${noteTimestamp}] ${note.text}`;
+                                    noteP.style.margin = "4px 0 0 16px";
+                                    noteP.style.color = "#555";
+                                    noteP.style.fontSize = "13px";
+                                    noteP.style.borderLeft =
+                                        "3px solid #3b82f6";
+                                    noteP.style.paddingLeft = "8px";
+                                    taskDiv.appendChild(noteP);
+                                });
+                            }
                         }
                         taskDetails.style.margin = "0";
                         taskDetails.style.color = "#666";

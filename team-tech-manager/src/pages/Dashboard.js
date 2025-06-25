@@ -428,7 +428,7 @@ export default function Dashboard() {
 
         // Group tasks by simulator
         const tasksBySimulator = taskList.reduce((acc, task) => {
-            const simulator = task.simulator || "Senza Simulatore";
+            const simulator = task.simulator || "Others";
             if (!acc[simulator]) {
                 acc[simulator] = [];
             }
