@@ -551,7 +551,7 @@ export default function Dashboard() {
                                     strokeWidth="1.5"
                                 ></path>
                             </svg>
-                            <p className="text-gray-600">Task giornaliere</p>
+                            <p className="text-gray-600">Task di oggi</p>
                         </div>
                     </div>
 
@@ -651,7 +651,7 @@ export default function Dashboard() {
                                     strokeLinejoin="round"
                                 />
                             </svg>{" "}
-                            <p className="text-gray-600">Task incomplete</p>
+                            <p className="text-gray-600">Task da programmare</p>
                         </div>
                     </div>
 

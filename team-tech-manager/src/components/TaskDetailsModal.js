@@ -139,7 +139,8 @@ export default function TaskDetailsModal({
                             </label>
                             <p className="text-gray-600 text-md">{task.time}</p>
                         </div>{" "}
-                    </div>                    {/* Subcategory - only for logbook entries */}
+                    </div>{" "}
+                    {/* Subcategory - only for logbook entries */}
                     {task.type === "logbook-entry" && task.subcategory && (
                         <div>
                             <label className="block text-xs font-medium text-gray-600 mb-1">
@@ -150,7 +151,6 @@ export default function TaskDetailsModal({
                             </p>
                         </div>
                     )}
-                    
                     {/* Extra Detail - only for logbook entries */}
                     {task.type === "logbook-entry" && task.extraDetail && (
                         <div>
@@ -380,9 +380,8 @@ export default function TaskDetailsModal({
                                             Cambia Stato
                                         </span>
                                     </button>
-                                )}
-
-                                {canDeleteTasks() && (
+                                )}{" "}
+                                {canDeleteTasks(task) && (
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
@@ -390,7 +389,7 @@ export default function TaskDetailsModal({
                                             onClose(); // Close modal after deletion
                                         }}
                                         className="flex items-center gap-2 px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-colors border border-red-200"
-                                        title="Elimina task"
+                                        title="Elimina"
                                     >
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
@@ -413,9 +412,7 @@ export default function TaskDetailsModal({
                                                 strokeLinecap="round"
                                             />
                                         </svg>
-                                        <span className="text-sm">
-                                            Elimina Task
-                                        </span>
+                                        <span className="text-sm">Elimina</span>
                                     </button>
                                 )}
                             </div>

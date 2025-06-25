@@ -32,6 +32,7 @@ export default function Logbook() {
     const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
     const [entries, setEntries] = useState([]);
     const [filteredEntries, setFilteredEntries] = useState([]);
+    const [name, setName] = useState("");
     const [text, setText] = useState("");
     const [author, setAuthor] = useState("");
     const [category, setCategory] = useState("");
@@ -237,10 +238,12 @@ export default function Logbook() {
                         const entrySimulator = entry.simulator || "Others";
                         if (!tasksBySimulator[entrySimulator]) {
                             tasksBySimulator[entrySimulator] = [];
-                        } // Convert entries to task-like format for consistent rendering
-
-                        // Load notes for this logbook entry
-                        const logbookNoteKey = `logbook-${entry.date}-${entry.time}-${entry.author}`;
+                        } // Convert entries to task-like format for consistent rendering                        // Load notes for this logbook entry - include text to make key unique
+                        const logbookNoteKey = `logbook-${entry.date}-${
+                            entry.time
+                        }-${entry.author}-${btoa(
+                            entry.text.substring(0, 50)
+                        ).replace(/[^a-zA-Z0-9]/g, "")}`;
                         const savedLogbookNotes = JSON.parse(
                             localStorage.getItem("logbookNotes") || "{}"
                         );
@@ -424,21 +427,68 @@ export default function Logbook() {
     ) => {
         let filtered = [...entriesToFilter];
 
+        console.log("=== APPLY FILTERS DEBUG ===");
+        console.log("Input entries:", entriesToFilter);
+        console.log("Search term:", searchTerm);
+
         // Text search filter - comprehensive search like in Tasks.js
         if (searchTerm && searchTerm.trim()) {
             const searchLower = searchTerm.toLowerCase();
-            filtered = filtered.filter(
-                (entry) =>
-                    entry.text.toLowerCase().includes(searchLower) ||
-                    entry.author.toLowerCase().includes(searchLower) ||
-                    entry.category.toLowerCase().includes(searchLower) ||
-                    (entry.subcategory &&
-                        entry.subcategory
-                            .toLowerCase()
-                            .includes(searchLower)) ||
-                    (entry.extraDetail &&
-                        entry.extraDetail.toLowerCase().includes(searchLower))
-            );
+            console.log("Searching for:", searchLower);
+
+            filtered = filtered.filter((entry) => {
+                const textMatch = entry.text
+                    .toLowerCase()
+                    .includes(searchLower);
+                const titleMatch =
+                    entry.title &&
+                    entry.title.toLowerCase().includes(searchLower);
+                const authorMatch = entry.author
+                    .toLowerCase()
+                    .includes(searchLower);
+                const categoryMatch = entry.category
+                    .toLowerCase()
+                    .includes(searchLower);
+                const subcategoryMatch =
+                    entry.subcategory &&
+                    entry.subcategory.toLowerCase().includes(searchLower);
+                const extraDetailMatch =
+                    entry.extraDetail &&
+                    entry.extraDetail.toLowerCase().includes(searchLower);
+
+                const matches =
+                    textMatch ||
+                    titleMatch ||
+                    authorMatch ||
+                    categoryMatch ||
+                    subcategoryMatch ||
+                    extraDetailMatch;
+
+                if (matches) {
+                    console.log("MATCH found in entry:", entry);
+                    console.log(
+                        "Text match:",
+                        textMatch,
+                        "- searching in:",
+                        entry.text
+                    );
+                    console.log(
+                        "Title match:",
+                        titleMatch,
+                        "- searching in:",
+                        entry.title
+                    );
+                    console.log(
+                        "Author match:",
+                        authorMatch,
+                        "- searching in:",
+                        entry.author
+                    );
+                }
+
+                return matches;
+            });
+            console.log("After text filter:", filtered);
         }
 
         // Category filter
@@ -457,17 +507,27 @@ export default function Logbook() {
             );
         }
 
+        console.log("Final filtered results:", filtered);
+        console.log("=== APPLY FILTERS DEBUG END ===");
+
         return filtered;
     };
-
     const handleSearch = async () => {
         setIsSearching(true);
         setShowFilterResults(true);
         let filtered = [];
 
+        console.log("=== DEBUG: Search started ===");
+        console.log("Search term:", search);
+        console.log("Filter category:", filterCategory);
+        console.log("Filter subcategory:", filterSubcategory);
+        console.log("Start date:", startDate);
+        console.log("End date:", endDate);
+
         // If date range is specified, search across that range
         if (startDate && endDate) {
             const allEntries = await loadEntriesFromRange();
+            console.log("Loaded entries from range:", allEntries);
             filtered = applyFilters(
                 allEntries,
                 search,
@@ -482,6 +542,8 @@ export default function Logbook() {
 
             const searchStartDate = threeMonthsAgo.toISOString().split("T")[0];
             const searchEndDate = today.toISOString().split("T")[0];
+
+            console.log("Searching from", searchStartDate, "to", searchEndDate);
 
             const dates = getDateRange(searchStartDate, searchEndDate);
             let allEntries = [];
@@ -506,6 +568,30 @@ export default function Logbook() {
                     console.log(`No data for ${d}`);
                 }
             }
+
+            // Ensure today's entries are included from current state
+            const todayDate = new Date().toISOString().split("T")[0];
+            const currentDateEntries = entries.filter(
+                (entry) => entry.date === todayDate || !entry.date
+            );
+
+            // Add current entries if they're not already included
+            currentDateEntries.forEach((entry) => {
+                const entryWithDate = { ...entry, date: entry.date || date };
+                const exists = allEntries.find(
+                    (e) =>
+                        e.text === entry.text &&
+                        e.time === entry.time &&
+                        e.author === entry.author &&
+                        e.date === entryWithDate.date
+                );
+                if (!exists) {
+                    allEntries.push(entryWithDate);
+                }
+            });
+
+            console.log("All loaded entries:", allEntries);
+            console.log("Sample entry structure:", allEntries[0]);
             filtered = applyFilters(
                 allEntries,
                 search,
@@ -517,6 +603,9 @@ export default function Logbook() {
             filtered = [...entries];
             setShowFilterResults(false);
         }
+
+        console.log("Filtered results:", filtered);
+        console.log("=== DEBUG: Search completed ===");
 
         setFilteredEntries(filtered);
         setIsSearching(false);
@@ -549,6 +638,7 @@ export default function Logbook() {
         resetForm();
     };
     const resetForm = () => {
+        setName("");
         setText("");
         setAuthor(currentUserName);
         setCategory("");
@@ -572,23 +662,19 @@ export default function Logbook() {
             date: formDate,
             time: formTime,
             duration,
-            // Store the initial title when creating the entry
+            // Use name as title, fallback to text snippet if name is empty
             title:
-                editIndex === null
-                    ? text.substring(0, 50) + (text.length > 50 ? "..." : "")
-                    : undefined,
+                name || text.substring(0, 50) + (text.length > 50 ? "..." : ""),
         };
 
         const newEntries = [...entries];
         if (editIndex !== null) {
-            // When editing, preserve the existing title if it exists
-            const existingEntry = newEntries[editIndex];
+            // When editing, use the name field as title
             newEntries[editIndex] = {
                 ...entry,
                 title:
-                    existingEntry.title ||
-                    existingEntry.text.substring(0, 50) +
-                        (existingEntry.text.length > 50 ? "..." : ""),
+                    name ||
+                    text.substring(0, 50) + (text.length > 50 ? "..." : ""),
             };
         } else {
             newEntries.push(entry);
@@ -604,6 +690,7 @@ export default function Logbook() {
     };
     const handleEdit = (index) => {
         const entry = entries[index];
+        setName(entry.title || "");
         setText(entry.text);
         setAuthor(entry.author);
         setCategory(entry.category);
@@ -835,8 +922,88 @@ export default function Logbook() {
         }
     }; // Permission functions for TaskDetailsModal (read-only in logbook)
     const canToggleTask = (task) => false; // No task editing in logbook
-    const canDeleteTasks = () => false; // No task deletion in logbook
-    const canEditDescription = (task) => task.type === "logbook-entry"; // Allow editing description for logbook entries    // Function to handle saving notes for tasks and logbook entries
+    const canDeleteTasks = (task) => task && task.type === "logbook-entry"; // Allow deletion for logbook entries
+    const canEditDescription = (task) => task.type === "logbook-entry"; // Allow editing description for logbook entries    // Function to handle deleting a task/entry from the modal
+    const handleDeleteTask = async (taskOrId) => {
+        // Handle both task object and task ID
+        let task = taskOrId;
+
+        // If we received just an ID, get the task from the modal
+        if (typeof taskOrId === "string" || typeof taskOrId === "number") {
+            task = taskDetailsModal.task;
+        }
+
+        if (!task || task.type !== "logbook-entry") {
+            showModal(
+                "Errore",
+                "Impossibile eliminare questo elemento",
+                "error"
+            );
+            return;
+        }
+
+        // Find the entry index in the entries array
+        let entryIndex = -1;
+
+        if (task.originalEntry) {
+            // Use the original entry reference if available
+            entryIndex = entries.findIndex(
+                (entry) =>
+                    entry.text === task.originalEntry.text &&
+                    entry.date === task.originalEntry.date &&
+                    entry.time === task.originalEntry.time &&
+                    entry.author === task.originalEntry.author
+            );
+        } else {
+            // Fallback to finding by task properties
+            entryIndex = entries.findIndex(
+                (entry) =>
+                    entry.text === task.fullText &&
+                    entry.date === task.date &&
+                    entry.time === task.time &&
+                    entry.author === task.assignedTo
+            );
+        }
+
+        if (entryIndex === -1) {
+            showModal(
+                "Errore",
+                "Impossibile trovare l'entry da eliminare",
+                "error"
+            );
+            return;
+        } // Show confirmation dialog
+        showModal(
+            "Conferma Eliminazione",
+            "Sei sicuro di voler eliminare questa entry?",
+            "confirm",
+            async () => {
+                try {
+                    // Delete the entry directly without calling handleDelete to avoid double confirmation
+                    const newEntries = entries.filter(
+                        (_, i) => i !== entryIndex
+                    );
+                    await saveEntries(newEntries);
+
+                    // Close the task details modal
+                    closeTaskDetails();
+
+                    showModal(
+                        "Successo",
+                        "Entry eliminata con successo!",
+                        "success"
+                    );
+                } catch (error) {
+                    console.error("Error deleting entry:", error);
+                    showModal(
+                        "Errore",
+                        "Errore durante l'eliminazione dell'entry",
+                        "error"
+                    );
+                }
+            }
+        );
+    }; // Function to handle saving notes for tasks and logbook entries
     const handleSaveNote = async (taskId, noteText) => {
         try {
             // Check if this is a logbook entry
@@ -848,14 +1015,19 @@ export default function Logbook() {
                     text: noteText,
                     author: currentUserName,
                     timestamp: new Date().toISOString(),
-                };
-
-                // Store notes for logbook entries in localStorage with a special key format
+                }; // Store notes for logbook entries in localStorage with a special key format
                 const logbookNoteKey = `logbook-${
                     currentTask.originalEntry?.date || currentTask.date
                 }-${currentTask.originalEntry?.time || currentTask.time}-${
                     currentTask.originalEntry?.author || currentTask.assignedTo
-                }`;
+                }-${btoa(
+                    (
+                        currentTask.originalEntry?.text ||
+                        currentTask.fullText ||
+                        currentTask.description ||
+                        ""
+                    ).substring(0, 50)
+                ).replace(/[^a-zA-Z0-9]/g, "")}`;
                 const savedNotes = JSON.parse(
                     localStorage.getItem("logbookNotes") || "{}"
                 );
@@ -1237,16 +1409,17 @@ export default function Logbook() {
                                     filteredEntries.map((entry, index) => (
                                         <div
                                             key={index}
-                                            className="display-entry flex items-center gap-4 justify-between dashboard-content p-3 rounded mt-3 bg-gray-100 cursor-pointer hover:bg-gray-200 transition-colors"
+                                            className="display-entry flex items-center gap-4 justify-between dashboard-content p-3 rounded mt-3 bg-gray-100"
                                             style={{
                                                 border: `2px solid ${getCategoryBorderColor(
                                                     entry.category
                                                 )}`,
                                             }}
                                         >
+                                            {" "}
                                             <div className="entry-info">
                                                 <p className="text-gray-600 max-w-md font-bold text-sm">
-                                                    {entry.text}
+                                                    {entry.title || entry.text}
                                                 </p>
                                                 <div className="text-xs text-gray-500 capitalize">
                                                     {entry.date} • {entry.time}{" "}
@@ -1260,15 +1433,75 @@ export default function Logbook() {
                                                 </div>
                                             </div>
                                             <div className="flex gap-4">
+                                                {" "}
                                                 <button
-                                                    onClick={() =>
-                                                        handleEdit(
-                                                            entries.findIndex(
-                                                                (e) =>
-                                                                    e === entry
+                                                    onClick={() => {
+                                                        // Convert entry to task format and open modal
+                                                        const taskEntry = {
+                                                            id: `logbook-${entry.date}-${entry.time}`,
+                                                            title:
+                                                                entry.title ||
+                                                                entry.text.substring(
+                                                                    0,
+                                                                    50
+                                                                ) +
+                                                                    (entry.text
+                                                                        .length >
+                                                                    50
+                                                                        ? "..."
+                                                                        : ""),
+                                                            description:
+                                                                entry.text,
+                                                            fullText:
+                                                                entry.text,
+                                                            assignedTo:
+                                                                entry.author,
+                                                            date: entry.date,
+                                                            time: entry.time,
+                                                            status: entry.category,
+                                                            category:
+                                                                entry.category,
+                                                            subcategory:
+                                                                entry.subcategory,
+                                                            extraDetail:
+                                                                entry.extraDetail,
+                                                            simulator:
+                                                                entry.simulator ||
+                                                                "Others",
+                                                            type: "logbook-entry",
+                                                            originalEntry:
+                                                                entry,
+                                                        };
+
+                                                        // Load existing notes for this logbook entry
+                                                        const logbookNoteKey = `logbook-${
+                                                            entry.date
+                                                        }-${entry.time}-${
+                                                            entry.author
+                                                        }-${btoa(
+                                                            entry.text.substring(
+                                                                0,
+                                                                50
                                                             )
-                                                        )
-                                                    }
+                                                        ).replace(
+                                                            /[^a-zA-Z0-9]/g,
+                                                            ""
+                                                        )}`;
+                                                        const savedNotes =
+                                                            JSON.parse(
+                                                                localStorage.getItem(
+                                                                    "logbookNotes"
+                                                                ) || "{}"
+                                                            );
+                                                        taskEntry.notes =
+                                                            savedNotes[
+                                                                logbookNoteKey
+                                                            ] || [];
+
+                                                        openTaskDetails(
+                                                            taskEntry
+                                                        );
+                                                    }}
                                                     className="text-blue-600 hover:underline"
                                                 >
                                                     <svg
@@ -1292,41 +1525,7 @@ export default function Logbook() {
                                                             strokeWidth="1.5"
                                                             strokeLinecap="round"
                                                         />
-                                                    </svg>
-                                                </button>
-                                                <button
-                                                    onClick={() =>
-                                                        handleDelete(
-                                                            entries.findIndex(
-                                                                (e) =>
-                                                                    e === entry
-                                                            )
-                                                        )
-                                                    }
-                                                    className="text-red-600 hover:underline"
-                                                >
-                                                    <svg
-                                                        className="elimina-icon"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        viewBox="0 0 24 24"
-                                                        width="24"
-                                                        height="24"
-                                                        color="#e53e3e"
-                                                        fill="none"
-                                                    >
-                                                        <path
-                                                            d="M19.5 5.5L18.8803 15.5251C18.7219 18.0864 18.6428 19.3671 18.0008 20.2879C17.6833 20.7431 17.2747 21.1273 16.8007 21.416C15.8421 22 14.559 22 11.9927 22C9.42312 22 8.1383 22 7.17905 21.4149C6.7048 21.1257 6.296 20.7408 5.97868 20.2848C5.33688 19.3626 5.25945 18.0801 5.10461 15.5152L4.5 5.5"
-                                                            stroke="currentColor"
-                                                            strokeWidth="1.5"
-                                                            strokeLinecap="round"
-                                                        />
-                                                        <path
-                                                            d="M3 5.5H21M16.0557 5.5L15.3731 4.09173C14.9196 3.15626 14.6928 2.68852 14.3017 2.39681C14.215 2.3321 14.1231 2.27454 14.027 2.2247C13.5939 2 13.0741 2 12.0345 2C10.9688 2 10.436 2 9.99568 2.23412C9.8981 2.28601 9.80498 2.3459 9.71729 2.41317C9.32164 2.7167 9.10063 3.20155 8.65861 4.17126L8.05292 5.5"
-                                                            stroke="currentColor"
-                                                            strokeWidth="1.5"
-                                                            strokeLinecap="round"
-                                                        />
-                                                    </svg>
+                                                    </svg>{" "}
                                                 </button>
                                             </div>
                                         </div>
@@ -1492,10 +1691,12 @@ export default function Logbook() {
                                             !simulators.includes(entrySimulator)
                                         ) {
                                             simulators.push(entrySimulator);
-                                        }
-
-                                        // Load notes for this logbook entry
-                                        const logbookNoteKey = `logbook-${entry.date}-${entry.time}-${entry.author}`;
+                                        } // Load notes for this logbook entry - include text to make key unique
+                                        const logbookNoteKey = `logbook-${
+                                            entry.date
+                                        }-${entry.time}-${entry.author}-${btoa(
+                                            entry.text.substring(0, 50)
+                                        ).replace(/[^a-zA-Z0-9]/g, "")}`;
                                         const savedLogbookNotes = JSON.parse(
                                             localStorage.getItem(
                                                 "logbookNotes"
@@ -1796,6 +1997,22 @@ export default function Logbook() {
                                         htmlFor="text"
                                         className="text-xs text-gray-500"
                                     >
+                                        Nome task
+                                    </label>{" "}
+                                    <input
+                                        type="text"
+                                        id="name"
+                                        value={name}
+                                        onChange={(e) =>
+                                            setName(e.target.value)
+                                        }
+                                        placeholder="Nome entry "
+                                        className="border px-3 py-2 rounded mb-4 text-gray-600 text-sm focus:outline-none"
+                                    />
+                                    <label
+                                        htmlFor="text"
+                                        className="text-xs text-gray-500"
+                                    >
                                         Testo della task
                                     </label>
                                     <textarea
@@ -1899,23 +2116,32 @@ export default function Logbook() {
                                                 )}{" "}
                                             </select>
                                         </>
-                                    )}
+                                    )}{" "}
                                     <label
                                         htmlFor="simulator"
                                         className="text-xs text-gray-500"
                                     >
                                         Simulatore
                                     </label>
-                                    <input
-                                        type="text"
+                                    <select
                                         id="simulator"
                                         value={simulator}
                                         onChange={(e) =>
                                             setSimulator(e.target.value)
                                         }
-                                        placeholder="Inserisci nome simulatore (es. SIM1, SIM2...)"
                                         className="border px-3 py-2 rounded mb-4 text-gray-600 text-sm focus:outline-none"
-                                    />
+                                    >
+                                        <option value="">
+                                            Seleziona simulatore...
+                                        </option>
+                                        <option value="FTD">FTD</option>
+                                        <option value="109FFS">109FFS</option>
+                                        <option value="139#1">139#1</option>
+                                        <option value="139#3">139#3</option>
+                                        <option value="169">169</option>
+                                        <option value="189">189</option>
+                                        <option value="Others">Others</option>
+                                    </select>
                                     <div className="flex gap-2">
                                         <div className="flex flex-col flex-1">
                                             <label
@@ -2093,7 +2319,7 @@ export default function Logbook() {
                                         <input
                                             type="text"
                                             id="searchText"
-                                            placeholder="Cerca testo..."
+                                            placeholder="Cerca per testo, titolo, nome..."
                                             value={search}
                                             onChange={(e) =>
                                                 setSearch(e.target.value)
@@ -2259,7 +2485,7 @@ export default function Logbook() {
                 onClose={closeTaskDetails}
                 task={taskDetailsModal.task}
                 onToggleTask={() => {}} // Placeholder - no task editing in logbook
-                onDeleteTask={() => {}} // Placeholder - no task deletion in logbook
+                onDeleteTask={handleDeleteTask} // Allow deletion of logbook entries
                 canToggleTask={canToggleTask}
                 canDeleteTasks={canDeleteTasks}
                 canEditDescription={canEditDescription}
