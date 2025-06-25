@@ -1149,10 +1149,6 @@ export default function Tasks() {
                                     ))
                                 )}
                             </>
-                        ) : dayShiftTasks.length === 0 ? (
-                            <div className="text-center py-4 text-gray-400 text-sm">
-                                Nessun task diurno per questa data
-                            </div>
                         ) : (
                             (() => {
                                 // Group tasks by simulator
@@ -1218,7 +1214,7 @@ export default function Tasks() {
                                                                                 .endTime
                                                                         }
                                                                     </span>
-                                                                )}
+                                                                )}{" "}
                                                             </p>
                                                             {(() => {
                                                                 const today =
@@ -1230,6 +1226,55 @@ export default function Tasks() {
                                                                 const isToday =
                                                                     selectedDate ===
                                                                     today;
+
+                                                                return (
+                                                                    <svg
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                        viewBox="0 0 24 24"
+                                                                        width="16"
+                                                                        height="16"
+                                                                        color={
+                                                                            isToday
+                                                                                ? "#3b82f6"
+                                                                                : "#9ca3af"
+                                                                        }
+                                                                        fill="none"
+                                                                        className={
+                                                                            isToday
+                                                                                ? "cursor-pointer hover:scale-110 transition-transform"
+                                                                                : "cursor-not-allowed opacity-50"
+                                                                        }
+                                                                        onClick={() => {
+                                                                            if (
+                                                                                isToday
+                                                                            ) {
+                                                                                openScheduleModal(
+                                                                                    simulator
+                                                                                );
+                                                                            }
+                                                                        }}
+                                                                        title={
+                                                                            isToday
+                                                                                ? "Modifica orari"
+                                                                                : "Puoi modificare gli orari solo per oggi"
+                                                                        }
+                                                                    >
+                                                                        <path
+                                                                            d="M22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12Z"
+                                                                            stroke="currentColor"
+                                                                            stroke-width="1.5"
+                                                                            stroke-linecap="round"
+                                                                            stroke-linejoin="round"
+                                                                        />
+                                                                        <path
+                                                                            d="M12 8V16M16 12H8"
+                                                                            stroke="currentColor"
+                                                                            stroke-width="1.5"
+                                                                            stroke-linecap="round"
+                                                                            stroke-linejoin="round"
+                                                                        />
+                                                                    </svg>
+                                                                );
                                                             })()}
                                                         </div>
                                                         <div className="simulator-tasks space-y-2">
@@ -1299,6 +1344,30 @@ export default function Tasks() {
                                                                                                 task.status
                                                                                             }
                                                                                         </span>
+                                                                                        {task.notes &&
+                                                                                            task
+                                                                                                .notes
+                                                                                                .length >
+                                                                                                0 && (
+                                                                                                <div className="flex items-center gap-1 text-blue-600">
+                                                                                                    <svg
+                                                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                                                        viewBox="0 0 24 24"
+                                                                                                        width="12"
+                                                                                                        height="12"
+                                                                                                        fill="currentColor"
+                                                                                                    >
+                                                                                                        <path d="M20 2H4C2.9 2 2 2.9 2 4V16C2 17.1 2.9 18 4 18H6L10 22L14 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H13.2L10 19.2L6.8 16H4V4H20V16Z" />
+                                                                                                    </svg>
+                                                                                                    <span className="text-xs">
+                                                                                                        {
+                                                                                                            task
+                                                                                                                .notes
+                                                                                                                .length
+                                                                                                        }
+                                                                                                    </span>
+                                                                                                </div>
+                                                                                            )}
                                                                                     </div>
                                                                                 </div>
                                                                             </div>
@@ -1309,19 +1378,17 @@ export default function Tasks() {
                                                         </div>
                                                     </div>
                                                 );
-                                            })}{" "}
+                                            })}
                                         </div>
                                     </div>
                                 );
                             })()
                         )}
-                        {/* Night Section */}
+                        {/* Night Section */}{" "}
                         {!showFilterResults &&
                             (() => {
                                 // Use already filtered night shift tasks
                                 const nightTasks = nightShiftTasks;
-
-                                if (nightTasks.length === 0) return null;
 
                                 return (
                                     <>
@@ -1357,263 +1424,256 @@ export default function Tasks() {
                                             </div>
                                         </div>
 
-                                        {nightTasks.length === 0 ? (
-                                            <div className="text-center py-4 text-gray-500">
-                                                Nessun task notturno per questa
-                                                data
-                                            </div>
-                                        ) : (
-                                            (() => {
-                                                // Group night tasks by simulator
-                                                const tasksBySimulator = {};
-                                                const simulators = [
-                                                    "FTD",
-                                                    "109FFS",
-                                                    "139#1",
-                                                    "139#3",
-                                                    "169",
-                                                    "189",
-                                                    "Others",
-                                                ];
+                                        {(() => {
+                                            // Group night tasks by simulator
+                                            const tasksBySimulator = {};
+                                            const simulators = [
+                                                "FTD",
+                                                "109FFS",
+                                                "139#1",
+                                                "139#3",
+                                                "169",
+                                                "189",
+                                                "Others",
+                                            ];
 
-                                                // Initialize each simulator group
-                                                simulators.forEach((sim) => {
-                                                    tasksBySimulator[sim] = [];
-                                                });
+                                            // Initialize each simulator group
+                                            simulators.forEach((sim) => {
+                                                tasksBySimulator[sim] = [];
+                                            });
 
-                                                // Group night tasks by simulator
-                                                nightTasks.forEach((task) => {
-                                                    const simulator =
-                                                        task.simulator || "";
-                                                    if (
-                                                        simulators
-                                                            .slice(0, -1)
-                                                            .includes(simulator)
-                                                    ) {
-                                                        tasksBySimulator[
-                                                            simulator
-                                                        ].push(task);
-                                                    } else {
-                                                        tasksBySimulator[
-                                                            "Others"
-                                                        ].push(task);
-                                                    }
-                                                });
+                                            // Group night tasks by simulator
+                                            nightTasks.forEach((task) => {
+                                                const simulator =
+                                                    task.simulator || "";
+                                                if (
+                                                    simulators
+                                                        .slice(0, -1)
+                                                        .includes(simulator)
+                                                ) {
+                                                    tasksBySimulator[
+                                                        simulator
+                                                    ].push(task);
+                                                } else {
+                                                    tasksBySimulator[
+                                                        "Others"
+                                                    ].push(task);
+                                                }
+                                            });
 
-                                                return (
-                                                    <div className="simulator-container">
-                                                        <div className="simulators-row flex flex-wrap justify-between gap-4 mb-4">
-                                                            {simulators.map(
-                                                                (simulator) => {
-                                                                    const tasks =
-                                                                        tasksBySimulator[
-                                                                            simulator
-                                                                        ];
+                                            return (
+                                                <div className="simulator-container">
+                                                    <div className="simulators-row flex flex-wrap justify-between gap-4 mb-4">
+                                                        {simulators.map(
+                                                            (simulator) => {
+                                                                const tasks =
+                                                                    tasksBySimulator[
+                                                                        simulator
+                                                                    ];
 
-                                                                    return (
-                                                                        <div
-                                                                            key={`night-${simulator}`}
-                                                                            className="simulator-column flex-1 min-w-[120px]"
-                                                                        >
-                                                                            {" "}
-                                                                            <div className="simulator-header flex flex-row items-center justify-center gap-2 mb-4">
-                                                                                <p className="text-xs font-medium text-gray-600">
-                                                                                    {
-                                                                                        simulator
-                                                                                    }
-                                                                                    {simulatorSchedules[
-                                                                                        simulator
-                                                                                    ] && (
-                                                                                        <span className="ml-2 bg-blue-100 p-1 rounded text-blue-600 text-xs">
-                                                                                            {
-                                                                                                simulatorSchedules[
-                                                                                                    simulator
-                                                                                                ]
-                                                                                                    .startTime
-                                                                                            }
+                                                                return (
+                                                                    <div
+                                                                        key={`night-${simulator}`}
+                                                                        className="simulator-column flex-1 min-w-[120px]"
+                                                                    >
+                                                                        {" "}
+                                                                        <div className="simulator-header flex flex-row items-center justify-center gap-2 mb-4">
+                                                                            <p className="text-xs font-medium text-gray-600">
+                                                                                {
+                                                                                    simulator
+                                                                                }
+                                                                                {simulatorSchedules[
+                                                                                    simulator
+                                                                                ] && (
+                                                                                    <span className="ml-2 bg-blue-100 p-1 rounded text-blue-600 text-xs">
+                                                                                        {
+                                                                                            simulatorSchedules[
+                                                                                                simulator
+                                                                                            ]
+                                                                                                .startTime
+                                                                                        }
 
-                                                                                            -
-                                                                                            {
-                                                                                                simulatorSchedules[
-                                                                                                    simulator
-                                                                                                ]
-                                                                                                    .endTime
-                                                                                            }
-                                                                                        </span>
-                                                                                    )}
-                                                                                </p>
-                                                                                {(() => {
-                                                                                    const today =
-                                                                                        new Date()
-                                                                                            .toISOString()
-                                                                                            .split(
-                                                                                                "T"
-                                                                                            )[0];
-                                                                                    const isToday =
-                                                                                        selectedDate ===
-                                                                                        today;
+                                                                                        -
+                                                                                        {
+                                                                                            simulatorSchedules[
+                                                                                                simulator
+                                                                                            ]
+                                                                                                .endTime
+                                                                                        }
+                                                                                    </span>
+                                                                                )}
+                                                                            </p>
+                                                                            {(() => {
+                                                                                const today =
+                                                                                    new Date()
+                                                                                        .toISOString()
+                                                                                        .split(
+                                                                                            "T"
+                                                                                        )[0];
+                                                                                const isToday =
+                                                                                    selectedDate ===
+                                                                                    today;
 
-                                                                                    return (
-                                                                                        <svg
-                                                                                            xmlns="http://www.w3.org/2000/svg"
-                                                                                            viewBox="0 0 24 24"
-                                                                                            width="16"
-                                                                                            height="16"
-                                                                                            color={
+                                                                                return (
+                                                                                    <svg
+                                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                                        viewBox="0 0 24 24"
+                                                                                        width="16"
+                                                                                        height="16"
+                                                                                        color={
+                                                                                            isToday
+                                                                                                ? "#3b82f6"
+                                                                                                : "#9ca3af"
+                                                                                        }
+                                                                                        fill="none"
+                                                                                        className={
+                                                                                            isToday
+                                                                                                ? "cursor-pointer hover:scale-110 transition-transform"
+                                                                                                : "cursor-not-allowed opacity-50"
+                                                                                        }
+                                                                                        onClick={() => {
+                                                                                            if (
                                                                                                 isToday
-                                                                                                    ? "#3b82f6"
-                                                                                                    : "#9ca3af"
+                                                                                            ) {
+                                                                                                openScheduleModal(
+                                                                                                    simulator
+                                                                                                );
                                                                                             }
-                                                                                            fill="none"
-                                                                                            className={
-                                                                                                isToday
-                                                                                                    ? "cursor-pointer hover:scale-110 transition-transform"
-                                                                                                    : "cursor-not-allowed opacity-50"
+                                                                                        }}
+                                                                                        title={
+                                                                                            isToday
+                                                                                                ? "Modifica orari"
+                                                                                                : "Puoi modificare gli orari solo per oggi"
+                                                                                        }
+                                                                                    >
+                                                                                        <path
+                                                                                            d="M22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12Z"
+                                                                                            stroke="currentColor"
+                                                                                            stroke-width="1.5"
+                                                                                            stroke-linecap="round"
+                                                                                            stroke-linejoin="round"
+                                                                                        />
+                                                                                        <path
+                                                                                            d="M12 8V16M16 12H8"
+                                                                                            stroke="currentColor"
+                                                                                            stroke-width="1.5"
+                                                                                            stroke-linecap="round"
+                                                                                            stroke-linejoin="round"
+                                                                                        />
+                                                                                    </svg>
+                                                                                );
+                                                                            })()}
+                                                                        </div>
+                                                                        <div className="simulator-tasks space-y-2">
+                                                                            {tasks.length ===
+                                                                            0 ? (
+                                                                                <div className="text-center py-2">
+                                                                                    <span className="text-xs text-gray-400 italic"></span>
+                                                                                </div>
+                                                                            ) : (
+                                                                                tasks.map(
+                                                                                    (
+                                                                                        task
+                                                                                    ) => (
+                                                                                        <div
+                                                                                            key={
+                                                                                                task.id
                                                                                             }
-                                                                                            onClick={() => {
-                                                                                                if (
-                                                                                                    isToday
-                                                                                                ) {
-                                                                                                    openScheduleModal(
-                                                                                                        simulator
-                                                                                                    );
-                                                                                                }
+                                                                                            className="task-card-small p-2 rounded border bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
+                                                                                            style={{
+                                                                                                border: `1px solid ${getBorderColor(
+                                                                                                    task.status
+                                                                                                )}`,
                                                                                             }}
-                                                                                            title={
-                                                                                                isToday
-                                                                                                    ? "Modifica orari"
-                                                                                                    : "Puoi modificare gli orari solo per oggi"
+                                                                                            onClick={() =>
+                                                                                                openTaskDetails(
+                                                                                                    task
+                                                                                                )
                                                                                             }
                                                                                         >
-                                                                                            <path
-                                                                                                d="M22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12Z"
-                                                                                                stroke="currentColor"
-                                                                                                stroke-width="1.5"
-                                                                                                stroke-linecap="round"
-                                                                                                stroke-linejoin="round"
-                                                                                            />
-                                                                                            <path
-                                                                                                d="M12 8V16M16 12H8"
-                                                                                                stroke="currentColor"
-                                                                                                stroke-width="1.5"
-                                                                                                stroke-linecap="round"
-                                                                                                stroke-linejoin="round"
-                                                                                            />
-                                                                                        </svg>
-                                                                                    );
-                                                                                })()}
-                                                                            </div>
-                                                                            <div className="simulator-tasks space-y-2">
-                                                                                {tasks.length ===
-                                                                                0 ? (
-                                                                                    <div className="text-center py-2">
-                                                                                        <span className="text-xs text-gray-400 italic"></span>
-                                                                                    </div>
-                                                                                ) : (
-                                                                                    tasks.map(
-                                                                                        (
-                                                                                            task
-                                                                                        ) => (
-                                                                                            <div
-                                                                                                key={
-                                                                                                    task.id
-                                                                                                }
-                                                                                                className="task-card-small p-2 rounded border bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
-                                                                                                style={{
-                                                                                                    border: `1px solid ${getBorderColor(
-                                                                                                        task.status
-                                                                                                    )}`,
-                                                                                                }}
-                                                                                                onClick={() =>
-                                                                                                    openTaskDetails(
-                                                                                                        task
-                                                                                                    )
-                                                                                                }
-                                                                                            >
-                                                                                                {" "}
-                                                                                                <div className="task-info h-full flex flex-col justify-between">
-                                                                                                    <p className="text-gray-900 font-bold text-xs leading-tight mb-1 overflow-hidden">
-                                                                                                        {task
-                                                                                                            .title
-                                                                                                            .length >
-                                                                                                        20
-                                                                                                            ? task.title.substring(
-                                                                                                                  0,
-                                                                                                                  20
-                                                                                                              ) +
-                                                                                                              "..."
-                                                                                                            : task.title}
-                                                                                                    </p>
-                                                                                                    <div className="task-details text-xs text-gray-500 space-y-4">
-                                                                                                        <div className="text-xs">
+                                                                                            {" "}
+                                                                                            <div className="task-info h-full flex flex-col justify-between">
+                                                                                                <p className="text-gray-900 font-bold text-xs leading-tight mb-1 overflow-hidden">
+                                                                                                    {task
+                                                                                                        .title
+                                                                                                        .length >
+                                                                                                    20
+                                                                                                        ? task.title.substring(
+                                                                                                              0,
+                                                                                                              20
+                                                                                                          ) +
+                                                                                                          "..."
+                                                                                                        : task.title}
+                                                                                                </p>
+                                                                                                <div className="task-details text-xs text-gray-500 space-y-4">
+                                                                                                    <div className="text-xs">
+                                                                                                        {
+                                                                                                            task.time
+                                                                                                        }
+                                                                                                    </div>
+                                                                                                    <div className="flex items-center justify-between">
+                                                                                                        <span
+                                                                                                            className={`px-2 py-1 rounded text-xs ${
+                                                                                                                task.status ===
+                                                                                                                "completato"
+                                                                                                                    ? "bg-green-100 text-green-600"
+                                                                                                                    : task.status ===
+                                                                                                                      "in corso"
+                                                                                                                    ? "bg-yellow-100 text-yellow-600"
+                                                                                                                    : task.status ===
+                                                                                                                      "non completato"
+                                                                                                                    ? "bg-red-100 text-red-600"
+                                                                                                                    : "bg-gray-100 text-gray-600"
+                                                                                                            }`}
+                                                                                                            style={{
+                                                                                                                fontSize:
+                                                                                                                    "12px",
+                                                                                                            }}
+                                                                                                        >
                                                                                                             {
-                                                                                                                task.time
+                                                                                                                task.status
                                                                                                             }
-                                                                                                        </div>
-                                                                                                        <div className="flex items-center justify-between">
-                                                                                                            <span
-                                                                                                                className={`px-2 py-1 rounded text-xs ${
-                                                                                                                    task.status ===
-                                                                                                                    "completato"
-                                                                                                                        ? "bg-green-100 text-green-600"
-                                                                                                                        : task.status ===
-                                                                                                                          "in corso"
-                                                                                                                        ? "bg-yellow-100 text-yellow-600"
-                                                                                                                        : task.status ===
-                                                                                                                          "non completato"
-                                                                                                                        ? "bg-red-100 text-red-600"
-                                                                                                                        : "bg-gray-100 text-gray-600"
-                                                                                                                }`}
-                                                                                                                style={{
-                                                                                                                    fontSize:
-                                                                                                                        "12px",
-                                                                                                                }}
-                                                                                                            >
-                                                                                                                {
-                                                                                                                    task.status
-                                                                                                                }
-                                                                                                            </span>
-                                                                                                            {task.notes &&
-                                                                                                                task
-                                                                                                                    .notes
-                                                                                                                    .length >
-                                                                                                                    0 && (
-                                                                                                                    <div className="flex items-center gap-1 text-blue-600">
-                                                                                                                        <svg
-                                                                                                                            xmlns="http://www.w3.org/2000/svg"
-                                                                                                                            viewBox="0 0 24 24"
-                                                                                                                            width="12"
-                                                                                                                            height="12"
-                                                                                                                            fill="currentColor"
-                                                                                                                        >
-                                                                                                                            <path d="M20 2H4C2.9 2 2 2.9 2 4V16C2 17.1 2.9 18 4 18H6L10 22L14 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H13.2L10 19.2L6.8 16H4V4H20V16Z" />
-                                                                                                                        </svg>
-                                                                                                                        <span className="text-xs">
-                                                                                                                            {
-                                                                                                                                task
-                                                                                                                                    .notes
-                                                                                                                                    .length
-                                                                                                                            }
-                                                                                                                        </span>
-                                                                                                                    </div>
-                                                                                                                )}
-                                                                                                        </div>
+                                                                                                        </span>
+                                                                                                        {task.notes &&
+                                                                                                            task
+                                                                                                                .notes
+                                                                                                                .length >
+                                                                                                                0 && (
+                                                                                                                <div className="flex items-center gap-1 text-blue-600">
+                                                                                                                    <svg
+                                                                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                                                                        viewBox="0 0 24 24"
+                                                                                                                        width="12"
+                                                                                                                        height="12"
+                                                                                                                        fill="currentColor"
+                                                                                                                    >
+                                                                                                                        <path d="M20 2H4C2.9 2 2 2.9 2 4V16C2 17.1 2.9 18 4 18H6L10 22L14 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H13.2L10 19.2L6.8 16H4V4H20V16Z" />
+                                                                                                                    </svg>
+                                                                                                                    <span className="text-xs">
+                                                                                                                        {
+                                                                                                                            task
+                                                                                                                                .notes
+                                                                                                                                .length
+                                                                                                                        }
+                                                                                                                    </span>
+                                                                                                                </div>
+                                                                                                            )}
                                                                                                     </div>
                                                                                                 </div>
                                                                                             </div>
-                                                                                        )
+                                                                                        </div>
                                                                                     )
-                                                                                )}
-                                                                            </div>
+                                                                                )
+                                                                            )}
                                                                         </div>
-                                                                    );
-                                                                }
-                                                            )}
-                                                        </div>
+                                                                    </div>
+                                                                );
+                                                            }
+                                                        )}
                                                     </div>
-                                                );
-                                            })()
-                                        )}
+                                                </div>
+                                            );
+                                        })()}
                                     </>
                                 );
                             })()}

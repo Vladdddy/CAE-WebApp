@@ -66,7 +66,6 @@ export default function TaskDetailsModal({
                         </svg>
                     </button>
                 </div>
-
                 {/* Scrollable Content */}
                 <div className="flex-1 overflow-y-auto">
                     <div className="p-6 space-y-4">
@@ -295,13 +294,12 @@ export default function TaskDetailsModal({
                             )}
                         </div>
                     </div>
-                </div>
-
+                </div>{" "}
                 {/* Fixed Footer - Action Buttons */}
                 {(canToggleTask(task) ||
                     canDeleteTasks() ||
                     canEditDescription(task)) && (
-                    <div className="flex-shrink-0 p-6 pt-4 border-t bg-gray-50">
+                    <div className="flex-shrink-0 p-6 pt-4 border-t bg-gray-50 rounded-b-lg">
                         {" "}
                         <label className="block text-xs font-medium text-gray-600 mb-3">
                             Azioni

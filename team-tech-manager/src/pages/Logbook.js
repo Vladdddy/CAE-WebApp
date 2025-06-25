@@ -1330,13 +1330,11 @@ export default function Logbook() {
                     {task.title.length > 20
                         ? task.title.substring(0, 20) + "..."
                         : task.title}
-                </p>
-                <div className="task-details text-xs text-gray-500 space-y-1">
+                </p>{" "}
+                <div className="task-details text-xs text-gray-500 space-y-2">
                     <div className="text-xs">{task.time}</div>
                     <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-600">
-                            {task.assignedTo}
-                        </span>
+                        {" "}
                         <span
                             className={
                                 task.type === "logbook-entry"
@@ -1357,6 +1355,22 @@ export default function Logbook() {
                                 ? "logbook"
                                 : task.status}
                         </span>
+                        {task.notes && task.notes.length > 0 && (
+                            <div className="flex items-center gap-1 text-blue-600">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    width="12"
+                                    height="12"
+                                    fill="currentColor"
+                                >
+                                    <path d="M20 2H4C2.9 2 2 2.9 2 4V16C2 17.1 2.9 18 4 18H6L10 22L14 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H13.2L10 19.2L6.8 16H4V4H20V16Z" />
+                                </svg>
+                                <span className="text-xs">
+                                    {task.notes.length}
+                                </span>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -1531,11 +1545,10 @@ export default function Logbook() {
                                             <div className="entry-info">
                                                 <p className="text-gray-600 max-w-md font-bold text-sm">
                                                     {entry.title || entry.text}
-                                                </p>
+                                                </p>{" "}
                                                 <div className="text-xs text-gray-500 capitalize">
                                                     {entry.date} • {entry.time}{" "}
                                                     • {entry.duration} •{" "}
-                                                    {entry.author} •{" "}
                                                     {entry.category}
                                                     {entry.subcategory &&
                                                         ` / ${entry.subcategory}`}
@@ -1674,18 +1687,6 @@ export default function Logbook() {
                                         );
                                     }
                                 );
-
-                                // If no entries and no tasks, show empty message
-                                if (
-                                    dateEntries.length === 0 &&
-                                    dateTasks.length === 0
-                                ) {
-                                    return (
-                                        <div className="text-center py-4 text-gray-400 text-sm">
-                                            Nessuna entry o task per questa data
-                                        </div>
-                                    );
-                                }
 
                                 // Group entries by category
                                 const entriesByCategory = {};
@@ -1866,179 +1867,171 @@ export default function Logbook() {
                                 return (
                                     <div className="combined-container space-y-6">
                                         {/* Day Shift Tasks Section */}
-                                        {dayShiftTasks.length > 0 && (
-                                            <div className="day-tasks-section">
-                                                <div className="flex flex-row items-center gap-16 mb-2">
-                                                    <div className="flex items-center gap-2">
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            viewBox="0 0 24 24"
-                                                            width="20"
-                                                            height="20"
-                                                            color="oklch(44.6% 0.03 256.802)"
-                                                            fill="none"
-                                                        >
-                                                            <path
-                                                                d="M17 12C17 14.7614 14.7614 17 12 17C9.23858 17 7 14.7614 7 12C7 9.23858 9.23858 7 12 7C14.7614 7 17 9.23858 17 12Z"
-                                                                stroke="oklch(44.6% 0.03 256.802)"
-                                                                strokeWidth="1.5"
-                                                            ></path>
-                                                            <path
-                                                                d="M12 2V3.5M12 20.5V22M19.0708 19.0713L18.0101 18.0106M5.98926 5.98926L4.9286 4.9286M22 12H20.5M3.5 12H2M19.0713 4.92871L18.0106 5.98937M5.98975 18.0107L4.92909 19.0714"
-                                                                stroke="oklch(44.6% 0.03 256.802)"
-                                                                strokeWidth="1.5"
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                            ></path>
-                                                        </svg>{" "}
-                                                        <h4 className="text-gray-600">
-                                                            Giorno
-                                                        </h4>
-                                                        <span className="span">
-                                                            {
-                                                                dayShiftTasks.length
-                                                            }{" "}
-                                                            task
-                                                        </span>
-                                                    </div>
+                                        <div className="day-tasks-section">
+                                            <div className="flex flex-row items-center gap-16 mb-2">
+                                                <div className="flex items-center gap-2">
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        viewBox="0 0 24 24"
+                                                        width="20"
+                                                        height="20"
+                                                        color="oklch(44.6% 0.03 256.802)"
+                                                        fill="none"
+                                                    >
+                                                        <path
+                                                            d="M17 12C17 14.7614 14.7614 17 12 17C9.23858 17 7 14.7614 7 12C7 9.23858 9.23858 7 12 7C14.7614 7 17 9.23858 17 12Z"
+                                                            stroke="oklch(44.6% 0.03 256.802)"
+                                                            strokeWidth="1.5"
+                                                        ></path>
+                                                        <path
+                                                            d="M12 2V3.5M12 20.5V22M19.0708 19.0713L18.0101 18.0106M5.98926 5.98926L4.9286 4.9286M22 12H20.5M3.5 12H2M19.0713 4.92871L18.0106 5.98937M5.98975 18.0107L4.92909 19.0714"
+                                                            stroke="oklch(44.6% 0.03 256.802)"
+                                                            strokeWidth="1.5"
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                        ></path>
+                                                    </svg>{" "}
+                                                    <h4 className="text-gray-600">
+                                                        Giorno
+                                                    </h4>
+                                                    <span className="span">
+                                                        {dayShiftTasks.length}{" "}
+                                                        task
+                                                    </span>
                                                 </div>
-                                                {(() => {
-                                                    const {
-                                                        tasksBySimulator,
-                                                        simulators,
-                                                    } = groupTasksBySimulator(
-                                                        dayShiftTasks,
-                                                        "day"
-                                                    );
-                                                    return (
-                                                        <div className="simulators-row flex flex-wrap justify-between gap-4 mb-4">
-                                                            {simulators.map(
-                                                                (simulator) => {
-                                                                    const simulatorTasks =
-                                                                        tasksBySimulator[
-                                                                            simulator
-                                                                        ];
-
-                                                                    return (
-                                                                        <div
-                                                                            key={
-                                                                                simulator
-                                                                            }
-                                                                            className="simulator-column flex-1 min-w-[120px]"
-                                                                        >
-                                                                            <div className="simulator-header flex flex-row items-center justify-center gap-2 mb-4">
-                                                                                <p className="text-xs font-medium text-gray-600">
-                                                                                    {
-                                                                                        simulator
-                                                                                    }
-                                                                                </p>
-                                                                            </div>
-                                                                            <div className="simulator-tasks space-y-2">
-                                                                                {simulatorTasks.length ===
-                                                                                0 ? (
-                                                                                    <div className="text-center py-2">
-                                                                                        <span className="text-xs text-gray-400 italic"></span>
-                                                                                    </div>
-                                                                                ) : (
-                                                                                    simulatorTasks.map(
-                                                                                        renderTaskCard
-                                                                                    )
-                                                                                )}
-                                                                            </div>
-                                                                        </div>
-                                                                    );
-                                                                }
-                                                            )}
-                                                        </div>
-                                                    );
-                                                })()}
                                             </div>
-                                        )}
+                                            {(() => {
+                                                const {
+                                                    tasksBySimulator,
+                                                    simulators,
+                                                } = groupTasksBySimulator(
+                                                    dayShiftTasks,
+                                                    "day"
+                                                );
+                                                return (
+                                                    <div className="simulators-row flex flex-wrap justify-between gap-4 mb-4">
+                                                        {simulators.map(
+                                                            (simulator) => {
+                                                                const simulatorTasks =
+                                                                    tasksBySimulator[
+                                                                        simulator
+                                                                    ];
 
+                                                                return (
+                                                                    <div
+                                                                        key={
+                                                                            simulator
+                                                                        }
+                                                                        className="simulator-column flex-1 min-w-[120px]"
+                                                                    >
+                                                                        <div className="simulator-header flex flex-row items-center justify-center gap-2 mb-4">
+                                                                            <p className="text-xs font-medium text-gray-600">
+                                                                                {
+                                                                                    simulator
+                                                                                }
+                                                                            </p>
+                                                                        </div>
+                                                                        <div className="simulator-tasks space-y-2">
+                                                                            {simulatorTasks.length ===
+                                                                            0 ? (
+                                                                                <div className="text-center py-2">
+                                                                                    <span className="text-xs text-gray-400 italic"></span>
+                                                                                </div>
+                                                                            ) : (
+                                                                                simulatorTasks.map(
+                                                                                    renderTaskCard
+                                                                                )
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                );
+                                                            }
+                                                        )}
+                                                    </div>
+                                                );
+                                            })()}
+                                        </div>{" "}
+                                        <div className="separator"></div>
                                         {/* Night Shift Tasks Section */}
-                                        {nightShiftTasks.length > 0 && (
-                                            <div className="night-tasks-section">
-                                                <div className="flex flex-row items-center gap-16 mb-2">
-                                                    <div className="flex items-center gap-2">
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            viewBox="0 0 24 24"
-                                                            width="20"
-                                                            height="20"
-                                                            color="oklch(44.6% 0.03 256.802)"
-                                                            fill="none"
-                                                        >
-                                                            <path
-                                                                d="M21.5 14.0784C20.3003 14.7189 18.9301 15.0821 17.4751 15.0821C12.7491 15.0821 8.91792 11.2509 8.91792 6.52485C8.91792 5.06986 9.28105 3.69968 9.92163 2.5C5.66765 3.49698 2.5 7.31513 2.5 11.8731C2.5 17.1899 6.8101 21.5 12.1269 21.5C16.6849 21.5 20.503 18.3324 21.5 14.0784Z"
-                                                                stroke="oklch(44.6% 0.03 256.802)"
-                                                                strokeWidth="1.5"
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                            />
-                                                        </svg>{" "}
-                                                        <h4 className="text-gray-600">
-                                                            Notte
-                                                        </h4>
-                                                        <span className="span">
-                                                            {
-                                                                nightShiftTasks.length
-                                                            }{" "}
-                                                            task
-                                                        </span>
-                                                    </div>
+                                        <div className="night-tasks-section">
+                                            <div className="flex flex-row items-center gap-16 mb-2">
+                                                <div className="flex items-center gap-2">
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        viewBox="0 0 24 24"
+                                                        width="20"
+                                                        height="20"
+                                                        color="oklch(44.6% 0.03 256.802)"
+                                                        fill="none"
+                                                    >
+                                                        <path
+                                                            d="M21.5 14.0784C20.3003 14.7189 18.9301 15.0821 17.4751 15.0821C12.7491 15.0821 8.91792 11.2509 8.91792 6.52485C8.91792 5.06986 9.28105 3.69968 9.92163 2.5C5.66765 3.49698 2.5 7.31513 2.5 11.8731C2.5 17.1899 6.8101 21.5 12.1269 21.5C16.6849 21.5 20.503 18.3324 21.5 14.0784Z"
+                                                            stroke="oklch(44.6% 0.03 256.802)"
+                                                            strokeWidth="1.5"
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                        />
+                                                    </svg>{" "}
+                                                    <h4 className="text-gray-600">
+                                                        Notte
+                                                    </h4>
+                                                    <span className="span">
+                                                        {nightShiftTasks.length}{" "}
+                                                        task
+                                                    </span>
                                                 </div>
-                                                {(() => {
-                                                    const {
-                                                        tasksBySimulator,
-                                                        simulators,
-                                                    } = groupTasksBySimulator(
-                                                        nightShiftTasks,
-                                                        "night"
-                                                    );
-                                                    return (
-                                                        <div className="simulators-row flex flex-wrap justify-between gap-4 mb-4">
-                                                            {simulators.map(
-                                                                (simulator) => {
-                                                                    const simulatorTasks =
-                                                                        tasksBySimulator[
-                                                                            simulator
-                                                                        ];
-
-                                                                    return (
-                                                                        <div
-                                                                            key={
-                                                                                simulator
-                                                                            }
-                                                                            className="simulator-column flex-1 min-w-[120px]"
-                                                                        >
-                                                                            <div className="simulator-header flex flex-row items-center justify-center gap-2 mb-4">
-                                                                                <p className="text-xs font-medium text-gray-600">
-                                                                                    {
-                                                                                        simulator
-                                                                                    }
-                                                                                </p>
-                                                                            </div>
-                                                                            <div className="simulator-tasks space-y-2">
-                                                                                {simulatorTasks.length ===
-                                                                                0 ? (
-                                                                                    <div className="text-center py-2">
-                                                                                        <span className="text-xs text-gray-400 italic"></span>
-                                                                                    </div>
-                                                                                ) : (
-                                                                                    simulatorTasks.map(
-                                                                                        renderTaskCard
-                                                                                    )
-                                                                                )}
-                                                                            </div>
-                                                                        </div>
-                                                                    );
-                                                                }
-                                                            )}
-                                                        </div>
-                                                    );
-                                                })()}
                                             </div>
-                                        )}
+                                            {(() => {
+                                                const {
+                                                    tasksBySimulator,
+                                                    simulators,
+                                                } = groupTasksBySimulator(
+                                                    nightShiftTasks,
+                                                    "night"
+                                                );
+                                                return (
+                                                    <div className="simulators-row flex flex-wrap justify-between gap-4 mb-4">
+                                                        {simulators.map(
+                                                            (simulator) => {
+                                                                const simulatorTasks =
+                                                                    tasksBySimulator[
+                                                                        simulator
+                                                                    ];
+
+                                                                return (
+                                                                    <div
+                                                                        key={
+                                                                            simulator
+                                                                        }
+                                                                        className="simulator-column flex-1 min-w-[120px]"
+                                                                    >
+                                                                        <div className="simulator-header flex flex-row items-center justify-center gap-2 mb-4">
+                                                                            <p className="text-xs font-medium text-gray-600">
+                                                                                {
+                                                                                    simulator
+                                                                                }
+                                                                            </p>
+                                                                        </div>
+                                                                        <div className="simulator-tasks space-y-2">
+                                                                            {simulatorTasks.length ===
+                                                                            0 ? (
+                                                                                <div className="text-center py-2">
+                                                                                    <span className="text-xs text-gray-400 italic"></span>
+                                                                                </div>
+                                                                            ) : (
+                                                                                simulatorTasks.map(
+                                                                                    renderTaskCard
+                                                                                )
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                );
+                                                            }
+                                                        )}
+                                                    </div>
+                                                );
+                                            })()}
+                                        </div>
                                     </div>
                                 );
                             })()
