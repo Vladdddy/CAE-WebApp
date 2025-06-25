@@ -134,16 +134,18 @@
   {
     "id": 31,
     "title": "fjgnf",
-    "assignedTo": "Luca",
-    "status": "completato",
-    "date": "2025-06-22",
-    "time": "08:00"
+    "assignedTo": "Gianluca",
+    "status": "in corso",
+    "date": "2025-06-25",
+    "time": "17:00",
+    "description": "Desc",
+    "simulator": "169"
   },
   {
     "id": 32,
     "title": "Prova 23/06",
     "assignedTo": "Luca",
-    "status": "in corso",
+    "status": "non completato",
     "date": "2025-06-23",
     "time": "08:00",
     "description": "Prova?",
@@ -163,7 +165,7 @@
     "id": 34,
     "title": "task2",
     "assignedTo": "Simone",
-    "status": "completato",
+    "status": "non completato",
     "date": "2025-06-23",
     "time": "23:00",
     "description": "",

@@ -1661,7 +1661,7 @@ export default function Tasks() {
                                         </svg>
 
                                         <p className="text-gray-600">
-                                            Aggiungi una task
+                                            Aggiungi task
                                         </p>
 
                                         {/* Accordion arrow */}
