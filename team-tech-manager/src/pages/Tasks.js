@@ -4,6 +4,10 @@ import TaskDetailsModal from "../components/TaskDetailsModal";
 import DescriptionModal from "../components/DescriptionModal";
 import html2pdf from "html2pdf.js";
 import "../styles/tasks.css";
+import {
+    notesService,
+    migrateNotesFromLocalStorage,
+} from "../utils/notesService";
 
 export default function Tasks() {
     const [tasks, setTasks] = useState([]);
@@ -57,6 +61,11 @@ export default function Tasks() {
     const [showFilterResults, setShowFilterResults] = useState(false);
     const [isAddTaskAccordionOpen, setIsAddTaskAccordionOpen] = useState(false);
     const [isFilterAccordionOpen, setIsFilterAccordionOpen] = useState(false);
+
+    // Notes state
+    const [taskNotes, setTaskNotes] = useState({});
+    const [notesLoaded, setNotesLoaded] = useState(false);
+
     const API = process.env.REACT_APP_API_URL;
     const tasksListRef = useRef();
 
@@ -237,13 +246,10 @@ export default function Tasks() {
             if (res.ok) {
                 const updated = await res.json();
 
-                // Load notes from localStorage and merge with the updated task
-                const savedNotes = JSON.parse(
-                    localStorage.getItem("taskNotes") || "{}"
-                );
+                // Load notes from state and merge with the updated task
                 const updatedWithNotes = {
                     ...updated,
-                    notes: savedNotes[updated.id] || [],
+                    notes: taskNotes[updated.id] || [],
                 };
 
                 setTasks(
@@ -284,6 +290,32 @@ export default function Tasks() {
             );
         }
     };
+    // Load notes from backend and migrate from localStorage if needed
+    useEffect(() => {
+        const loadNotesAndMigrate = async () => {
+            try {
+                // First, migrate any existing localStorage notes
+                await migrateNotesFromLocalStorage();
+
+                // Then load all notes from backend
+                const taskNotesData = await notesService.getTaskNotes();
+
+                setTaskNotes(taskNotesData);
+                setNotesLoaded(true);
+            } catch (error) {
+                console.error("Error loading notes:", error);
+                // Don't fall back to localStorage - require backend for notes
+                setTaskNotes({});
+                setNotesLoaded(true);
+                console.warn(
+                    "Backend notes API not available. Notes will only work when backend is running."
+                );
+            }
+        };
+
+        loadNotesAndMigrate();
+    }, []);
+
     useEffect(() => {
         const token = localStorage.getItem("authToken");
         fetch(`${API}/api/tasks`, {
@@ -293,13 +325,10 @@ export default function Tasks() {
         })
             .then((res) => res.json())
             .then((data) => {
-                // Load notes from localStorage and merge with tasks
-                const savedNotes = JSON.parse(
-                    localStorage.getItem("taskNotes") || "{}"
-                );
+                // Load notes from state and merge with tasks
                 const tasksWithNotes = data.map((task) => ({
                     ...task,
-                    notes: savedNotes[task.id] || [],
+                    notes: taskNotes[task.id] || [],
                 }));
 
                 setTasks(tasksWithNotes);
@@ -309,7 +338,7 @@ export default function Tasks() {
                 console.error("Error fetching tasks:", error);
                 setLoading(false);
             });
-    }, []); // Update simulator schedules when selected date changes
+    }, [taskNotes, notesLoaded]); // Re-run when notes are loaded// Update simulator schedules when selected date changes
     useEffect(() => {
         const allSchedules = JSON.parse(
             localStorage.getItem("simulatorSchedules") || "{}"
@@ -428,13 +457,10 @@ export default function Tasks() {
             if (res.ok) {
                 const updated = await res.json();
 
-                // Load notes from localStorage and merge with the updated task
-                const savedNotes = JSON.parse(
-                    localStorage.getItem("taskNotes") || "{}"
-                );
+                // Load notes from state and merge with the updated task
                 const updatedWithNotes = {
                     ...updated,
-                    notes: savedNotes[updated.id] || [],
+                    notes: taskNotes[updated.id] || [],
                 };
 
                 setTasks(
@@ -492,15 +518,10 @@ export default function Tasks() {
                         return;
                     }
                     if (res.ok) {
-                        // Clean up notes for the deleted task
-                        const savedNotes = JSON.parse(
-                            localStorage.getItem("taskNotes") || "{}"
-                        );
-                        delete savedNotes[id];
-                        localStorage.setItem(
-                            "taskNotes",
-                            JSON.stringify(savedNotes)
-                        );
+                        // Clean up notes for the deleted task from local state
+                        const updatedTaskNotes = { ...taskNotes };
+                        delete updatedTaskNotes[id];
+                        setTaskNotes(updatedTaskNotes);
 
                         setTasks(tasks.filter((t) => t.id !== id));
                         showModal(
@@ -526,6 +547,59 @@ export default function Tasks() {
                 }
             }
         );
+    };
+    const handleSaveNote = async (taskId, noteText) => {
+        try {
+            const currentUserName =
+                localStorage.getItem("userName") || "Utente Sconosciuto";
+
+            // Save note to backend
+            await notesService.addTaskNote(taskId, noteText, currentUserName);
+
+            // Update local state
+            const updatedTaskNotes = {
+                ...taskNotes,
+                [taskId]: [
+                    ...(taskNotes[taskId] || []),
+                    {
+                        text: noteText,
+                        author: currentUserName,
+                        timestamp: new Date().toISOString(),
+                    },
+                ],
+            };
+            setTaskNotes(updatedTaskNotes);
+
+            // Update the task in local state
+            const updatedTasks = tasks.map((task) => {
+                if (task.id === taskId) {
+                    return {
+                        ...task,
+                        notes: updatedTaskNotes[taskId],
+                    };
+                }
+                return task;
+            });
+            setTasks(updatedTasks);
+
+            console.log("Nota salvata con successo:", noteText);
+
+            // Update the task in the modal if it's the same task
+            if (taskDetailsModal.task && taskDetailsModal.task.id === taskId) {
+                const updatedTask = updatedTasks.find((t) => t.id === taskId);
+                setTaskDetailsModal({
+                    ...taskDetailsModal,
+                    task: updatedTask,
+                });
+            }
+        } catch (error) {
+            console.error("Errore nel salvare la nota:", error);
+            showModal(
+                "Errore",
+                "Errore nel salvare la nota: " + error.message,
+                "error"
+            );
+        }
     };
     const handleChangeDay = (offset) => {
         const d = new Date(selectedDate);
@@ -1973,6 +2047,7 @@ export default function Tasks() {
                     canDeleteTasks={canDeleteTasks}
                     canEditDescription={canEditDescription}
                     onEditDescription={openDescriptionModal}
+                    onSaveNote={handleSaveNote}
                 />{" "}
                 <DescriptionModal
                     isOpen={descriptionModal.isOpen}

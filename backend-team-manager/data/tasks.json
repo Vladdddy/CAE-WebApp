@@ -11,9 +11,11 @@
     "id": 2,
     "title": "Test di una scheda grafica",
     "assignedTo": "Luca",
-    "status": "non completato",
+    "status": "completato",
     "date": "2025-06-25",
-    "time": "08:00"
+    "time": "08:00",
+    "description": "Prova2",
+    "simulator": "FTD"
   },
   {
     "id": 3,

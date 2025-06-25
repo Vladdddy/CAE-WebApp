@@ -3,6 +3,13 @@ import "../styles/tasks.css";
 import TaskDetailsModal from "../components/TaskDetailsModal";
 import Modal from "../components/Modal";
 import DescriptionModal from "../components/DescriptionModal";
+import {
+    notesService,
+    migrateNotesFromLocalStorage,
+    generateLogbookNoteKey,
+    generateLegacyLogbookNoteKey,
+    migrateNoteFromLegacyKey,
+} from "../utils/notesService";
 
 const API = process.env.REACT_APP_API_URL;
 const categories = {
@@ -238,17 +245,37 @@ export default function Logbook() {
                         const entrySimulator = entry.simulator || "Others";
                         if (!tasksBySimulator[entrySimulator]) {
                             tasksBySimulator[entrySimulator] = [];
-                        } // Convert entries to task-like format for consistent rendering                        // Load notes for this logbook entry - include text to make key unique
-                        const logbookNoteKey = `logbook-${entry.date}-${
-                            entry.time
-                        }-${entry.author}-${btoa(
-                            entry.text.substring(0, 50)
-                        ).replace(/[^a-zA-Z0-9]/g, "")}`;
-                        const savedLogbookNotes = JSON.parse(
-                            localStorage.getItem("logbookNotes") || "{}"
-                        );
-                        const entryNotes =
-                            savedLogbookNotes[logbookNoteKey] || [];
+                        } // Convert entries to task-like format for consistent rendering                        // Load notes for this logbook entry - try multiple key formats for compatibility
+                        const logbookNoteKey = generateLogbookNoteKey(entry);
+                        let entryNotes = logbookNotes[logbookNoteKey] || []; // Fallback: try old key formats if no notes found with new stable key
+                        if (entryNotes.length === 0) {
+                            // Try with current text
+                            const legacyKeys1 = generateLegacyLogbookNoteKey(
+                                entry,
+                                entry.text
+                            );
+                            entryNotes =
+                                (legacyKeys1.simpleKey
+                                    ? logbookNotes[legacyKeys1.simpleKey]
+                                    : []) ||
+                                logbookNotes[legacyKeys1.textBasedKey] ||
+                                [];
+
+                            // Try with originalText if available
+                            if (entryNotes.length === 0 && entry.originalText) {
+                                const legacyKeys2 =
+                                    generateLegacyLogbookNoteKey(
+                                        entry,
+                                        entry.originalText
+                                    );
+                                entryNotes =
+                                    (legacyKeys2.simpleKey
+                                        ? logbookNotes[legacyKeys2.simpleKey]
+                                        : []) ||
+                                    logbookNotes[legacyKeys2.textBasedKey] ||
+                                    [];
+                            }
+                        }
 
                         tasksBySimulator[entrySimulator].push({
                             id: `entry-${entry.id || Math.random()}`,
@@ -269,6 +296,7 @@ export default function Logbook() {
                             duration: entry.duration,
                             simulator: entry.simulator || entrySimulator,
                             originalEntry: entry, // Keep reference to original entry for editing
+                            originalText: entry.text, // Preserve original text for stable note key generation
                             notes: entryNotes, // Add notes from localStorage
                         });
                     });
@@ -1003,7 +1031,9 @@ export default function Logbook() {
                 }
             }
         );
-    }; // Function to handle saving notes for tasks and logbook entries
+    };
+
+    // Function to handle saving notes for tasks and logbook entries
     const handleSaveNote = async (taskId, noteText) => {
         try {
             // Check if this is a logbook entry
@@ -1011,39 +1041,87 @@ export default function Logbook() {
             if (currentTask && currentTask.type === "logbook-entry") {
                 console.log("Saving note for logbook entry:", currentTask);
 
-                const noteData = {
-                    text: noteText,
-                    author: currentUserName,
-                    timestamp: new Date().toISOString(),
-                }; // Store notes for logbook entries in localStorage with a special key format
-                const logbookNoteKey = `logbook-${
-                    currentTask.originalEntry?.date || currentTask.date
-                }-${currentTask.originalEntry?.time || currentTask.time}-${
-                    currentTask.originalEntry?.author || currentTask.assignedTo
-                }-${btoa(
-                    (
-                        currentTask.originalEntry?.text ||
-                        currentTask.fullText ||
-                        currentTask.description ||
-                        ""
-                    ).substring(0, 50)
-                ).replace(/[^a-zA-Z0-9]/g, "")}`;
-                const savedNotes = JSON.parse(
-                    localStorage.getItem("logbookNotes") || "{}"
+                // Generate the logbook note key using the new stable format
+                const originalEntry = currentTask.originalEntry || {
+                    id:
+                        currentTask.id && currentTask.id.startsWith("entry-")
+                            ? currentTask.id.replace("entry-", "")
+                            : null,
+                    date: currentTask.date,
+                    time: currentTask.time,
+                    author: currentTask.assignedTo,
+                    title: currentTask.title,
+                    simulator: currentTask.simulator,
+                    category: currentTask.category,
+                    text: currentTask.originalText || currentTask.description,
+                };
+
+                const logbookNoteKey = generateLogbookNoteKey(originalEntry);
+
+                // Check for existing notes with old key formats and migrate them
+                let existingNotes = logbookNotes[logbookNoteKey] || [];
+                if (existingNotes.length === 0 && currentTask.originalEntry) {
+                    // Try to find notes with legacy keys
+                    const legacyKeys1 = generateLegacyLogbookNoteKey(
+                        currentTask.originalEntry,
+                        currentTask.originalEntry.text
+                    );
+                    const legacyNotes1 =
+                        (legacyKeys1.simpleKey
+                            ? logbookNotes[legacyKeys1.simpleKey]
+                            : []) ||
+                        logbookNotes[legacyKeys1.textBasedKey] ||
+                        [];
+
+                    if (legacyNotes1.length > 0) {
+                        existingNotes = legacyNotes1;
+                        console.log(
+                            `Migrating notes from legacy keys to new key: ${logbookNoteKey}`
+                        );
+                    } else {
+                        // Try with current description
+                        const legacyKeys2 = generateLegacyLogbookNoteKey(
+                            currentTask.originalEntry,
+                            currentTask.description
+                        );
+                        const legacyNotes2 =
+                            (legacyKeys2.simpleKey
+                                ? logbookNotes[legacyKeys2.simpleKey]
+                                : []) ||
+                            logbookNotes[legacyKeys2.textBasedKey] ||
+                            [];
+                        if (legacyNotes2.length > 0) {
+                            existingNotes = legacyNotes2;
+                            console.log(
+                                `Migrating notes from legacy keys to new key: ${logbookNoteKey}`
+                            );
+                        }
+                    }
+                } // Save note to backend
+                await notesService.addLogbookNote(
+                    logbookNoteKey,
+                    noteText,
+                    currentUserName
                 );
-                if (!savedNotes[logbookNoteKey]) {
-                    savedNotes[logbookNoteKey] = [];
-                }
-                savedNotes[logbookNoteKey].push(noteData);
-                localStorage.setItem(
-                    "logbookNotes",
-                    JSON.stringify(savedNotes)
-                );
+
+                // Update local state with migrated notes
+                const updatedLogbookNotes = {
+                    ...logbookNotes,
+                    [logbookNoteKey]: [
+                        ...existingNotes, // Include any migrated notes
+                        {
+                            text: noteText,
+                            author: currentUserName,
+                            timestamp: new Date().toISOString(),
+                        },
+                    ],
+                };
+                setLogbookNotes(updatedLogbookNotes);
 
                 // Update the task details modal to show the new note
                 const updatedTask = {
                     ...currentTask,
-                    notes: savedNotes[logbookNoteKey],
+                    notes: updatedLogbookNotes[logbookNoteKey],
                 };
 
                 setTaskDetailsModal({
@@ -1055,29 +1133,33 @@ export default function Logbook() {
                 showModal("Successo", "Nota aggiunta con successo!", "success");
                 return;
             } else {
-                // For regular tasks, use the original localStorage approach
-                const noteData = {
-                    text: noteText,
-                    author: currentUserName,
-                    timestamp: new Date().toISOString(),
-                };
-
-                // For now, store notes in localStorage until backend endpoint is created
-                const savedNotes = JSON.parse(
-                    localStorage.getItem("taskNotes") || "{}"
+                // For regular tasks, use the task notes API
+                await notesService.addTaskNote(
+                    taskId,
+                    noteText,
+                    currentUserName
                 );
-                if (!savedNotes[taskId]) {
-                    savedNotes[taskId] = [];
-                }
-                savedNotes[taskId].push(noteData);
-                localStorage.setItem("taskNotes", JSON.stringify(savedNotes));
+
+                // Update local state
+                const updatedTaskNotes = {
+                    ...taskNotes,
+                    [taskId]: [
+                        ...(taskNotes[taskId] || []),
+                        {
+                            text: noteText,
+                            author: currentUserName,
+                            timestamp: new Date().toISOString(),
+                        },
+                    ],
+                };
+                setTaskNotes(updatedTaskNotes);
 
                 // Update the task in local state
                 const updatedTasks = tasks.map((task) => {
                     if (task.id === taskId) {
                         return {
                             ...task,
-                            notes: savedNotes[taskId],
+                            notes: updatedTaskNotes[taskId],
                         };
                     }
                     return task;
@@ -1148,9 +1230,7 @@ export default function Logbook() {
             default:
                 return "#e5e7eb";
         }
-    };
-
-    // Helper function to get border color based on task status
+    }; // Helper function to get border color based on task status
     const getBorderColor = (status) => {
         switch (status) {
             case "completato":
@@ -1164,6 +1244,40 @@ export default function Logbook() {
         }
     };
 
+    // Notes state
+    const [taskNotes, setTaskNotes] = useState({});
+    const [logbookNotes, setLogbookNotes] = useState({});
+    const [notesLoaded, setNotesLoaded] = useState(false); // Load notes from backend and migrate from localStorage if needed
+    useEffect(() => {
+        const loadNotesAndMigrate = async () => {
+            try {
+                // First, migrate any existing localStorage notes
+                await migrateNotesFromLocalStorage();
+
+                // Then load all notes from backend
+                const [taskNotesData, logbookNotesData] = await Promise.all([
+                    notesService.getTaskNotes(),
+                    notesService.getLogbookNotes(),
+                ]);
+
+                setTaskNotes(taskNotesData);
+                setLogbookNotes(logbookNotesData);
+                setNotesLoaded(true);
+            } catch (error) {
+                console.error("Error loading notes:", error);
+                // Don't fall back to localStorage - require backend for notes
+                setTaskNotes({});
+                setLogbookNotes({});
+                setNotesLoaded(true);
+                console.warn(
+                    "Backend notes API not available. Notes will only work when backend is running."
+                );
+            }
+        };
+
+        loadNotesAndMigrate();
+    }, []);
+
     // Tasks state (from Tasks.js)
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -1176,13 +1290,10 @@ export default function Logbook() {
         })
             .then((res) => res.json())
             .then((data) => {
-                // Load notes from localStorage and merge with tasks
-                const savedNotes = JSON.parse(
-                    localStorage.getItem("taskNotes") || "{}"
-                );
+                // Load notes from state and merge with tasks
                 const tasksWithNotes = data.map((task) => ({
                     ...task,
-                    notes: savedNotes[task.id] || [],
+                    notes: taskNotes[task.id] || [],
                 }));
 
                 setTasks(tasksWithNotes);
@@ -1192,7 +1303,7 @@ export default function Logbook() {
                 console.error("Error fetching tasks:", error);
                 setLoading(false);
             });
-    }, []);
+    }, [taskNotes, notesLoaded]); // Re-run when notes are loaded
 
     // Helper function to get border color for both tasks and logbook entries
     const getCardBorderColor = (item) => {
@@ -1471,30 +1582,13 @@ export default function Logbook() {
                                                             type: "logbook-entry",
                                                             originalEntry:
                                                                 entry,
-                                                        };
-
-                                                        // Load existing notes for this logbook entry
-                                                        const logbookNoteKey = `logbook-${
-                                                            entry.date
-                                                        }-${entry.time}-${
-                                                            entry.author
-                                                        }-${btoa(
-                                                            entry.text.substring(
-                                                                0,
-                                                                50
-                                                            )
-                                                        ).replace(
-                                                            /[^a-zA-Z0-9]/g,
-                                                            ""
-                                                        )}`;
-                                                        const savedNotes =
-                                                            JSON.parse(
-                                                                localStorage.getItem(
-                                                                    "logbookNotes"
-                                                                ) || "{}"
+                                                        }; // Load existing notes for this logbook entry
+                                                        const logbookNoteKey =
+                                                            generateLogbookNoteKey(
+                                                                entry
                                                             );
                                                         taskEntry.notes =
-                                                            savedNotes[
+                                                            logbookNotes[
                                                                 logbookNoteKey
                                                             ] || [];
 
@@ -1691,20 +1785,52 @@ export default function Logbook() {
                                             !simulators.includes(entrySimulator)
                                         ) {
                                             simulators.push(entrySimulator);
-                                        } // Load notes for this logbook entry - include text to make key unique
-                                        const logbookNoteKey = `logbook-${
-                                            entry.date
-                                        }-${entry.time}-${entry.author}-${btoa(
-                                            entry.text.substring(0, 50)
-                                        ).replace(/[^a-zA-Z0-9]/g, "")}`;
-                                        const savedLogbookNotes = JSON.parse(
-                                            localStorage.getItem(
-                                                "logbookNotes"
-                                            ) || "{}"
-                                        );
-                                        const entryNotes =
-                                            savedLogbookNotes[logbookNoteKey] ||
-                                            [];
+                                        } // Load notes for this logbook entry - try multiple key formats for compatibility
+                                        const logbookNoteKey =
+                                            generateLogbookNoteKey(entry);
+                                        let entryNotes =
+                                            logbookNotes[logbookNoteKey] || []; // Fallback: try old key formats if no notes found with new stable key
+                                        if (entryNotes.length === 0) {
+                                            // Try with current text
+                                            const legacyKeys1 =
+                                                generateLegacyLogbookNoteKey(
+                                                    entry,
+                                                    entry.text
+                                                );
+                                            entryNotes =
+                                                (legacyKeys1.simpleKey
+                                                    ? logbookNotes[
+                                                          legacyKeys1.simpleKey
+                                                      ]
+                                                    : []) ||
+                                                logbookNotes[
+                                                    legacyKeys1.textBasedKey
+                                                ] ||
+                                                [];
+
+                                            // Try with originalText if available
+                                            if (
+                                                entryNotes.length === 0 &&
+                                                entry.originalText
+                                            ) {
+                                                const legacyKeys2 =
+                                                    generateLegacyLogbookNoteKey(
+                                                        entry,
+                                                        entry.originalText
+                                                    );
+                                                entryNotes =
+                                                    (legacyKeys2.simpleKey
+                                                        ? logbookNotes[
+                                                              legacyKeys2
+                                                                  .simpleKey
+                                                          ]
+                                                        : []) ||
+                                                    logbookNotes[
+                                                        legacyKeys2.textBasedKey
+                                                    ] ||
+                                                    [];
+                                            }
+                                        }
 
                                         tasksBySimulator[entrySimulator].push({
                                             id: `entry-${
