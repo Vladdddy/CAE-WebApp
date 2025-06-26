@@ -2688,6 +2688,9 @@ export default function Logbook() {
                 onSave={handleSaveDescriptionForLogbook}
                 currentDescription={descriptionModal.entry?.fullText || ""}
                 currentSimulator={descriptionModal.entry?.simulator || ""}
+                currentEmployee={descriptionModal.entry?.employee || ""}
+                availableEmployees={[]}
+                employeesLoading={false}
                 isEditing={true}
             />
         </>

@@ -206,7 +206,7 @@ exports.updateTaskDescription = (req, res) => {
     });
 
     const id = parseInt(req.params.id);
-    const { description, simulator } = req.body;
+    const { description, simulator, employee } = req.body;
     const task = tasks.find((t) => t.id === id);
 
     if (!task) {
@@ -231,14 +231,33 @@ exports.updateTaskDescription = (req, res) => {
         }
     }
 
+    // If employee is being changed, validate the new employee
+    if (employee !== undefined && employee !== task.assignedTo) {
+        const activeEmployees = getActiveEmployees();
+        const employeeExists = activeEmployees.find(
+            (emp) => emp.name === employee
+        );
+
+        if (employee !== "" && !employeeExists) {
+            return res.status(400).json({
+                message: "Dipendente non valido o non attivo",
+            });
+        }
+    }
+
     console.log(
         "Updating task with description:",
         description,
         "and simulator:",
-        simulator
+        simulator,
+        "and employee:",
+        employee
     );
     task.description = description || "";
     task.simulator = simulator || "";
+    if (employee !== undefined) {
+        task.assignedTo = employee;
+    }
     saveTasksToFile();
     console.log("Task updated successfully:", task);
     res.json(task);

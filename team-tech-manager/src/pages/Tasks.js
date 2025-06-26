@@ -65,6 +65,7 @@ export default function Tasks() {
         taskId: null,
         currentDescription: "",
         currentSimulator: "",
+        currentEmployee: "",
     }); // Simulator schedule states - now date-specific
     const [simulatorSchedules, setSimulatorSchedules] = useState(() => {
         const saved = localStorage.getItem("simulatorSchedules");
@@ -180,7 +181,13 @@ export default function Tasks() {
             taskId: task.id,
             currentDescription: task.description || "",
             currentSimulator: task.simulator || "",
+            currentEmployee: task.assignedTo || "",
         });
+
+        // Fetch available employees for this specific task's date and time
+        if (task.date && task.time) {
+            fetchAvailableEmployees(task.date, task.time);
+        }
     };
     const closeDescriptionModal = () => {
         setDescriptionModal({
@@ -188,6 +195,7 @@ export default function Tasks() {
             taskId: null,
             currentDescription: "",
             currentSimulator: "",
+            currentEmployee: "",
         });
     }; // Schedule modal functions
     const openScheduleModal = (simulator) => {
@@ -2264,7 +2272,7 @@ export default function Tasks() {
                     message={modal.message}
                     type={modal.type}
                     onConfirm={modal.onConfirm}
-                />{" "}
+                />
                 <TaskDetailsModal
                     isOpen={taskDetailsModal.isOpen}
                     onClose={closeTaskDetails}
@@ -2276,13 +2284,16 @@ export default function Tasks() {
                     canEditDescription={canEditDescription}
                     onEditDescription={openDescriptionModal}
                     onSaveNote={handleSaveNote}
-                />{" "}
+                />
                 <DescriptionModal
                     isOpen={descriptionModal.isOpen}
                     onClose={closeDescriptionModal}
                     onSave={updateTaskDescription}
                     currentDescription={descriptionModal.currentDescription}
                     currentSimulator={descriptionModal.currentSimulator}
+                    currentEmployee={descriptionModal.currentEmployee || ""}
+                    availableEmployees={availableEmployees}
+                    employeesLoading={employeesLoading}
                 />
                 {/* Schedule Modal */}
                 {scheduleModal.isOpen && (
