@@ -1,220 +1,24 @@
 {
-  "taskNotes": {
-    "2": [
-      {
-        "text": "gldf",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T11:34:14.726Z"
-      },
-      {
-        "text": "rjw",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T11:34:20.355Z"
-      },
-      {
-        "text": "fdfsd",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T11:38:14.217Z"
-      },
-      {
-        "text": "v,dsmvfs",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T11:38:19.592Z"
-      },
-      {
-        "text": "f,dsmfsd",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T11:38:25.520Z"
-      },
-      {
-        "text": "dmnds",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T11:38:28.706Z"
-      },
-      {
-        "text": "gfgfdgdgf",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T14:26:13.666Z"
-      }
-    ],
-    "31": [
-      {
-        "text": "Rifare tutto",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T12:34:22.648Z"
-      }
-    ],
-    "36": [
-      {
-        "text": "prova",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T13:12:28.091Z"
-      }
-    ],
-    "41": [
-      {
-        "text": "asas",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T13:41:57.745Z"
-      }
-    ]
-  },
-  "logbookNotes": {
-    "logbook_20250625_0800_Administra_dfmlnjssfadg": [
-      {
-        "text": "dssf",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T10:03:58.856Z"
-      }
-    ],
-    "logbook_20250625_0800_Administra_Descentry2": [
-      {
-        "text": "d",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T11:33:08.355Z"
-      }
-    ],
-    "logbook_20250625_0800_Administra_dsjfs": [
-      {
-        "text": "jgjdfdj",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T11:34:03.049Z"
-      },
-      {
-        "text": "fjgnfd",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T11:34:05.809Z"
-      },
-      {
-        "text": "gkldjgoidl",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T11:35:32.220Z"
-      }
-    ],
-    "logbook_20250625_0800_Administra_Prova": [
-      {
-        "text": "dsfmgdfk",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T11:35:45.675Z"
-      },
-      {
-        "text": "dmfdfsjd",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T11:35:51.055Z"
-      },
-      {
-        "text": "jglsd",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T11:35:54.138Z"
-      },
-      {
-        "text": "sdmsf",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T11:36:08.573Z"
-      },
-      {
-        "text": "fkdsmfks",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T11:37:10.865Z"
-      }
-    ],
-    "logbook_20250625_0800_Administrator_Prova": [
-      {
-        "text": "fdl,sk",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T11:46:10.591Z"
-      },
-      {
-        "text": "vdmnfdjs",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T11:46:14.895Z"
-      },
-      {
-        "text": "msnvdf",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T11:46:17.882Z"
-      },
-      {
-        "text": "fmkns",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T11:46:22.072Z"
-      }
-    ],
-    "logbook_20250625_0800_Administrator": [
-      {
-        "text": "fenfs",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T11:50:25.413Z"
-      },
-      {
-        "text": "ds",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T11:51:03.281Z"
-      }
-    ],
-    "logbook_20250625_0800_Administrator_Provaa_FTD_others_2mv7ln": [
-      {
-        "text": "as",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T11:56:34.992Z"
-      }
-    ],
-    "logbook_20250625_0800_Administrator_Nomeentry_189_routinet_2tfgd1": [
-      {
-        "text": "fdfffdsddsvfdsfe fb  vc",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T11:56:46.050Z"
-      }
-    ],
-    "logbook_20250625_0800_Administrator_Ciao_169_others_12kvst": [
-      {
-        "text": "f",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T11:57:12.313Z"
-      }
-    ],
-    "logbook_20250625_0800_Administrator_asa_Others_troubles_23i8s": [
-      {
-        "text": "d",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T12:00:16.137Z"
-      },
-      {
-        "text": "d",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T12:00:28.401Z"
-      },
-      {
-        "text": "ssdsd",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T12:03:17.837Z"
-      }
-    ],
-    "logbook_20250625_0800_Administrator_dfdfd_FTD_others_24o2": [
-      {
-        "text": "df",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T12:02:57.048Z"
-      }
-    ],
-    "logbook_20250625_0800_Administrator_Entry1_FTD_troubles_2d8erz": [
-      {
-        "text": "Nota entry#1",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T12:22:51.795Z"
-      }
-    ],
-    "logbook_20250625_0800_Administrator_Entry2_1391_routinet_ar5lc": [
-      {
-        "text": "Prova note #2",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T12:23:33.455Z"
-      },
-      {
-        "text": "prova",
-        "author": "Administrator",
-        "timestamp": "2025-06-25T13:21:57.339Z"
-      }
-    ]
-  }
+    "taskNotes": {},
+    "logbookNotes": {
+        "logbook_20250625_0800_Administrator_Entry1_FTD_troubles_2d8erz": [
+            {
+                "text": "Nota entry#1",
+                "author": "Administrator",
+                "timestamp": "2025-06-25T12:22:51.795Z"
+            }
+        ],
+        "logbook_20250625_0800_Administrator_Entry2_1391_routinet_ar5lc": [
+            {
+                "text": "Prova note #2",
+                "author": "Administrator",
+                "timestamp": "2025-06-25T12:23:33.455Z"
+            },
+            {
+                "text": "prova",
+                "author": "Administrator",
+                "timestamp": "2025-06-25T13:21:57.339Z"
+            }
+        ]
+    }
 }

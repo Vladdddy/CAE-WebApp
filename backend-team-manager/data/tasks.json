@@ -189,5 +189,17 @@
     "date": "2025-06-25",
     "time": "08:00",
     "description": "dgdfgd"
+  },
+  {
+    "id": 42,
+    "title": "Task",
+    "assignedTo": "Mario",
+    "simulator": "FTD",
+    "category": "others",
+    "subcategory": "",
+    "extraDetail": "",
+    "status": "non iniziato",
+    "date": "2025-06-26",
+    "time": "08:00"
   }
 ]

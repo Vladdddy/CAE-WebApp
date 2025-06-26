@@ -3,6 +3,7 @@ const path = require("path");
 
 const filePath = path.join(__dirname, "..", "data", "tasks.json");
 const usersFilePath = path.join(__dirname, "..", "data", "users.json");
+const notesFilePath = path.join(__dirname, "..", "data", "notes.json");
 
 // Helper function to get active employees from users.json
 const getActiveEmployees = () => {
@@ -47,6 +48,32 @@ if (fs.existsSync(filePath)) {
 
 const saveTasksToFile = () => {
     fs.writeFileSync(filePath, JSON.stringify(tasks, null, 2));
+};
+
+// Helper function to delete notes for a specific task
+const deleteTaskNotes = (taskId) => {
+    try {
+        if (fs.existsSync(notesFilePath)) {
+            const notesData = JSON.parse(fs.readFileSync(notesFilePath));
+
+            // Delete the task notes if they exist
+            if (notesData.taskNotes && notesData.taskNotes[taskId.toString()]) {
+                delete notesData.taskNotes[taskId.toString()];
+
+                // Save the updated notes back to file
+                fs.writeFileSync(
+                    notesFilePath,
+                    JSON.stringify(notesData, null, 2)
+                );
+                console.log(`Deleted notes for task ID: ${taskId}`);
+                return true;
+            }
+        }
+        return false;
+    } catch (error) {
+        console.error(`Error deleting notes for task ID ${taskId}:`, error);
+        return false;
+    }
 };
 
 exports.getTasks = (req, res) => {
@@ -162,6 +189,10 @@ exports.deleteTask = (req, res) => {
 
     const index = tasks.findIndex((t) => t.id === id);
     tasks.splice(index, 1);
+
+    // Delete all notes associated with this task
+    deleteTaskNotes(id);
+
     saveTasksToFile();
     res.json({ success: true, id });
 };
