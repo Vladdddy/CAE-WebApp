@@ -665,10 +665,10 @@ export default function Dashboard() {
             <div className="space-y-4">
                 {simulators.map((simulator) => (
                     <div key={simulator} className="simulator-section">
-                        <h5 className="text-sm font-semibold text-gray-700 mb-2 border-b border-gray-200 pb-1">
-                            {simulator} -
+                        <h5 className="text-sm font-semibold text-gray-700 mb-4">
+                            {simulator}
                         </h5>
-                        <div className="ml-4 space-y-2">
+                        <div className="space-y-2">
                             {tasksBySimulator[simulator].map((task) => (
                                 <div
                                     key={task.id}

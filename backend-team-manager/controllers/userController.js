@@ -11,15 +11,16 @@ exports.getUsers = (req, res) => {
         }
 
         const users = JSON.parse(fs.readFileSync(usersFilePath));
-        // Filter for active employees in Operations department
-        const employees = users.filter(
+        // Filter for active users who should appear in shifts (employees, admins, managers)
+        const shiftUsers = users.filter(
             (user) =>
                 user.active &&
-                user.role === "employee" &&
-                user.department === "Operations"
+                (user.role === "employee" ||
+                    user.role === "admin" ||
+                    user.role === "manager")
         );
 
-        res.json(employees);
+        res.json(shiftUsers);
     } catch (error) {
         console.error("Error reading users file:", error);
         res.status(500).json({ error: "Error reading users file" });

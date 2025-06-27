@@ -3,7 +3,6 @@ import html2pdf from "html2pdf.js";
 import "../styles/shifts.css";
 
 const API = process.env.REACT_APP_API_URL;
-const names = ["Luca", "Gianluca", "Mario", "Simone"];
 const shifts = ["O", "OP", "ON", "F", "M", "R"];
 
 // Helper function to get shift color
@@ -47,6 +46,7 @@ export default function Shifts() {
         dateKey: "",
         note: "",
     });
+    const [users, setUsers] = useState([]);
     const tableRef = useRef();
 
     // Get current user's role from JWT token
@@ -66,9 +66,58 @@ export default function Shifts() {
     const currentUser = getCurrentUser();
     const isAdmin = currentUser && currentUser.role === "admin";
 
+    // Function to check if a user has admin role
+    const isUserAdmin = (userName) => {
+        const user = users.find((u) => u.name === userName);
+        return user && user.role === "admin";
+    };
+
+    // Get names of active users (including admin users who should appear in shifts)
+    const getShiftUsers = () => {
+        const filteredUsers = users.filter(
+            (user) =>
+                user.active &&
+                (user.role === "employee" ||
+                    user.role === "admin" ||
+                    user.role === "manager")
+        );
+
+        // Sort users: admin first, then manager, then employee
+        const sortedUsers = filteredUsers.sort((a, b) => {
+            const rolePriority = {
+                admin: 1,
+                manager: 2,
+                employee: 3,
+            };
+
+            const aPriority = rolePriority[a.role] || 4;
+            const bPriority = rolePriority[b.role] || 4;
+
+            // If roles are different, sort by role priority (lower number = higher priority)
+            if (aPriority !== bPriority) {
+                return aPriority - bPriority;
+            }
+
+            // If roles are the same, sort alphabetically by name
+            return a.name.localeCompare(b.name);
+        });
+
+        console.log("Filtered users:", filteredUsers);
+        console.log("Sorted users:", sortedUsers);
+
+        return sortedUsers.map((user) => user.name);
+    };
+
+    // Calculate names dynamically based on users state
+    const names = getShiftUsers();
+    console.log("Current users:", users);
+    console.log("Generated names:", names);
+
     useEffect(() => {
         setDays(getMonthDays(year, month));
         const token = localStorage.getItem("authToken");
+
+        // Fetch shifts data
         fetch(`${API}/api/shifts/${year}/${month + 1}`, {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -76,6 +125,19 @@ export default function Shifts() {
         })
             .then((res) => res.json())
             .then((json) => setData(json));
+
+        // Fetch users data
+        fetch(`${API}/api/users`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        })
+            .then((res) => res.json())
+            .then((json) => {
+                console.log("Fetched users:", json);
+                setUsers(json);
+            })
+            .catch((error) => console.error("Error fetching users:", error));
     }, [year, month]);
 
     const handleChange = (name, day, field, value) => {
@@ -415,7 +477,7 @@ export default function Shifts() {
                                 >
                                     <td className="gap-2 px-8 py-4 text-gray-700 border-r border-gray-200 bg-gray-50">
                                         <div className="flex items-center gap-2">
-                                            {isAdmin && (
+                                            {isUserAdmin(name) ? (
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     viewBox="0 0 24 24"
@@ -432,7 +494,7 @@ export default function Shifts() {
                                                         stroke-linejoin="round"
                                                     ></path>
                                                 </svg>
-                                            )}
+                                            ) : null}
                                             <div>{name}</div>
                                         </div>
                                     </td>
@@ -456,48 +518,76 @@ export default function Shifts() {
                                                 }`}
                                             >
                                                 <div className="space-y-2">
-                                                    <select
-                                                        value={
-                                                            entry.shift || ""
-                                                        }
-                                                        onChange={(e) =>
-                                                            handleChange(
-                                                                name,
-                                                                d,
-                                                                "shift",
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                        className={`shift-select w-full p-1 px-4 text-md font-bold rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 transition-colors duration-200 ${
-                                                            entry.shift
-                                                                ? getShiftColor(
-                                                                      entry.shift
-                                                                  )
-                                                                : "bg-gray-50"
-                                                        }`}
-                                                    >
-                                                        <option value="">
-                                                            --
-                                                        </option>
-                                                        {shifts.map((s) => (
-                                                            <option
-                                                                key={s}
-                                                                value={s}
-                                                            >
-                                                                {s}
+                                                    {isAdmin ? (
+                                                        <select
+                                                            value={
+                                                                entry.shift ||
+                                                                ""
+                                                            }
+                                                            onChange={(e) =>
+                                                                handleChange(
+                                                                    name,
+                                                                    d,
+                                                                    "shift",
+                                                                    e.target
+                                                                        .value
+                                                                )
+                                                            }
+                                                            className={`shift-select w-full p-1 px-4 text-md font-bold rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 transition-colors duration-200 ${
+                                                                entry.shift
+                                                                    ? getShiftColor(
+                                                                          entry.shift
+                                                                      )
+                                                                    : "bg-gray-50"
+                                                            }`}
+                                                        >
+                                                            <option value="">
+                                                                --
                                                             </option>
-                                                        ))}
-                                                    </select>
+                                                            {shifts.map((s) => (
+                                                                <option
+                                                                    key={s}
+                                                                    value={s}
+                                                                >
+                                                                    {s}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    ) : (
+                                                        <p
+                                                            className={`w-full p-1 px-4 text-md font-bold rounded-md border-gray-300 transition-colors duration-200 ${
+                                                                entry.shift
+                                                                    ? getShiftColor(
+                                                                          entry.shift
+                                                                      )
+                                                                    : "bg-gray-50"
+                                                            }`}
+                                                        >
+                                                            {entry.shift ||
+                                                                "--"}
+                                                        </p>
+                                                    )}
+
                                                     <div className="flex justify-between items-center">
                                                         <button
                                                             onClick={() =>
+                                                                isAdmin &&
                                                                 openNoteModal(
                                                                     name,
                                                                     dateKey
                                                                 )
                                                             }
-                                                            className="flex justify-center w-full hover:bg-gray-100 p-1 rounded transition-colors"
-                                                            title="Aggiungi nota"
+                                                            disabled={!isAdmin}
+                                                            className={`flex justify-center w-full p-1 rounded transition-colors ${
+                                                                isAdmin
+                                                                    ? "hover:bg-gray-100 cursor-pointer"
+                                                                    : "opacity-60"
+                                                            }`}
+                                                            title={
+                                                                isAdmin
+                                                                    ? "Aggiungi nota"
+                                                                    : "Solo gli admin possono aggiungere note"
+                                                            }
                                                         >
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
@@ -535,7 +625,7 @@ export default function Shifts() {
                                                                         )
                                                                     }
                                                                     className="flex justify-center w-full hover:bg-gray-100 p-1 rounded transition-colors"
-                                                                    title={`Visualizza nota: ${entry.note}`}
+                                                                    title={`Visualizza nota`}
                                                                 >
                                                                     <svg
                                                                         xmlns="http://www.w3.org/2000/svg"
@@ -594,7 +684,7 @@ export default function Shifts() {
 
             {/* Note Modal */}
             {noteModal.isOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40">
                     <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
                         <div className="flex justify-between items-center mb-4">
                             <h3 className="text-lg font-semibold text-gray-900">
@@ -661,7 +751,7 @@ export default function Shifts() {
 
             {/* View Note Modal */}
             {viewNoteModal.isOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40">
                     <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
                         <div className="flex justify-between items-center mb-4">
                             <h3 className="text-lg font-semibold text-gray-900">

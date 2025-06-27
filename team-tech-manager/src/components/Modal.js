@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 
 export default function Modal({
     isOpen,
@@ -106,8 +107,11 @@ export default function Modal({
 
     // Success toast notification at the top
     if (isSuccessModal) {
-        return (
-            <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 animate-slide-down">
+        return createPortal(
+            <div
+                className="fixed top-4 left-1/2 transform -translate-x-1/2"
+                style={{ zIndex: 999999 }}
+            >
                 <div className="bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 min-w-80">
                     <svg
                         className="w-6 h-6 text-white flex-shrink-0"
@@ -126,14 +130,16 @@ export default function Modal({
                         <p className="text-sm opacity-90">{message}</p>
                     </div>
                 </div>
-            </div>
+            </div>,
+            document.body
         );
     }
 
     // Regular modal for other types
-    return (
+    return createPortal(
         <div
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+            style={{ zIndex: 999999 }}
             onClick={handleOverlayClick}
         >
             <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 transform transition-all">
@@ -177,6 +183,7 @@ export default function Modal({
                     </div>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }

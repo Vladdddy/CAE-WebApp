@@ -42,7 +42,7 @@
     },
     "Gianluca": {
       "shift": "OP",
-      "note": ""
+      "note": "Ciao"
     },
     "Mario": {
       "shift": "O",
@@ -103,7 +103,7 @@
       "note": ""
     },
     "Simone": {
-      "shift": "ON",
+      "shift": "OP",
       "note": ""
     }
   },
@@ -525,6 +525,21 @@
     "Simone": {
       "shift": "OP",
       "note": "Riposo"
+    },
+    "Andrea": {
+      "shift": "O"
+    },
+    "Francesco": {
+      "shift": "O"
+    },
+    "Sara Gialli": {
+      "shift": "O"
+    },
+    "Nicolo": {
+      "shift": "OP"
+    },
+    "Sara": {
+      "shift": "OP"
     }
   },
   "2025-06-28": {
@@ -561,6 +576,18 @@
     "Simone": {
       "shift": "ON",
       "note": ""
+    },
+    "Francesco Verde": {
+      "shift": "O"
+    },
+    "Andrea Bianchi": {
+      "shift": "O"
+    },
+    "Sara Gialli": {
+      "shift": "O"
+    },
+    "Andrea": {
+      "shift": "O"
     }
   }
 }

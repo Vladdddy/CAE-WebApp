@@ -1,19 +1,10 @@
 [
     {
-        "id": 1,
-        "email": "admin",
-        "password": "admin123",
-        "name": "Administrator",
-        "role": "admin",
-        "department": "IT",
-        "active": true
-    },
-    {
         "id": 2,
         "email": "mario",
         "password": "mario123",
         "name": "Mario",
-        "role": "employee",
+        "role": "admin",
         "department": "Operations",
         "active": true
     },
@@ -22,7 +13,7 @@
         "email": "luca",
         "password": "luca123",
         "name": "Luca",
-        "role": "employee",
+        "role": "admin",
         "department": "Operations",
         "active": true
     },
@@ -31,7 +22,7 @@
         "email": "simone",
         "password": "simone123",
         "name": "Simone",
-        "role": "employee",
+        "role": "admin",
         "department": "Operations",
         "active": true
     },
@@ -39,7 +30,7 @@
         "id": 6,
         "email": "sara.gialli",
         "password": "sara123",
-        "name": "Sara Gialli",
+        "name": "Sara",
         "role": "employee",
         "department": "Operations",
         "active": true
@@ -48,7 +39,7 @@
         "id": 7,
         "email": "andrea.bianchi",
         "password": "andrea123",
-        "name": "Andrea Bianchi",
+        "name": "Andrea",
         "role": "employee",
         "department": "Operations",
         "active": true
@@ -57,27 +48,18 @@
         "id": 8,
         "email": "francesco.verde",
         "password": "francesco123",
-        "name": "Francesco Verde",
+        "name": "Francesco",
         "role": "employee",
         "department": "Operations",
         "active": true
     },
     {
-        "id": 9,
-        "email": "manager",
-        "password": "manager123",
-        "name": "Team Manager",
-        "role": "manager",
-        "department": "Management",
-        "active": true
-    },
-    {
         "id": 10,
-        "email": "hr",
-        "password": "hr123",
-        "name": "HR Department",
-        "role": "hr",
-        "department": "Human Resources",
+        "email": "nicolo",
+        "password": "nicolo123",
+        "name": "Nicolo",
+        "role": "employee",
+        "department": "Operations",
         "active": true
     },
     {
@@ -85,7 +67,7 @@
         "email": "gianluca",
         "password": "gianluca123",
         "name": "Gianluca",
-        "role": "employee",
+        "role": "admin",
         "department": "Operations",
         "active": true
     }

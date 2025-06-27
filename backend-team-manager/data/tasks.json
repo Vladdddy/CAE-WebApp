@@ -154,10 +154,10 @@
   {
     "id": 34,
     "title": "task2",
-    "assignedTo": "Simone",
+    "assignedTo": "Nicolo",
     "status": "non completato",
-    "date": "2025-06-23",
-    "time": "23:00",
+    "date": "2025-06-27",
+    "time": "13:00",
     "description": "",
     "simulator": "109FFS"
   },
@@ -225,6 +225,30 @@
     "extraDetail": "",
     "status": "riassegnato",
     "date": "2025-06-26",
+    "time": "08:00"
+  },
+  {
+    "id": 45,
+    "title": "hjfhdfhdf",
+    "assignedTo": "Andrea",
+    "simulator": "FTD",
+    "category": "others",
+    "subcategory": "",
+    "extraDetail": "",
+    "status": "completato",
+    "date": "2025-06-27",
+    "time": "08:00"
+  },
+  {
+    "id": 46,
+    "title": "dsgfdzsgzfdg",
+    "assignedTo": "Francesco",
+    "simulator": "FTD",
+    "category": "troubleshooting",
+    "subcategory": "HW",
+    "extraDetail": "COMPUTER",
+    "status": "in corso",
+    "date": "2025-06-27",
     "time": "08:00"
   }
 ]
