@@ -47,6 +47,7 @@ export default function Shifts() {
         note: "",
     });
     const [users, setUsers] = useState([]);
+    const [expandedRows, setExpandedRows] = useState(new Set());
     const tableRef = useRef();
 
     // Get current user's role from JWT token
@@ -180,15 +181,240 @@ export default function Shifts() {
 
     const handleExportPDF = () => {
         const element = tableRef.current;
-        html2pdf()
-            .from(element)
-            .set({
-                margin: 0.5,
-                filename: `turni-${year}-${month + 1}.pdf`,
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: "in", format: "a4", orientation: "landscape" },
-            })
-            .save();
+
+        // Store original state
+        const originalExpandedRows = new Set(expandedRows);
+
+        // Collapse all rows for cleaner PDF
+        setExpandedRows(new Set());
+
+        // Wait for state update, then create vertical layout for PDF
+        setTimeout(() => {
+            // Create a new container for vertical layout
+            const pdfContainer = document.createElement("div");
+            pdfContainer.style.cssText = `
+                font-family: system-ui, -apple-system, sans-serif;
+                padding: 20px;
+                background: white;
+                max-width: 800px;
+                margin: 0 auto;
+            `;
+
+            // Add title
+            const title = document.createElement("h1");
+            title.textContent = `Turni - ${new Date(
+                year,
+                month
+            ).toLocaleDateString("it-IT", { month: "long", year: "numeric" })}`;
+            title.style.cssText = `
+                text-align: center;
+                margin-bottom: 30px;
+                color: #1f2937;
+                font-size: 24px;
+                font-weight: bold;
+            `;
+            pdfContainer.appendChild(title);
+
+            // Create sections for each user
+            names.forEach((name, nameIndex) => {
+                const userSection = document.createElement("div");
+                userSection.style.cssText = `
+                    margin-bottom: 40px;
+                    page-break-inside: avoid;
+                    border: 1px solid #e5e7eb;
+                    border-radius: 8px;
+                    overflow: hidden;
+                `;
+
+                // User header
+                const userHeader = document.createElement("div");
+                userHeader.style.cssText = `
+                    background: #f9fafb;
+                    padding: 15px 20px;
+                    border-bottom: 1px solid #e5e7eb;
+                    font-weight: bold;
+                    font-size: 18px;
+                    color: #374151;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                `;
+
+                // Add admin star if applicable
+                if (isUserAdmin(name)) {
+                    const star = document.createElement("span");
+                    star.textContent = "⭐";
+                    star.style.fontSize = "16px";
+                    userHeader.appendChild(star);
+                }
+
+                const nameSpan = document.createElement("span");
+                nameSpan.textContent = name;
+                userHeader.appendChild(nameSpan);
+                userSection.appendChild(userHeader);
+
+                // Days table for this user
+                const daysTable = document.createElement("table");
+                daysTable.style.cssText = `
+                    width: 100%;
+                    border-collapse: collapse;
+                `;
+
+                // Create rows for each day
+                days.forEach((day, dayIndex) => {
+                    const dateKey = day.toISOString().split("T")[0];
+                    const entry = data?.[dateKey]?.[name] || {};
+                    const isToday =
+                        dateKey === new Date().toISOString().split("T")[0];
+
+                    const row = document.createElement("tr");
+                    row.style.cssText = `
+                        border-bottom: 1px solid #f3f4f6;
+                        ${isToday ? "background-color: #dbeafe;" : ""}
+                        ${
+                            dayIndex % 2 === 0
+                                ? "background-color: #f9fafb;"
+                                : ""
+                        }
+                    `;
+
+                    // Date cell
+                    const dateCell = document.createElement("td");
+                    dateCell.style.cssText = `
+                        padding: 12px 20px;
+                        font-weight: 500;
+                        color: #374151;
+                        width: 200px;
+                        border-right: 1px solid #f3f4f6;
+                    `;
+                    dateCell.textContent = `${day.getDate()}/${
+                        day.getMonth() + 1
+                    }/${year}`;
+
+                    // Day name
+                    const dayName = day.toLocaleDateString("it-IT", {
+                        weekday: "short",
+                    });
+                    const daySpan = document.createElement("span");
+                    daySpan.style.cssText = `
+                        color: #6b7280;
+                        font-size: 12px;
+                        margin-left: 8px;
+                    `;
+                    daySpan.textContent = `(${dayName})`;
+                    dateCell.appendChild(daySpan);
+
+                    row.appendChild(dateCell);
+
+                    // Shift cell
+                    const shiftCell = document.createElement("td");
+                    shiftCell.style.cssText = `
+                        padding: 12px 20px;
+                        text-align: center;
+                        width: 120px;
+                        border-right: 1px solid #f3f4f6;
+                    `;
+
+                    const shiftDiv = document.createElement("div");
+                    const shiftValue = entry.shift || "--";
+                    shiftDiv.textContent = shiftValue;
+                    shiftDiv.style.cssText = `
+                        padding: 6px 12px;
+                        border-radius: 6px;
+                        font-weight: bold;
+                        font-size: 14px;
+                        display: inline-block;
+                        min-width: 40px;
+                    `;
+
+                    // Apply shift colors
+                    if (entry.shift) {
+                        const colorClass = getShiftColor(entry.shift);
+                        if (colorClass.includes("bg-yellow-100")) {
+                            shiftDiv.style.backgroundColor = "#fef3c7";
+                            shiftDiv.style.color = "#92400e";
+                        } else if (colorClass.includes("bg-orange-100")) {
+                            shiftDiv.style.backgroundColor = "#fed7aa";
+                            shiftDiv.style.color = "#9a3412";
+                        } else if (colorClass.includes("bg-purple-100")) {
+                            shiftDiv.style.backgroundColor = "#e9d5ff";
+                            shiftDiv.style.color = "#7c2d12";
+                        } else if (colorClass.includes("bg-green-100")) {
+                            shiftDiv.style.backgroundColor = "#dcfce7";
+                            shiftDiv.style.color = "#166534";
+                        } else if (colorClass.includes("bg-red-100")) {
+                            shiftDiv.style.backgroundColor = "#fee2e2";
+                            shiftDiv.style.color = "#991b1b";
+                        } else if (colorClass.includes("bg-blue-100")) {
+                            shiftDiv.style.backgroundColor = "#dbeafe";
+                            shiftDiv.style.color = "#1e40af";
+                        }
+                    } else {
+                        shiftDiv.style.backgroundColor = "#f3f4f6";
+                        shiftDiv.style.color = "#6b7280";
+                    }
+
+                    shiftCell.appendChild(shiftDiv);
+                    row.appendChild(shiftCell);
+
+                    // Notes cell
+                    const notesCell = document.createElement("td");
+                    notesCell.style.cssText = `
+                        padding: 12px 20px;
+                        color: #6b7280;
+                        font-size: 14px;
+                    `;
+                    notesCell.textContent = entry.note || "";
+                    row.appendChild(notesCell);
+
+                    daysTable.appendChild(row);
+                });
+
+                userSection.appendChild(daysTable);
+                pdfContainer.appendChild(userSection);
+            });
+
+            // Create a temporary container for the PDF content
+            const tempContainer = document.createElement("div");
+            tempContainer.style.position = "fixed";
+            tempContainer.style.top = "-9999px";
+            tempContainer.style.left = "-9999px";
+            tempContainer.appendChild(pdfContainer);
+            document.body.appendChild(tempContainer);
+
+            // Generate PDF from the vertical layout
+            html2pdf()
+                .from(pdfContainer)
+                .set({
+                    margin: 0.5,
+                    filename: `turni-${year}-${month + 1}.pdf`,
+                    html2canvas: {
+                        scale: 1.5,
+                        useCORS: true,
+                        allowTaint: true,
+                        backgroundColor: "#ffffff",
+                    },
+                    jsPDF: {
+                        unit: "in",
+                        format: "a4",
+                        orientation: "portrait",
+                    },
+                })
+                .save()
+                .then(() => {
+                    // Clean up
+                    document.body.removeChild(tempContainer);
+                    // Restore original state
+                    setExpandedRows(originalExpandedRows);
+                })
+                .catch(() => {
+                    // Clean up even if there's an error
+                    if (tempContainer.parentNode) {
+                        document.body.removeChild(tempContainer);
+                    }
+                    setExpandedRows(originalExpandedRows);
+                });
+        }, 100);
     };
 
     const openNoteModal = (name, dateKey) => {
@@ -224,6 +450,18 @@ export default function Shifts() {
 
     const closeViewNoteModal = () => {
         setViewNoteModal({ isOpen: false, name: "", dateKey: "", note: "" });
+    };
+
+    const toggleRowExpansion = (name) => {
+        setExpandedRows((prev) => {
+            const newSet = new Set(prev);
+            if (newSet.has(name)) {
+                newSet.delete(name);
+            } else {
+                newSet.add(name);
+            }
+            return newSet;
+        });
     };
 
     return (
@@ -322,7 +560,7 @@ export default function Shifts() {
             </div>
 
             {/* Summary Section */}
-            <div className="flex gap-4 mb-6 w-[70vw]">
+            <div className="flex gap-2 mb-6 w-[50vw]">
                 {["O", "OP", "ON", "F", "M", "R"].map((shiftType) => {
                     const count = Object.values(data).reduce(
                         (total, dayData) => {
@@ -348,11 +586,11 @@ export default function Shifts() {
                     return (
                         <div
                             key={shiftType}
-                            className="bg-white rounded-xl shadow-md border px-4 py-6 w-1/2"
+                            className="bg-white rounded-xl shadow-md border px-2 py-2 w-1/2"
                         >
-                            <div className="flex flex-col items-center justify-between gap-4">
+                            <div className="flex flex-col items-center justify-between gap-2">
                                 <div
-                                    className={`px-3 py-2 text-sm rounded-lg flex items-center justify-center ${getShiftColor(
+                                    className={`px-3 py-2 text-xs rounded-lg flex items-center justify-center ${getShiftColor(
                                         shiftType
                                     )}`}
                                 >
@@ -390,7 +628,7 @@ export default function Shifts() {
                                             stroke-linejoin="round"
                                         />
                                     </svg>
-                                    <p className="text-3xl font-bold text-blue-600">
+                                    <p className="text-xl text-blue-600">
                                         {count}
                                     </p>
                                 </div>
@@ -400,57 +638,15 @@ export default function Shifts() {
                 })}
             </div>
 
-            {/* Legend */}
-            <div className="mb-4 mt-8">
-                <div className="flex flex-wrap gap-12">
-                    <div className="flex items-center gap-2">
-                        <span className="px-2 py-1 text-xs font-medium rounded bg-yellow-100 text-yellow-800">
-                            O
-                        </span>
-                        <span className="text-xs text-gray-600">Mattino</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <span className="px-2 py-1 text-xs font-medium rounded bg-orange-100 text-orange-800">
-                            OP
-                        </span>
-                        <span className="text-xs text-gray-600">
-                            Pomeriggio
-                        </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <span className="px-2 py-1 text-xs font-medium rounded bg-purple-100 text-purple-800">
-                            ON
-                        </span>
-                        <span className="text-xs text-gray-600">Notte</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <span className="px-2 py-1 text-xs font-medium rounded bg-green-100 text-green-800">
-                            F
-                        </span>
-                        <span className="text-xs text-gray-600">Ferie</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <span className="px-2 py-1 text-xs font-medium rounded bg-red-100 text-red-800">
-                            M
-                        </span>
-                        <span className="text-xs text-gray-600">Malattia</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <span className="px-2 py-1 text-xs font-medium rounded bg-blue-100 text-blue-800">
-                            R
-                        </span>
-                        <span className="text-xs text-gray-600">Riposo</span>
-                    </div>
-                </div>
-            </div>
-
             {/* Shifts Table */}
             <div className="bg-white rounded-xl shadow-sm border overflow-hidden w-[80vw]">
                 <div ref={tableRef} className="shifts-container overflow-auto">
                     <table className="w-full">
                         <thead className="bg-gray-50 border-b border-gray-200">
                             <tr>
-                                <th className="px-6 py-4 text-left text-sm text-gray-500 border-r border-gray-200"></th>
+                                <th className="px-6 py-4 text-center text-sm text-gray-500 border-r border-gray-200">
+                                    Turni
+                                </th>
                                 {days.map((d) => (
                                     <th
                                         key={d.toISOString()}
@@ -472,30 +668,67 @@ export default function Shifts() {
                                     className={`shift-row  ${
                                         nameIndex % 2 === 0
                                             ? "bg-white"
-                                            : "bg-gray-25"
+                                            : "bg-gray-50"
                                     }`}
                                 >
-                                    <td className="gap-2 px-8 py-4 text-gray-700 border-r border-gray-200 bg-gray-50">
-                                        <div className="flex items-center gap-2">
-                                            {isUserAdmin(name) ? (
+                                    <td className="gap-2 px-4 py-2 text-gray-700 border-r border-gray-200">
+                                        <div className="flex flex-row justify-between items-center gap-4">
+                                            <div className="flex items-center gap-2">
+                                                {isUserAdmin(name) ? (
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        viewBox="0 0 24 24"
+                                                        width="16"
+                                                        height="16"
+                                                        color="#222"
+                                                        fill="none"
+                                                    >
+                                                        <path
+                                                            d="M13.7276 3.44418L15.4874 6.99288C15.7274 7.48687 16.3673 7.9607 16.9073 8.05143L20.0969 8.58575C22.1367 8.92853 22.6167 10.4206 21.1468 11.8925L18.6671 14.3927C18.2471 14.8161 18.0172 15.6327 18.1471 16.2175L18.8571 19.3125C19.417 21.7623 18.1271 22.71 15.9774 21.4296L12.9877 19.6452C12.4478 19.3226 11.5579 19.3226 11.0079 19.6452L8.01827 21.4296C5.8785 22.71 4.57865 21.7522 5.13859 19.3125L5.84851 16.2175C5.97849 15.6327 5.74852 14.8161 5.32856 14.3927L2.84884 11.8925C1.389 10.4206 1.85895 8.92853 3.89872 8.58575L7.08837 8.05143C7.61831 7.9607 8.25824 7.48687 8.49821 6.99288L10.258 3.44418C11.2179 1.51861 12.7777 1.51861 13.7276 3.44418Z"
+                                                            stroke="currentColor"
+                                                            stroke-width="1.5"
+                                                            stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                        ></path>
+                                                    </svg>
+                                                ) : null}
+                                                <div className="text-sm">
+                                                    {name}
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() =>
+                                                    toggleRowExpansion(name)
+                                                }
+                                                className="flex items-center justify-center p-1 bg-blue-50 hover:bg-blue-100 rounded transition-colors"
+                                                title={
+                                                    expandedRows.has(name)
+                                                        ? "Nascondi controlli"
+                                                        : "Mostra controlli"
+                                                }
+                                            >
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     viewBox="0 0 24 24"
                                                     width="16"
                                                     height="16"
-                                                    color="#222"
+                                                    color="#1051b9"
                                                     fill="none"
+                                                    className={`transform transition-transform duration-200 ${
+                                                        expandedRows.has(name)
+                                                            ? "rotate-180"
+                                                            : ""
+                                                    }`}
                                                 >
                                                     <path
-                                                        d="M13.7276 3.44418L15.4874 6.99288C15.7274 7.48687 16.3673 7.9607 16.9073 8.05143L20.0969 8.58575C22.1367 8.92853 22.6167 10.4206 21.1468 11.8925L18.6671 14.3927C18.2471 14.8161 18.0172 15.6327 18.1471 16.2175L18.8571 19.3125C19.417 21.7623 18.1271 22.71 15.9774 21.4296L12.9877 19.6452C12.4478 19.3226 11.5579 19.3226 11.0079 19.6452L8.01827 21.4296C5.8785 22.71 4.57865 21.7522 5.13859 19.3125L5.84851 16.2175C5.97849 15.6327 5.74852 14.8161 5.32856 14.3927L2.84884 11.8925C1.389 10.4206 1.85895 8.92853 3.89872 8.58575L7.08837 8.05143C7.61831 7.9607 8.25824 7.48687 8.49821 6.99288L10.258 3.44418C11.2179 1.51861 12.7777 1.51861 13.7276 3.44418Z"
+                                                        d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
                                                         stroke="currentColor"
-                                                        stroke-width="1.5"
-                                                        stroke-linecap="round"
-                                                        stroke-linejoin="round"
-                                                    ></path>
+                                                        strokeWidth="1.5"
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                    />
                                                 </svg>
-                                            ) : null}
-                                            <div>{name}</div>
+                                            </button>
                                         </div>
                                     </td>
                                     {days.map((d) => {
@@ -533,12 +766,12 @@ export default function Shifts() {
                                                                         .value
                                                                 )
                                                             }
-                                                            className={`shift-select w-full p-1 px-4 text-md font-bold rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 transition-colors duration-200 ${
+                                                            className={`shift-select w-full p-2 px-4 text-xs font-bold rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 transition-colors duration-200 ${
                                                                 entry.shift
                                                                     ? getShiftColor(
                                                                           entry.shift
                                                                       )
-                                                                    : "bg-gray-50"
+                                                                    : "bg-gray-100"
                                                             }`}
                                                         >
                                                             <option value="">
@@ -555,7 +788,7 @@ export default function Shifts() {
                                                         </select>
                                                     ) : (
                                                         <p
-                                                            className={`w-full p-1 px-4 text-md font-bold rounded-md border-gray-300 transition-colors duration-200 ${
+                                                            className={`w-full p-1 px-4 text-sm font-bold rounded-md border-gray-300 transition-colors duration-200 ${
                                                                 entry.shift
                                                                     ? getShiftColor(
                                                                           entry.shift
@@ -568,7 +801,15 @@ export default function Shifts() {
                                                         </p>
                                                     )}
 
-                                                    <div className="flex justify-between items-center">
+                                                    <div
+                                                        className={`flex justify-between items-center transition-all duration-500 ease-in-out ${
+                                                            expandedRows.has(
+                                                                name
+                                                            )
+                                                                ? "max-h-20 opacity-100"
+                                                                : "max-h-0 opacity-0 overflow-hidden"
+                                                        }`}
+                                                    >
                                                         <button
                                                             onClick={() =>
                                                                 isAdmin &&
@@ -649,21 +890,6 @@ export default function Shifts() {
                                                                         ></path>
                                                                     </svg>
                                                                 </button>
-                                                                {/*<div
-                                                                className="text-xs text-gray-600 bg-gray-100 rounded px-2 py-1 truncate max-w-full"
-                                                                title={
-                                                                    entry.note
-                                                                }
-                                                            >
-                                                                📝{" "}
-                                                                {entry.note
-                                                                    .length > 20
-                                                                    ? entry.note.substring(
-                                                                          0,
-                                                                          20
-                                                                      ) + "..."
-                                                                    : entry.note}
-                                                            </div>*/}
                                                             </div>
                                                         )}
                                                     </div>

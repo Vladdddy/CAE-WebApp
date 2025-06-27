@@ -672,7 +672,7 @@ export default function Tasks() {
             title.textContent = `Task per il ${formattedDate}`;
             title.style.marginBottom = "20px";
             title.style.color = "#333";
-            title.style.borderBottom = "2px solid #3b82f6";
+            title.style.borderBottom = "2px solid #d1d5db";
             title.style.paddingBottom = "10px";
             pdfContent.appendChild(title);
             if (dailyTasks.length === 0) {
@@ -740,9 +740,7 @@ export default function Tasks() {
                         const taskDiv = document.createElement("div");
                         taskDiv.style.marginBottom = "15px";
                         taskDiv.style.padding = "15px";
-                        taskDiv.style.border = `2px solid ${getBorderColor(
-                            task.status
-                        )}`;
+                        taskDiv.style.border = "1px solid #e5e7eb";
                         taskDiv.style.borderRadius = "8px";
                         taskDiv.style.backgroundColor = "#f9f9f9";
 
@@ -785,7 +783,7 @@ export default function Tasks() {
                                 noteDiv.style.margin = "4px 0 4px 16px";
                                 noteDiv.style.padding = "8px";
                                 noteDiv.style.backgroundColor = "#f3f4f6";
-                                noteDiv.style.borderLeft = "3px solid #3b82f6";
+                                noteDiv.style.borderLeft = "3px solid #d1d5db";
                                 noteDiv.style.borderRadius = "4px";
 
                                 const noteText = document.createElement("p");

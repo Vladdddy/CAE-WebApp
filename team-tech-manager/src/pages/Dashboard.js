@@ -857,6 +857,8 @@ export default function Dashboard() {
                                 {renderTaskList(dayTasks, "Day")}
                             </div>
 
+                            <div className="separator"></div>
+
                             <div>
                                 <div className="flex items-center gap-2 mb-4">
                                     <svg
@@ -996,6 +998,8 @@ export default function Dashboard() {
                                     )}
                                 </div>
                             )}
+
+                            <div className="separator"></div>
 
                             {/* Incomplete tasks section */}
                             {incompleteTasks.length > 0 && (

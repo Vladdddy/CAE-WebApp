@@ -61,14 +61,14 @@ export default function Logbook() {
         new Date().toISOString().split("T")[0]
     );
     const [isSearching, setIsSearching] = useState(false);
-    const [showFilterResults, setShowFilterResults] = useState(false); // Accordion states
+    const [showFilterResults, setShowFilterResults] = useState(false);
     const [isFilterAccordionOpen, setIsFilterAccordionOpen] = useState(false);
     const [isAddTaskAccordionOpen, setIsAddTaskAccordionOpen] = useState(false);
-    const [isTaskAccordionOpen, setIsTaskAccordionOpen] = useState(false); // Task details modal state
+    const [isTaskAccordionOpen, setIsTaskAccordionOpen] = useState(false);
     const [taskDetailsModal, setTaskDetailsModal] = useState({
         isOpen: false,
         task: null,
-    }); // Modal state for success/error messages
+    });
     const [modal, setModal] = useState({
         isOpen: false,
         title: "",
@@ -77,16 +77,14 @@ export default function Logbook() {
         onConfirm: null,
     });
 
-    // Description modal state for editing logbook entries
     const [descriptionModal, setDescriptionModal] = useState({
         isOpen: false,
         entry: null,
         entryIndex: null,
-    }); // Get current user's name from localStorage
+    });
     const currentUserName =
         localStorage.getItem("userName") || "Utente Sconosciuto";
 
-    // Helper functions for modal
     const showModal = (title, message, type = "info", onConfirm = null) => {
         setModal({
             isOpen: true,
@@ -101,12 +99,10 @@ export default function Logbook() {
         setModal((prev) => ({ ...prev, isOpen: false }));
     };
 
-    // Set author to current user on component mount
     useEffect(() => {
         setAuthor(currentUserName);
     }, [currentUserName]);
 
-    // Sync selectedDate with date whenever date changes
     useEffect(() => {
         setSelectedDate(date);
     }, [date]);
@@ -123,7 +119,6 @@ export default function Logbook() {
                 if (!showFilterResults) {
                     setFilteredEntries(data);
                 }
-                // Reset search filters when changing date if not actively filtering
                 if (!showFilterResults) {
                     setSearch("");
                     setFilterCategory("");
@@ -132,7 +127,7 @@ export default function Logbook() {
                     setEndDate("");
                 }
             });
-    }, [date]); // Auto-search when search term, category, or subcategory changes
+    }, [date]);
     useEffect(() => {
         const timeoutId = setTimeout(() => {
             if (
@@ -150,11 +145,10 @@ export default function Logbook() {
                 !startDate &&
                 !endDate
             ) {
-                // Reset to show current day's entries when all filters are cleared
                 setFilteredEntries(entries);
                 setShowFilterResults(false);
             }
-        }, 500); // 500ms debounce to avoid too many API calls
+        }, 500);
 
         return () => clearTimeout(timeoutId);
     }, [
@@ -192,7 +186,6 @@ export default function Logbook() {
     };
     const handleExportPDF = () => {
         try {
-            // Create a clean version of the content for PDF
             const formattedDate = new Date(selectedDate).toLocaleDateString(
                 "it-IT",
                 {
@@ -202,7 +195,6 @@ export default function Logbook() {
                 }
             );
 
-            // Get tasks and entries for the selected date
             const dailyTasks = tasks.filter(
                 (task) => task.date === selectedDate
             );
@@ -210,18 +202,16 @@ export default function Logbook() {
                 (entry) => entry.date === selectedDate
             );
 
-            // Create a temporary div with clean styling for PDF
             const pdfContent = document.createElement("div");
             pdfContent.style.padding = "20px";
             pdfContent.style.fontFamily = "Arial, sans-serif";
             pdfContent.style.backgroundColor = "white";
 
-            // Add title
             const title = document.createElement("h2");
             title.textContent = `Task e Logbook per il ${formattedDate}`;
             title.style.marginBottom = "20px";
             title.style.color = "#333";
-            title.style.borderBottom = "2px solid #3b82f6";
+            title.style.borderBottom = "2px solid #d1d5db";
             title.style.paddingBottom = "10px";
             pdfContent.appendChild(title);
 
@@ -232,7 +222,6 @@ export default function Logbook() {
                 noContent.style.fontStyle = "italic";
                 pdfContent.appendChild(noContent);
             } else {
-                // Group tasks by simulator
                 const tasksBySimulator = {};
                 dailyTasks.forEach((task) => {
                     const simulator = task.simulator || "Nessun Simulatore";
@@ -240,17 +229,16 @@ export default function Logbook() {
                         tasksBySimulator[simulator] = [];
                     }
                     tasksBySimulator[simulator].push(task);
-                }); // Add logbook entries to their specified simulator
+                });
                 if (dailyEntries.length > 0) {
                     dailyEntries.forEach((entry) => {
                         const entrySimulator = entry.simulator || "Others";
                         if (!tasksBySimulator[entrySimulator]) {
                             tasksBySimulator[entrySimulator] = [];
-                        } // Convert entries to task-like format for consistent rendering                        // Load notes for this logbook entry - try multiple key formats for compatibility
+                        }
                         const logbookNoteKey = generateLogbookNoteKey(entry);
-                        let entryNotes = logbookNotes[logbookNoteKey] || []; // Fallback: try old key formats if no notes found with new stable key
+                        let entryNotes = logbookNotes[logbookNoteKey] || [];
                         if (entryNotes.length === 0) {
-                            // Try with current text
                             const legacyKeys1 = generateLegacyLogbookNoteKey(
                                 entry,
                                 entry.text
@@ -262,7 +250,6 @@ export default function Logbook() {
                                 logbookNotes[legacyKeys1.textBasedKey] ||
                                 [];
 
-                            // Try with originalText if available
                             if (entryNotes.length === 0 && entry.originalText) {
                                 const legacyKeys2 =
                                     generateLegacyLogbookNoteKey(
@@ -285,25 +272,24 @@ export default function Logbook() {
                                 entry.text.substring(0, 50) +
                                     (entry.text.length > 50 ? "..." : ""),
                             time: entry.time,
-                            date: entry.date, // Add the date property
+                            date: entry.date,
                             assignedTo: entry.author,
                             status: entry.category,
                             type: "logbook-entry",
                             fullText: entry.text,
-                            description: entry.text, // Add description property for TaskDetailsModal
+                            description: entry.text,
                             category: entry.category,
                             subcategory: entry.subcategory,
                             extraDetail: entry.extraDetail,
                             duration: entry.duration,
                             simulator: entry.simulator || entrySimulator,
-                            originalEntry: entry, // Keep reference to original entry for editing
-                            originalText: entry.text, // Preserve original text for stable note key generation
-                            notes: entryNotes, // Add notes from localStorage
+                            originalEntry: entry,
+                            originalText: entry.text,
+                            notes: entryNotes,
                         });
                     });
-                } // Render tasks grouped by simulator
+                }
                 Object.keys(tasksBySimulator).forEach((simulator) => {
-                    // Add simulator header
                     const simulatorHeader = document.createElement("h4");
                     simulatorHeader.textContent = simulator;
                     simulatorHeader.style.margin = "20px 0 10px 0";
@@ -312,9 +298,8 @@ export default function Logbook() {
                     simulatorHeader.style.fontWeight = "bold";
                     simulatorHeader.style.borderBottom = "1px solid #d1d5db";
                     simulatorHeader.style.paddingBottom = "20px";
-                    pdfContent.appendChild(simulatorHeader); // Add tasks for this simulator
+                    pdfContent.appendChild(simulatorHeader);
                     tasksBySimulator[simulator].forEach((task, index) => {
-                        // Load notes for regular tasks if they don't have notes already
                         if (task.type !== "logbook-entry" && !task.notes) {
                             task.notes = taskNotes[task.id] || [];
                         }
@@ -322,39 +307,12 @@ export default function Logbook() {
                         const taskDiv = document.createElement("div");
                         taskDiv.style.marginBottom = "15px";
                         taskDiv.style.padding = "15px";
-                        // Different styling for logbook entries vs tasks
                         if (task.type === "logbook-entry") {
-                            // Use solid colors for PDF borders
-                            let borderColor = "#e5e7eb"; // default
-                            switch (task.category) {
-                                case "routine task":
-                                    borderColor = "#3b82f6";
-                                    break;
-                                case "troubleshooting":
-                                    borderColor = "#dc2626";
-                                    break;
-                                case "others":
-                                    borderColor = "#f6ad10";
-                                    break;
-                            }
-                            taskDiv.style.border = `2px solid ${borderColor}`;
+                            taskDiv.style.border = "1px solid #e5e7eb";
                             taskDiv.style.borderRadius = "8px";
                             taskDiv.style.backgroundColor = "#fafafa";
                         } else {
-                            // Use solid colors for PDF borders
-                            let borderColor = "#e5e7eb"; // default
-                            switch (task.status) {
-                                case "completato":
-                                    borderColor = "#139d54";
-                                    break;
-                                case "in corso":
-                                    borderColor = "#f6ad10";
-                                    break;
-                                case "non completato":
-                                    borderColor = "#dc2626";
-                                    break;
-                            }
-                            taskDiv.style.border = `2px solid ${borderColor}`;
+                            taskDiv.style.border = "1px solid #e5e7eb";
                             taskDiv.style.borderRadius = "8px";
                             taskDiv.style.backgroundColor = "#f9f9f9";
                         }
@@ -375,7 +333,6 @@ export default function Logbook() {
                                 task.extraDetail ? "/" + task.extraDetail : ""
                             } • Durata: ${task.duration || "N/A"}`;
 
-                            // Add full text for logbook entries
                             if (task.fullText && task.fullText !== task.title) {
                                 const fullTextP = document.createElement("p");
                                 fullTextP.textContent = task.fullText;
@@ -386,7 +343,6 @@ export default function Logbook() {
                                 taskDiv.appendChild(fullTextP);
                             }
 
-                            // Add notes for logbook entries if they exist
                             if (task.notes && task.notes.length > 0) {
                                 const notesHeader = document.createElement("p");
                                 notesHeader.textContent = "Note:";
@@ -414,7 +370,7 @@ export default function Logbook() {
                                     noteP.style.color = "#555";
                                     noteP.style.fontSize = "13px";
                                     noteP.style.borderLeft =
-                                        "3px solid #3b82f6";
+                                        "3px solid #d1d5db";
                                     noteP.style.paddingLeft = "8px";
                                     taskDiv.appendChild(noteP);
                                 });
@@ -422,7 +378,6 @@ export default function Logbook() {
                         } else {
                             taskDetails.textContent = `Orario: ${task.time} • Assegnato a: ${task.assignedTo} • Status: ${task.status}`;
 
-                            // Add notes for regular tasks if they exist
                             if (task.notes && task.notes.length > 0) {
                                 const notesHeader = document.createElement("p");
                                 notesHeader.textContent = "Note:";
@@ -450,7 +405,7 @@ export default function Logbook() {
                                     noteP.style.color = "#555";
                                     noteP.style.fontSize = "13px";
                                     noteP.style.borderLeft =
-                                        "3px solid #3b82f6";
+                                        "3px solid #d1d5db";
                                     noteP.style.paddingLeft = "8px";
                                     taskDiv.appendChild(noteP);
                                 });
@@ -466,7 +421,6 @@ export default function Logbook() {
                 });
             }
 
-            // Temporarily add to body
             document.body.appendChild(pdfContent);
             const opt = {
                 margin: 0.5,
@@ -530,7 +484,6 @@ export default function Logbook() {
         console.log("Input entries:", entriesToFilter);
         console.log("Search term:", searchTerm);
 
-        // Text search filter - comprehensive search like in Tasks.js
         if (searchTerm && searchTerm.trim()) {
             const searchLower = searchTerm.toLowerCase();
             console.log("Searching for:", searchLower);
@@ -590,14 +543,12 @@ export default function Logbook() {
             console.log("After text filter:", filtered);
         }
 
-        // Category filter
         if (categoryFilter) {
             filtered = filtered.filter(
                 (entry) => entry.category === categoryFilter
             );
         }
 
-        // Subcategory filter
         if (subcategoryFilter) {
             filtered = filtered.filter(
                 (entry) =>
@@ -623,7 +574,6 @@ export default function Logbook() {
         console.log("Start date:", startDate);
         console.log("End date:", endDate);
 
-        // If date range is specified, search across that range
         if (startDate && endDate) {
             const allEntries = await loadEntriesFromRange();
             console.log("Loaded entries from range:", allEntries);
@@ -634,7 +584,6 @@ export default function Logbook() {
                 filterSubcategory
             );
         } else if (search || filterCategory || filterSubcategory) {
-            // If searching but no date range specified, search across last 3 months
             const today = new Date();
             const threeMonthsAgo = new Date(today);
             threeMonthsAgo.setMonth(today.getMonth() - 3);
@@ -648,7 +597,6 @@ export default function Logbook() {
             let allEntries = [];
             const token = localStorage.getItem("authToken");
 
-            // Load entries from the last 3 months (reduced from 6 for performance)
             for (const d of dates) {
                 try {
                     const res = await fetch(`${API}/api/logbook/${d}`, {
@@ -663,18 +611,15 @@ export default function Logbook() {
                         );
                     }
                 } catch (error) {
-                    // Skip dates that don't have data
                     console.log(`No data for ${d}`);
                 }
             }
 
-            // Ensure today's entries are included from current state
             const todayDate = new Date().toISOString().split("T")[0];
             const currentDateEntries = entries.filter(
                 (entry) => entry.date === todayDate || !entry.date
             );
 
-            // Add current entries if they're not already included
             currentDateEntries.forEach((entry) => {
                 const entryWithDate = { ...entry, date: entry.date || date };
                 const exists = allEntries.find(
@@ -698,7 +643,6 @@ export default function Logbook() {
                 filterSubcategory
             );
         } else {
-            // If no search criteria, show current day's entries
             filtered = [...entries];
             setShowFilterResults(false);
         }
@@ -730,7 +674,6 @@ export default function Logbook() {
             body: JSON.stringify(newEntries),
         });
         setEntries(newEntries);
-        // Update filtered entries if not actively filtering
         if (!showFilterResults) {
             setFilteredEntries(newEntries);
         }
@@ -761,14 +704,12 @@ export default function Logbook() {
             date: formDate,
             time: formTime,
             duration,
-            // Use name as title, fallback to text snippet if name is empty
             title:
                 name || text.substring(0, 50) + (text.length > 50 ? "..." : ""),
         };
 
         const newEntries = [...entries];
         if (editIndex !== null) {
-            // When editing, use the name field as title
             newEntries[editIndex] = {
                 ...entry,
                 title:
@@ -802,7 +743,6 @@ export default function Logbook() {
         setEditIndex(index);
     };
 
-    // Task details modal functions
     const openTaskDetails = (task) => {
         setTaskDetailsModal({
             isOpen: true,
@@ -817,16 +757,13 @@ export default function Logbook() {
         });
     };
 
-    // Description modal functions for editing logbook entries
     const openDescriptionModal = (task) => {
-        // Find the original entry index in the entries array
         let entryIndex = -1;
 
         console.log("Opening description modal for task:", task);
         console.log("Current entries:", entries);
 
         if (task.originalEntry) {
-            // Use the original entry reference if available
             console.log(
                 "Using originalEntry to find index:",
                 task.originalEntry
@@ -839,7 +776,6 @@ export default function Logbook() {
                     entry.author === task.originalEntry.author
             );
         } else {
-            // Fallback to the previous method
             console.log("Using fallback method to find index");
             entryIndex = entries.findIndex(
                 (entry) =>
@@ -852,7 +788,6 @@ export default function Logbook() {
 
         console.log("Found entryIndex:", entryIndex);
 
-        // If we still can't find the entry, try with a more flexible approach
         if (entryIndex === -1) {
             console.log(
                 "Entry not found with strict matching, trying flexible matching"
@@ -907,11 +842,9 @@ export default function Logbook() {
         console.log("Description modal entry:", descriptionModal.entry);
 
         if (entryIndex === -1) {
-            // If we can't find by index, try to find by originalEntry data
             const task = descriptionModal.entry;
             if (task && task.originalEntry) {
                 console.log("Trying to save using originalEntry data");
-                // Find the entry by matching the original entry data
                 const foundIndex = entries.findIndex(
                     (entry) =>
                         entry.text === task.originalEntry.text &&
@@ -922,7 +855,6 @@ export default function Logbook() {
 
                 if (foundIndex !== -1) {
                     console.log("Found entry at index:", foundIndex);
-                    // Update using the found index
                     const updatedEntries = [...entries];
                     const originalEntry = updatedEntries[foundIndex];
 
@@ -970,7 +902,6 @@ export default function Logbook() {
         }
 
         try {
-            // Update the entry in the entries array
             const updatedEntries = [...entries];
             const originalEntry = updatedEntries[entryIndex];
 
@@ -978,17 +909,14 @@ export default function Logbook() {
                 ...originalEntry,
                 text: description,
                 simulator: simulator || "Others",
-                // Keep the original title if it exists, otherwise create one from the original text
                 title:
                     originalEntry.title ||
                     originalEntry.text.substring(0, 50) +
                         (originalEntry.text.length > 50 ? "..." : ""),
             };
 
-            // Save to backend
             await saveEntries(updatedEntries);
 
-            // Update the task details modal if it's showing the same entry
             if (
                 taskDetailsModal.isOpen &&
                 taskDetailsModal.task &&
@@ -999,7 +927,6 @@ export default function Logbook() {
                     description: description,
                     fullText: description,
                     simulator: simulator || "Others",
-                    // Keep the original title, don't regenerate it from the new description
                     title: taskDetailsModal.task.title,
                 };
                 setTaskDetailsModal({
@@ -1008,7 +935,6 @@ export default function Logbook() {
                 });
             }
 
-            // Close modal and show success message
             closeDescriptionModal();
             showModal("Successo", "Entry aggiornata con successo!", "success");
         } catch (error) {
@@ -1019,15 +945,13 @@ export default function Logbook() {
                 "error"
             );
         }
-    }; // Permission functions for TaskDetailsModal (read-only in logbook)
-    const canToggleTask = (task) => false; // No task editing in logbook
-    const canDeleteTasks = (task) => task && task.type === "logbook-entry"; // Allow deletion for logbook entries
-    const canEditDescription = (task) => task.type === "logbook-entry"; // Allow editing description for logbook entries    // Function to handle deleting a task/entry from the modal
+    };
+    const canToggleTask = (task) => false;
+    const canDeleteTasks = (task) => task && task.type === "logbook-entry";
+    const canEditDescription = (task) => task.type === "logbook-entry";
     const handleDeleteTask = async (taskOrId) => {
-        // Handle both task object and task ID
         let task = taskOrId;
 
-        // If we received just an ID, get the task from the modal
         if (typeof taskOrId === "string" || typeof taskOrId === "number") {
             task = taskDetailsModal.task;
         }
@@ -1041,11 +965,9 @@ export default function Logbook() {
             return;
         }
 
-        // Find the entry index in the entries array
         let entryIndex = -1;
 
         if (task.originalEntry) {
-            // Use the original entry reference if available
             entryIndex = entries.findIndex(
                 (entry) =>
                     entry.text === task.originalEntry.text &&
@@ -1054,7 +976,6 @@ export default function Logbook() {
                     entry.author === task.originalEntry.author
             );
         } else {
-            // Fallback to finding by task properties
             entryIndex = entries.findIndex(
                 (entry) =>
                     entry.text === task.fullText &&
@@ -1071,20 +992,18 @@ export default function Logbook() {
                 "error"
             );
             return;
-        } // Show confirmation dialog
+        }
         showModal(
             "Conferma Eliminazione",
             "Sei sicuro di voler eliminare questa entry?",
             "confirm",
             async () => {
                 try {
-                    // Delete the entry directly without calling handleDelete to avoid double confirmation
                     const newEntries = entries.filter(
                         (_, i) => i !== entryIndex
                     );
                     await saveEntries(newEntries);
 
-                    // Close the task details modal
                     closeTaskDetails();
 
                     showModal(
@@ -1104,15 +1023,12 @@ export default function Logbook() {
         );
     };
 
-    // Function to handle saving notes for tasks and logbook entries
     const handleSaveNote = async (taskId, noteText) => {
         try {
-            // Check if this is a logbook entry
             const currentTask = taskDetailsModal.task;
             if (currentTask && currentTask.type === "logbook-entry") {
                 console.log("Saving note for logbook entry:", currentTask);
 
-                // Generate the logbook note key using the new stable format
                 const originalEntry = currentTask.originalEntry || {
                     id:
                         currentTask.id && currentTask.id.startsWith("entry-")
@@ -1129,10 +1045,8 @@ export default function Logbook() {
 
                 const logbookNoteKey = generateLogbookNoteKey(originalEntry);
 
-                // Check for existing notes with old key formats and migrate them
                 let existingNotes = logbookNotes[logbookNoteKey] || [];
                 if (existingNotes.length === 0 && currentTask.originalEntry) {
-                    // Try to find notes with legacy keys
                     const legacyKeys1 = generateLegacyLogbookNoteKey(
                         currentTask.originalEntry,
                         currentTask.originalEntry.text
@@ -1150,7 +1064,6 @@ export default function Logbook() {
                             `Migrating notes from legacy keys to new key: ${logbookNoteKey}`
                         );
                     } else {
-                        // Try with current description
                         const legacyKeys2 = generateLegacyLogbookNoteKey(
                             currentTask.originalEntry,
                             currentTask.description
@@ -1168,18 +1081,17 @@ export default function Logbook() {
                             );
                         }
                     }
-                } // Save note to backend
+                }
                 await notesService.addLogbookNote(
                     logbookNoteKey,
                     noteText,
                     currentUserName
                 );
 
-                // Update local state with migrated notes
                 const updatedLogbookNotes = {
                     ...logbookNotes,
                     [logbookNoteKey]: [
-                        ...existingNotes, // Include any migrated notes
+                        ...existingNotes,
                         {
                             text: noteText,
                             author: currentUserName,
@@ -1189,7 +1101,6 @@ export default function Logbook() {
                 };
                 setLogbookNotes(updatedLogbookNotes);
 
-                // Update the task details modal to show the new note
                 const updatedTask = {
                     ...currentTask,
                     notes: updatedLogbookNotes[logbookNoteKey],
@@ -1204,14 +1115,12 @@ export default function Logbook() {
                 showModal("Successo", "Nota aggiunta con successo!", "success");
                 return;
             } else {
-                // For regular tasks, use the task notes API
                 await notesService.addTaskNote(
                     taskId,
                     noteText,
                     currentUserName
                 );
 
-                // Update local state
                 const updatedTaskNotes = {
                     ...taskNotes,
                     [taskId]: [
@@ -1225,7 +1134,6 @@ export default function Logbook() {
                 };
                 setTaskNotes(updatedTaskNotes);
 
-                // Update the task in local state
                 const updatedTasks = tasks.map((task) => {
                     if (task.id === taskId) {
                         return {
@@ -1239,7 +1147,6 @@ export default function Logbook() {
 
                 console.log("Nota salvata con successo:", noteText);
 
-                // Update the task in the modal if it's the same task
                 if (
                     taskDetailsModal.task &&
                     taskDetailsModal.task.id === taskId
@@ -1289,7 +1196,6 @@ export default function Logbook() {
         URL.revokeObjectURL(url);
     };
 
-    // Helper function to get border color based on category
     const getCategoryBorderColor = (category) => {
         switch (category) {
             case "routine task":
@@ -1301,7 +1207,7 @@ export default function Logbook() {
             default:
                 return "#e5e7eb";
         }
-    }; // Helper function to get border color based on task status
+    };
     const getBorderColor = (status) => {
         switch (status) {
             case "completato":
@@ -1315,17 +1221,14 @@ export default function Logbook() {
         }
     };
 
-    // Notes state
     const [taskNotes, setTaskNotes] = useState({});
     const [logbookNotes, setLogbookNotes] = useState({});
-    const [notesLoaded, setNotesLoaded] = useState(false); // Load notes from backend and migrate from localStorage if needed
+    const [notesLoaded, setNotesLoaded] = useState(false);
     useEffect(() => {
         const loadNotesAndMigrate = async () => {
             try {
-                // First, migrate any existing localStorage notes
                 await migrateNotesFromLocalStorage();
 
-                // Then load all notes from backend
                 const [taskNotesData, logbookNotesData] = await Promise.all([
                     notesService.getTaskNotes(),
                     notesService.getLogbookNotes(),
@@ -1336,7 +1239,6 @@ export default function Logbook() {
                 setNotesLoaded(true);
             } catch (error) {
                 console.error("Error loading notes:", error);
-                // Don't fall back to localStorage - require backend for notes
                 setTaskNotes({});
                 setLogbookNotes({});
                 setNotesLoaded(true);
@@ -1349,7 +1251,6 @@ export default function Logbook() {
         loadNotesAndMigrate();
     }, []);
 
-    // Tasks state (from Tasks.js)
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
     useEffect(() => {
@@ -1361,7 +1262,6 @@ export default function Logbook() {
         })
             .then((res) => res.json())
             .then((data) => {
-                // Load notes from state and merge with tasks
                 const tasksWithNotes = data.map((task) => ({
                     ...task,
                     notes: taskNotes[task.id] || [],
@@ -1374,16 +1274,15 @@ export default function Logbook() {
                 console.error("Error fetching tasks:", error);
                 setLoading(false);
             });
-    }, [taskNotes, notesLoaded]); // Re-run when notes are loaded
+    }, [taskNotes, notesLoaded]);
 
-    // Helper function to get border color for both tasks and logbook entries
     const getCardBorderColor = (item) => {
         if (item.type === "logbook-entry") {
             return getCategoryBorderColor(item.category);
         } else {
             return getBorderColor(item.status);
         }
-    }; // Function to render task cards (handles both tasks and logbook entries)
+    };
     const renderTaskCard = (task) => (
         <div
             key={task.id}
@@ -1631,7 +1530,6 @@ export default function Logbook() {
                                                 {" "}
                                                 <button
                                                     onClick={() => {
-                                                        // Convert entry to task format and open modal
                                                         const taskEntry = {
                                                             id: `logbook-${entry.date}-${entry.time}`,
                                                             title:
@@ -1666,7 +1564,7 @@ export default function Logbook() {
                                                             type: "logbook-entry",
                                                             originalEntry:
                                                                 entry,
-                                                        }; // Load existing notes for this logbook entry
+                                                        };
                                                         const logbookNoteKey =
                                                             generateLogbookNoteKey(
                                                                 entry
@@ -1712,19 +1610,17 @@ export default function Logbook() {
                             </>
                         ) : (
                             (() => {
-                                // Get entries for the selected date
                                 const dateEntries = entries.filter(
                                     (e) => e.date === date
-                                ); // Get tasks for the selected date
+                                );
                                 const dateTasks = tasks.filter(
                                     (task) => task.date === date
                                 );
 
-                                // Separate day and night shift tasks
                                 const dayShiftTasks = dateTasks.filter(
                                     (task) => {
                                         const taskTime = task.time;
-                                        if (!taskTime) return true; // Include tasks without time in day shift
+                                        if (!taskTime) return true;
 
                                         const [hours, minutes] = taskTime
                                             .split(":")
@@ -1732,7 +1628,6 @@ export default function Logbook() {
                                         const timeInMinutes =
                                             hours * 60 + minutes;
 
-                                        // Day shift: 07:01 to 18:59 (not night shift)
                                         return (
                                             timeInMinutes > 420 &&
                                             timeInMinutes < 1140
@@ -1743,7 +1638,7 @@ export default function Logbook() {
                                 const nightShiftTasks = dateTasks.filter(
                                     (task) => {
                                         const taskTime = task.time;
-                                        if (!taskTime) return false; // Exclude tasks without time from night shift
+                                        if (!taskTime) return false;
 
                                         const [hours, minutes] = taskTime
                                             .split(":")
@@ -1751,7 +1646,6 @@ export default function Logbook() {
                                         const timeInMinutes =
                                             hours * 60 + minutes;
 
-                                        // Night shift: 19:00 to 07:00 (>= 1140 OR <= 420)
                                         return (
                                             timeInMinutes >= 1140 ||
                                             timeInMinutes <= 420
@@ -1759,28 +1653,24 @@ export default function Logbook() {
                                     }
                                 );
 
-                                // Group entries by category
                                 const entriesByCategory = {};
                                 const categoryList = Object.keys(categories);
 
-                                // Initialize each category group
                                 categoryList.forEach((cat) => {
                                     entriesByCategory[cat] = [];
                                 });
 
-                                // Group entries by category
                                 dateEntries.forEach((entry) => {
                                     const category = entry.category || "";
                                     if (categoryList.includes(category)) {
                                         entriesByCategory[category].push(entry);
                                     } else {
-                                        // If category doesn't exist, add to "others"
                                         if (!entriesByCategory["others"]) {
                                             entriesByCategory["others"] = [];
                                         }
                                         entriesByCategory["others"].push(entry);
                                     }
-                                }); // Function to group tasks by simulator
+                                });
                                 const groupTasksBySimulator = (
                                     taskList,
                                     shiftType = null
@@ -1796,12 +1686,10 @@ export default function Logbook() {
                                         "Others",
                                     ];
 
-                                    // Initialize each simulator group
                                     simulators.forEach((sim) => {
                                         tasksBySimulator[sim] = [];
                                     });
 
-                                    // Group tasks by simulator
                                     taskList.forEach((task) => {
                                         const simulator = task.simulator || "";
                                         if (
@@ -1817,9 +1705,8 @@ export default function Logbook() {
                                                 task
                                             );
                                         }
-                                    }); // Add logbook entries to their specified simulator only for the correct shift
+                                    });
                                     dateEntries.forEach((entry) => {
-                                        // Check if entry time matches the shift type
                                         if (shiftType && entry.time) {
                                             const [hours, minutes] = entry.time
                                                 .split(":")
@@ -1828,42 +1715,37 @@ export default function Logbook() {
                                                 hours * 60 + minutes;
 
                                             if (shiftType === "day") {
-                                                // Day shift: 07:01 to 18:59
                                                 if (
                                                     timeInMinutes <= 420 ||
                                                     timeInMinutes >= 1140
                                                 ) {
-                                                    return; // Skip this entry for day shift
+                                                    return;
                                                 }
                                             } else if (shiftType === "night") {
-                                                // Night shift: 19:00 to 07:00
                                                 if (
                                                     timeInMinutes > 420 &&
                                                     timeInMinutes < 1140
                                                 ) {
-                                                    return; // Skip this entry for night shift
+                                                    return;
                                                 }
                                             }
                                         }
                                         const entrySimulator =
                                             entry.simulator || "Others";
-                                        // Make sure the simulator exists in the list
                                         if (!tasksBySimulator[entrySimulator]) {
                                             tasksBySimulator[entrySimulator] =
                                                 [];
                                         }
-                                        // Also add the simulator to the list if it's not there
                                         if (
                                             !simulators.includes(entrySimulator)
                                         ) {
                                             simulators.push(entrySimulator);
-                                        } // Load notes for this logbook entry - try multiple key formats for compatibility
+                                        }
                                         const logbookNoteKey =
                                             generateLogbookNoteKey(entry);
                                         let entryNotes =
-                                            logbookNotes[logbookNoteKey] || []; // Fallback: try old key formats if no notes found with new stable key
+                                            logbookNotes[logbookNoteKey] || [];
                                         if (entryNotes.length === 0) {
-                                            // Try with current text
                                             const legacyKeys1 =
                                                 generateLegacyLogbookNoteKey(
                                                     entry,
@@ -1880,7 +1762,6 @@ export default function Logbook() {
                                                 ] ||
                                                 [];
 
-                                            // Try with originalText if available
                                             if (
                                                 entryNotes.length === 0 &&
                                                 entry.originalText
@@ -1915,12 +1796,12 @@ export default function Logbook() {
                                                         ? "..."
                                                         : ""),
                                             time: entry.time,
-                                            date: entry.date, // Add the date property
+                                            date: entry.date,
                                             assignedTo: entry.author,
                                             status: entry.category,
                                             type: "logbook-entry",
                                             fullText: entry.text,
-                                            description: entry.text, // Add description property for TaskDetailsModal
+                                            description: entry.text,
                                             category: entry.category,
                                             subcategory: entry.subcategory,
                                             extraDetail: entry.extraDetail,
@@ -1928,8 +1809,8 @@ export default function Logbook() {
                                             simulator:
                                                 entry.simulator ||
                                                 entrySimulator,
-                                            originalEntry: entry, // Keep reference to original entry for editing
-                                            notes: entryNotes, // Add notes from localStorage
+                                            originalEntry: entry,
+                                            notes: entryNotes,
                                         });
                                     });
 
@@ -2674,8 +2555,8 @@ export default function Logbook() {
                 isOpen={taskDetailsModal.isOpen}
                 onClose={closeTaskDetails}
                 task={taskDetailsModal.task}
-                onToggleTask={() => {}} // Placeholder - no task editing in logbook
-                onDeleteTask={handleDeleteTask} // Allow deletion of logbook entries
+                onToggleTask={() => {}}
+                onDeleteTask={handleDeleteTask}
                 canToggleTask={canToggleTask}
                 canDeleteTasks={canDeleteTasks}
                 canEditDescription={canEditDescription}
