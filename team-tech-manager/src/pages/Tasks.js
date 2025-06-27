@@ -886,7 +886,10 @@ export default function Tasks() {
         }));
     };
     const applyFilters = (tasksToFilter, currentFilters) => {
-        let filtered = [...tasksToFilter];
+        // First, filter out "da definire" tasks
+        let filtered = tasksToFilter.filter(
+            (task) => task.status !== "da definire"
+        );
 
         // Text search filter
         if (currentFilters.searchText.trim()) {
@@ -949,7 +952,9 @@ export default function Tasks() {
         setShowFilterResults(false);
     };
 
-    const dailyTasks = tasks.filter((t) => t.date === selectedDate);
+    const dailyTasks = tasks.filter(
+        (t) => t.date === selectedDate && t.status !== "da definire"
+    );
 
     // Separate day and night shift tasks
     const dayShiftTasks = dailyTasks.filter((task) => {

@@ -235,9 +235,10 @@
     "category": "others",
     "subcategory": "",
     "extraDetail": "",
-    "status": "completato",
+    "status": "non completato",
     "date": "2025-06-27",
-    "time": "08:00"
+    "time": "08:00",
+    "description": "fdgzdfgfdgzd"
   },
   {
     "id": 46,
@@ -250,5 +251,65 @@
     "status": "in corso",
     "date": "2025-06-27",
     "time": "08:00"
+  },
+  {
+    "id": 47,
+    "title": "f",
+    "assignedTo": "Francesco",
+    "simulator": "139#3",
+    "category": "troubleshooting",
+    "subcategory": "HW",
+    "extraDetail": "AVIONIC",
+    "status": "non iniziato",
+    "date": "2025-06-27",
+    "time": "08:00"
+  },
+  {
+    "id": 49,
+    "title": "asddasd",
+    "assignedTo": "Nicolo",
+    "simulator": "109FFS",
+    "category": "others",
+    "subcategory": "",
+    "extraDetail": "",
+    "status": "riassegnato",
+    "date": "2025-06-27",
+    "time": "18:29"
+  },
+  {
+    "id": 50,
+    "title": "djhdyj",
+    "assignedTo": "Francesco",
+    "simulator": "139#1",
+    "category": "troubleshooting",
+    "subcategory": "HW",
+    "extraDetail": "COMMS",
+    "status": "da definire",
+    "date": null,
+    "time": null
+  },
+  {
+    "id": 51,
+    "title": "rhythd",
+    "assignedTo": "Francesco",
+    "simulator": "109FFS",
+    "category": "routine task",
+    "subcategory": "PM",
+    "extraDetail": "",
+    "status": "da definire",
+    "date": null,
+    "time": null
+  },
+  {
+    "id": 52,
+    "title": "ghdfhf",
+    "assignedTo": "Andrea",
+    "simulator": "189",
+    "category": "others",
+    "subcategory": "",
+    "extraDetail": "",
+    "status": "riassegnato",
+    "date": "2025-06-27",
+    "time": "10:28"
   }
 ]

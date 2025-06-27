@@ -1,24 +1,32 @@
 {
-    "taskNotes": {},
-    "logbookNotes": {
-        "logbook_20250625_0800_Administrator_Entry1_FTD_troubles_2d8erz": [
-            {
-                "text": "Nota entry#1",
-                "author": "Administrator",
-                "timestamp": "2025-06-25T12:22:51.795Z"
-            }
-        ],
-        "logbook_20250625_0800_Administrator_Entry2_1391_routinet_ar5lc": [
-            {
-                "text": "Prova note #2",
-                "author": "Administrator",
-                "timestamp": "2025-06-25T12:23:33.455Z"
-            },
-            {
-                "text": "prova",
-                "author": "Administrator",
-                "timestamp": "2025-06-25T13:21:57.339Z"
-            }
-        ]
-    }
+  "taskNotes": {
+    "45": [
+      {
+        "text": "vchjk,nm",
+        "author": "Gianluca",
+        "timestamp": "2025-06-27T13:31:10.113Z"
+      }
+    ]
+  },
+  "logbookNotes": {
+    "logbook_20250625_0800_Administrator_Entry1_FTD_troubles_2d8erz": [
+      {
+        "text": "Nota entry#1",
+        "author": "Administrator",
+        "timestamp": "2025-06-25T12:22:51.795Z"
+      }
+    ],
+    "logbook_20250625_0800_Administrator_Entry2_1391_routinet_ar5lc": [
+      {
+        "text": "Prova note #2",
+        "author": "Administrator",
+        "timestamp": "2025-06-25T12:23:33.455Z"
+      },
+      {
+        "text": "prova",
+        "author": "Administrator",
+        "timestamp": "2025-06-25T13:21:57.339Z"
+      }
+    ]
+  }
 }

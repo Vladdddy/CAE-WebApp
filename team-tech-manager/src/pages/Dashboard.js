@@ -180,8 +180,8 @@ export default function Dashboard() {
         category: "",
         subcategory: "",
         extraDetail: "",
-        date: new Date().toISOString().split("T")[0],
-        time: "08:00",
+        date: null, // Will be null for "da definire" tasks
+        time: null, // Will be null for "da definire" tasks
         availableEmployees: [],
         loading: false,
         employeesLoading: false,
@@ -208,8 +208,8 @@ export default function Dashboard() {
             category: "",
             subcategory: "",
             extraDetail: "",
-            date: new Date().toISOString().split("T")[0],
-            time: "08:00",
+            date: null, // Will be null for "da definire" tasks
+            time: null, // Will be null for "da definire" tasks
             availableEmployees: [],
             loading: false,
             employeesLoading: false,
@@ -389,12 +389,15 @@ export default function Dashboard() {
         // Close any existing modal first
         setModal((prev) => ({ ...prev, isOpen: false }));
 
+        // For "da definire" tasks, we show all users from the system
+        // since we don't care about availability for a specific time
+        const allEmployeeNames = users.map((user) => user.name).filter(Boolean);
+
         setAddTaskModal((prev) => ({
             ...prev,
             isOpen: true,
+            availableEmployees: allEmployeeNames,
         }));
-        // Fetch available employees for the current date/time
-        fetchAvailableEmployeesForAddTask(addTaskModal.date, addTaskModal.time);
     };
 
     // Fetch available employees for add task modal
@@ -447,15 +450,6 @@ export default function Dashboard() {
     const handleAddTaskFormChange = async (field, value) => {
         setAddTaskModal((prev) => ({ ...prev, [field]: value }));
 
-        // If date or time changes, refetch available employees
-        if (field === "date" || field === "time") {
-            const date = field === "date" ? value : addTaskModal.date;
-            const time = field === "time" ? value : addTaskModal.time;
-            if (date && time) {
-                await fetchAvailableEmployeesForAddTask(date, time);
-            }
-        }
-
         // Reset dependent fields when category changes
         if (field === "category") {
             setAddTaskModal((prev) => ({
@@ -470,12 +464,7 @@ export default function Dashboard() {
     const handleAddTask = async (e) => {
         e.preventDefault();
 
-        if (
-            !addTaskModal.title ||
-            !addTaskModal.assignedTo ||
-            !addTaskModal.date ||
-            !addTaskModal.time
-        ) {
+        if (!addTaskModal.title || !addTaskModal.assignedTo) {
             setModal({
                 isOpen: true,
                 title: "Errore",
@@ -503,8 +492,9 @@ export default function Dashboard() {
                     category: addTaskModal.category,
                     subcategory: addTaskModal.subcategory,
                     extraDetail: addTaskModal.extraDetail,
-                    date: addTaskModal.date,
-                    time: addTaskModal.time,
+                    date: null, // Set to null for "da definire" tasks
+                    time: null, // Set to null for "da definire" tasks
+                    status: "da definire", // Set status to "da definire"
                 }),
             });
 
@@ -560,6 +550,8 @@ export default function Dashboard() {
                 return "#dc262620";
             case "riassegnato":
                 return "#8b5cf620";
+            case "da definire":
+                return "#6366f120";
             default:
                 return "#e5e7eb";
         }
@@ -571,6 +563,11 @@ export default function Dashboard() {
     // Filtra i task incompleti
     const incompleteTasks = Array.isArray(tasks)
         ? tasks.filter((task) => task.status === "non completato")
+        : [];
+
+    // Filtra i task da definire
+    const tasksToSchedule = Array.isArray(tasks)
+        ? tasks.filter((task) => task.status === "da definire")
         : [];
 
     // Prende le task del turno diurno
@@ -674,7 +671,8 @@ export default function Dashboard() {
                                     key={task.id}
                                     className={`display-task flex items-center justify-between dashboard-content p-2 rounded bg-gray-100 ${
                                         isIncompleteSection &&
-                                        task.status === "non completato" &&
+                                        (task.status === "non completato" ||
+                                            task.status === "da definire") &&
                                         currentUser?.role === "admin"
                                             ? "cursor-pointer hover:bg-gray-200 transition-colors"
                                             : ""
@@ -687,7 +685,9 @@ export default function Dashboard() {
                                     onClick={() => {
                                         if (
                                             isIncompleteSection &&
-                                            task.status === "non completato" &&
+                                            (task.status === "non completato" ||
+                                                task.status ===
+                                                    "da definire") &&
                                             currentUser?.role === "admin"
                                         ) {
                                             openReassignModal(task);
@@ -700,7 +700,8 @@ export default function Dashboard() {
                                         </p>
                                         <div className="text-xs text-gray-500 capitalize">
                                             {showDates &&
-                                                task.date !== today && (
+                                                task.date !== today &&
+                                                task.date && (
                                                     <span>
                                                         {new Date(
                                                             task.date
@@ -710,12 +711,13 @@ export default function Dashboard() {
                                                         •{" "}
                                                     </span>
                                                 )}
-                                            {task.time} • {task.assignedTo} •{" "}
-                                            {task.status}
+                                            {task.time || ""} {task.assignedTo}{" "}
+                                            • {task.status}
                                         </div>
                                     </div>
                                     {isIncompleteSection &&
-                                        task.status === "non completato" &&
+                                        (task.status === "non completato" ||
+                                            task.status === "da definire") &&
                                         currentUser?.role === "admin" && (
                                             <div className="text-xs text-blue-600 font-medium flex-shrink-0 ml-2">
                                                 <svg
@@ -785,7 +787,7 @@ export default function Dashboard() {
                     </div>
                 </div>
             </div>
-            <div className="dashboard-content flex justify-between gap-4 p-4 mt-16 h-96">
+            <div className="dashboard-content flex justify-between gap-4 p-4 mt-16 h-full max-h-[70vh]">
                 <div className="tasks border p-4 rounded-xl bg-white w-1/2 max-w-[30vw] max-h-full overflow-y-auto pb-4">
                     <div className="title flex flex-row items-center justify-between mb-4">
                         <div className="left-row title flex flex-row items-center gap-2 ">
@@ -946,77 +948,96 @@ export default function Dashboard() {
                         <div className="text-center py-4">
                             Caricamento task...
                         </div>
-                    ) : incompleteTasks.length === 0 ? (
+                    ) : incompleteTasks.length === 0 &&
+                      tasksToSchedule.length === 0 ? (
                         <div className="text-center py-4 text-gray-400">
-                            Nessun task incompleto per oggi
+                            Nessun task da programmare o incompleto
                         </div>
                     ) : (
                         <div>
-                            <div className="mb-6 mt-8">
-                                <div className="flex items-center gap-2 mb-4">
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 24 24"
-                                        width="20"
-                                        height="20"
-                                        color="oklch(44.6% 0.03 256.802)"
-                                        fill="none"
-                                    >
-                                        <path
-                                            d="M17 12C17 14.7614 14.7614 17 12 17C9.23858 17 7 14.7614 7 12C7 9.23858 9.23858 7 12 7C14.7614 7 17 9.23858 17 12Z"
-                                            stroke="oklch(44.6% 0.03 256.802)"
-                                            strokeWidth="1.5"
-                                        ></path>
-                                        <path
-                                            d="M12 2V3.5M12 20.5V22M19.0708 19.0713L18.0101 18.0106M5.98926 5.98926L4.9286 4.9286M22 12H20.5M3.5 12H2M19.0713 4.92871L18.0106 5.98937M5.98975 18.0107L4.92909 19.0714"
-                                            stroke="oklch(44.6% 0.03 256.802)"
-                                            strokeWidth="1.5"
-                                            strokeLinecap="round"
-                                        ></path>
-                                    </svg>
-                                    <h4 className="text-gray-600">Giorno</h4>
-                                    <span className="span">
-                                        {incompleteDayTasks.length} task
-                                    </span>
+                            {/* Tasks to schedule section */}
+                            {tasksToSchedule.length > 0 && (
+                                <div className="mb-6">
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 24 24"
+                                            width="20"
+                                            height="20"
+                                            color="oklch(44.6% 0.03 256.802)"
+                                            fill="none"
+                                        >
+                                            <path
+                                                d="M5.04798 8.60657L2.53784 8.45376C4.33712 3.70477 9.503 0.999914 14.5396 2.34474C19.904 3.77711 23.0904 9.26107 21.6565 14.5935C20.2227 19.926 14.7116 23.0876 9.3472 21.6553C5.36419 20.5917 2.58192 17.2946 2 13.4844"
+                                                stroke="currentColor"
+                                                stroke-width="1.5"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                            ></path>
+                                            <path
+                                                d="M12 8V12L14 14"
+                                                stroke="currentColor"
+                                                stroke-width="1.5"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                            ></path>
+                                        </svg>
+                                        <h4 className="text-gray-600">
+                                            Da Definire
+                                        </h4>
+                                        <span className="span">
+                                            {tasksToSchedule.length} task
+                                        </span>
+                                    </div>
+                                    {renderTaskList(
+                                        tasksToSchedule,
+                                        false,
+                                        true
+                                    )}
                                 </div>
-                                {renderTaskList(
-                                    incompleteDayTasks,
-                                    "Day",
-                                    true,
-                                    true
-                                )}
-                            </div>
+                            )}
 
-                            <div>
-                                <div className="flex items-center gap-2 mb-4">
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 24 24"
-                                        width="20"
-                                        height="20"
-                                        color="oklch(44.6% 0.03 256.802)"
-                                        fill="none"
-                                    >
-                                        <path
-                                            d="M21.5 14.0784C20.3003 14.7189 18.9301 15.0821 17.4751 15.0821C12.7491 15.0821 8.91792 11.2509 8.91792 6.52485C8.91792 5.06986 9.28105 3.69968 9.92163 2.5C5.66765 3.49698 2.5 7.31513 2.5 11.8731C2.5 17.1899 6.8101 21.5 12.1269 21.5C16.6849 21.5 20.503 18.3324 21.5 14.0784Z"
-                                            stroke="oklch(44.6% 0.03 256.802)"
-                                            strokeWidth="1.5"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        ></path>
-                                    </svg>
-                                    <h4 className="text-gray-600">Notte</h4>
-                                    <span className="span">
-                                        {incompleteNightTasks.length} task
-                                    </span>
+                            {/* Incomplete tasks section */}
+                            {incompleteTasks.length > 0 && (
+                                <div className="mb-6 mt-8">
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 24 24"
+                                            width="20"
+                                            height="20"
+                                            color="oklch(44.6% 0.03 256.802)"
+                                            fill="none"
+                                        >
+                                            <path
+                                                d="M12 2.00012C17.5228 2.00012 22 6.47727 22 12.0001C22 17.523 17.5228 22.0001 12 22.0001C6.47715 22.0001 2 17.523 2 12.0001M8.909 2.48699C7.9 2.8146 6.96135 3.29828 6.12153 3.90953M3.90943 6.12162C3.29806 6.9616 2.81432 7.90044 2.4867 8.90964"
+                                                stroke="currentColor"
+                                                strokeWidth="1.5"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
+                                            <path
+                                                d="M14.9994 15.0001L9 9.00012M9.00064 15.0001L15 9.00012"
+                                                stroke="currentColor"
+                                                strokeWidth="1.5"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
+                                        </svg>
+                                        <h4 className="text-gray-600">
+                                            Non Completati
+                                        </h4>
+                                        <span className="span">
+                                            {incompleteTasks.length} task
+                                        </span>
+                                    </div>
+                                    {renderTaskList(
+                                        incompleteTasks,
+                                        true,
+                                        true
+                                    )}
                                 </div>
-                                {renderTaskList(
-                                    incompleteNightTasks,
-                                    "Night",
-                                    true,
-                                    true
-                                )}
-                            </div>
+                            )}
                         </div>
                     )}
                 </div>{" "}
@@ -1268,7 +1289,7 @@ export default function Dashboard() {
                         onClick={(e) => e.stopPropagation()}
                     >
                         <h2 className="text-xl font-bold mb-4 text-gray-800">
-                            Aggiungi Task
+                            Task da programmare
                         </h2>
 
                         <form onSubmit={handleAddTask} className="space-y-4">
@@ -1402,42 +1423,6 @@ export default function Dashboard() {
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Data *
-                                </label>
-                                <input
-                                    type="date"
-                                    value={addTaskModal.date}
-                                    onChange={(e) =>
-                                        handleAddTaskFormChange(
-                                            "date",
-                                            e.target.value
-                                        )
-                                    }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    required
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Orario *
-                                </label>
-                                <input
-                                    type="time"
-                                    value={addTaskModal.time}
-                                    onChange={(e) =>
-                                        handleAddTaskFormChange(
-                                            "time",
-                                            e.target.value
-                                        )
-                                    }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    required
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
                                     Assegna a *
                                 </label>
                                 <select
@@ -1455,9 +1440,6 @@ export default function Dashboard() {
                                     <option value="">
                                         {addTaskModal.employeesLoading
                                             ? "Caricamento dipendenti..."
-                                            : addTaskModal.availableEmployees
-                                                  .length === 0
-                                            ? "Nessun dipendente disponibile"
                                             : "Seleziona dipendente"}
                                     </option>
                                     {addTaskModal.availableEmployees.map(
@@ -1471,13 +1453,6 @@ export default function Dashboard() {
                                         )
                                     )}
                                 </select>
-                                {addTaskModal.availableEmployees.length ===
-                                    0 && (
-                                    <p className="text-xs text-orange-600 mt-1">
-                                        Nessun dipendente disponibile per questa
-                                        data/ora
-                                    </p>
-                                )}
                             </div>
 
                             <div className="flex justify-end space-x-3 mt-6">
@@ -1494,9 +1469,7 @@ export default function Dashboard() {
                                     disabled={
                                         addTaskModal.loading ||
                                         !addTaskModal.title ||
-                                        !addTaskModal.assignedTo ||
-                                        !addTaskModal.date ||
-                                        !addTaskModal.time
+                                        !addTaskModal.assignedTo
                                     }
                                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
                                 >

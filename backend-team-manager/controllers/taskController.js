@@ -90,6 +90,7 @@ exports.createTask = (req, res) => {
         extraDetail,
         date,
         time,
+        status,
     } = req.body;
 
     // Check if the assigned employee exists in users.json and is active
@@ -104,26 +105,29 @@ exports.createTask = (req, res) => {
         });
     }
 
-    // Get the required shift for the task
-    const requiredShift = getShiftFromTime(time);
+    // Skip shift validation for "da definire" tasks since they don't have real date/time
+    if (status !== "da definire") {
+        // Get the required shift for the task
+        const requiredShift = getShiftFromTime(time);
 
-    // Get shift data for the specific date
-    const taskDate = new Date(date);
-    const year = taskDate.getFullYear();
-    const month = taskDate.getMonth() + 1;
-    const shiftFilePath = getShiftDataPath(year, month);
+        // Get shift data for the specific date
+        const taskDate = new Date(date);
+        const year = taskDate.getFullYear();
+        const month = taskDate.getMonth() + 1;
+        const shiftFilePath = getShiftDataPath(year, month);
 
-    if (fs.existsSync(shiftFilePath)) {
-        const shiftData = JSON.parse(fs.readFileSync(shiftFilePath));
-        const dayData = shiftData[date];
+        if (fs.existsSync(shiftFilePath)) {
+            const shiftData = JSON.parse(fs.readFileSync(shiftFilePath));
+            const dayData = shiftData[date];
 
-        if (dayData) {
-            // Check if the assigned employee is working the required shift on this date
-            const employeeData = dayData[assignedTo];
-            if (!employeeData || employeeData.shift !== requiredShift) {
-                return res.status(400).json({
-                    message: `${assignedTo} non è in servizio nel turno richiesto (${requiredShift}) per la data ${date}. Controlla i turni prima di assegnare il task.`,
-                });
+            if (dayData) {
+                // Check if the assigned employee is working the required shift on this date
+                const employeeData = dayData[assignedTo];
+                if (!employeeData || employeeData.shift !== requiredShift) {
+                    return res.status(400).json({
+                        message: `${assignedTo} non è in servizio nel turno richiesto (${requiredShift}) per la data ${date}. Controlla i turni prima di assegnare il task.`,
+                    });
+                }
             }
         }
     } // Generate a unique ID that won't be reused even if tasks are deleted
@@ -136,9 +140,9 @@ exports.createTask = (req, res) => {
         category: category || "",
         subcategory: subcategory || "",
         extraDetail: extraDetail || "",
-        status: "non iniziato",
-        date,
-        time,
+        status: status || "non iniziato",
+        date: status === "da definire" ? null : date,
+        time: status === "da definire" ? null : time,
     };
     tasks.push(newTask);
     saveTasksToFile();
@@ -322,11 +326,11 @@ exports.reassignTask = (req, res) => {
         return res.status(404).json({ message: "Task non trovato" });
     }
 
-    // Only allow reassignment of "non completato" tasks
-    if (task.status !== "non completato") {
+    // Only allow reassignment of "non completato" and "da definire" tasks
+    if (task.status !== "non completato" && task.status !== "da definire") {
         return res.status(400).json({
             message:
-                "Solo i task con stato 'non completato' possono essere riassegnati.",
+                "Solo i task con stato 'non completato' o 'da definire' possono essere riassegnati.",
         });
     }
 

@@ -1,0 +1,26 @@
+[
+  {
+    "text": "test",
+    "author": "Gianluca",
+    "category": "routine task",
+    "subcategory": "",
+    "extraDetail": "",
+    "simulator": "109FFS",
+    "date": "2025-06-27",
+    "time": "08:00",
+    "duration": "",
+    "title": "JL "
+  },
+  {
+    "text": "done",
+    "author": "Gianluca",
+    "category": "others",
+    "subcategory": "",
+    "extraDetail": "",
+    "simulator": "Others",
+    "date": "2025-06-27",
+    "time": "08:00",
+    "duration": "",
+    "title": "refill DPI"
+  }
+]
