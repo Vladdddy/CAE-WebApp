@@ -663,7 +663,7 @@ export default function Logbook() {
         setShowFilterResults(false);
         setFilteredEntries(entries);
     };
-    const saveEntries = async (newEntries) => {
+    const saveEntries = async (newEntries, isNewEntry = false) => {
         const token = localStorage.getItem("authToken");
         await fetch(`${API}/api/logbook/${date}`, {
             method: "POST",
@@ -678,6 +678,15 @@ export default function Logbook() {
             setFilteredEntries(newEntries);
         }
         resetForm();
+
+        // Show success popup only for new entries
+        if (isNewEntry) {
+            showModal(
+                "Successo",
+                "Nuova entry del logbook aggiunta con successo!",
+                "success"
+            );
+        }
     };
     const resetForm = () => {
         setName("");
@@ -709,6 +718,8 @@ export default function Logbook() {
         };
 
         const newEntries = [...entries];
+        const isNewEntry = editIndex === null;
+
         if (editIndex !== null) {
             newEntries[editIndex] = {
                 ...entry,
@@ -720,7 +731,7 @@ export default function Logbook() {
             newEntries.push(entry);
         }
 
-        await saveEntries(newEntries);
+        await saveEntries(newEntries, isNewEntry);
     };
 
     const handleDelete = async (index) => {
