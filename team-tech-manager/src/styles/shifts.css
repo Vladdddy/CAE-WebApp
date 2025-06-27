@@ -1,0 +1,130 @@
+body {
+    overflow-x: hidden;
+}
+
+/* Shifts page specific styles */
+.shifts-container {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+
+.shifts-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.shifts-container::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 3px;
+}
+
+.shifts-container::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+    transition: background 0.2s ease;
+}
+
+.shifts-container::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+.shifts-container:not(:hover)::-webkit-scrollbar-thumb {
+    background: transparent;
+}
+
+/* Shift selector styling */
+.shift-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1em 1em;
+    padding-right: 2rem;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.shift-select::-ms-expand {
+    display: none;
+}
+
+/* Notes popup animation */
+.notes-popup {
+    animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Today indicator animation */
+.today-indicator {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Month navigation buttons */
+.month-nav-btn {
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.month-nav-btn:before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background-color: rgba(59, 130, 246, 0.1);
+    transition: width 0.3s ease, height 0.3s ease;
+    transform: translate(-50%, -50%);
+}
+
+.month-nav-btn:hover:before {
+    width: 100%;
+    height: 100%;
+}
+
+/* Export button hover effect */
+.export-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.export-btn:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    transition: left 0.5s ease;
+}
+
+.export-btn:hover:before {
+    left: 100%;
+}

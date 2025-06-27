@@ -4,6 +4,30 @@ import Modal from "../components/Modal";
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
+// Categories and troubleshooting details for task classification
+const categories = {
+    "routine task": ["PM", "MR"],
+    troubleshooting: ["HW", "SW"],
+    others: [],
+};
+
+const troubleshootingDetails = [
+    "VISUAL",
+    "COMPUTER",
+    "AVIONIC",
+    "ENV",
+    "BUILDING",
+    "POWER LOSS",
+    "MOTION",
+    "INTERFACE",
+    "CONTROLS",
+    "VIBRATION",
+    "SOUND",
+    "COMMS",
+    "IOS",
+    "OTHERS",
+];
+
 export default function Dashboard() {
     const navigate = useNavigate();
     const today = new Date().toISOString().split("T")[0];
@@ -146,6 +170,22 @@ export default function Dashboard() {
         availableEmployees: [],
         loading: false,
     });
+
+    // Add task modal state
+    const [addTaskModal, setAddTaskModal] = useState({
+        isOpen: false,
+        title: "",
+        assignedTo: "",
+        simulator: "",
+        category: "",
+        subcategory: "",
+        extraDetail: "",
+        date: new Date().toISOString().split("T")[0],
+        time: "08:00",
+        availableEmployees: [],
+        loading: false,
+        employeesLoading: false,
+    });
     const closeReassignModal = () => {
         setReassignModal({
             isOpen: false,
@@ -155,6 +195,24 @@ export default function Dashboard() {
             assignedTo: "",
             availableEmployees: [],
             loading: false,
+        });
+    };
+
+    // Close add task modal
+    const closeAddTaskModal = () => {
+        setAddTaskModal({
+            isOpen: false,
+            title: "",
+            assignedTo: "",
+            simulator: "",
+            category: "",
+            subcategory: "",
+            extraDetail: "",
+            date: new Date().toISOString().split("T")[0],
+            time: "08:00",
+            availableEmployees: [],
+            loading: false,
+            employeesLoading: false,
         });
     };
 
@@ -326,6 +384,171 @@ export default function Dashboard() {
         }
     };
 
+    // Open add task modal
+    const openAddTaskModal = () => {
+        // Close any existing modal first
+        setModal((prev) => ({ ...prev, isOpen: false }));
+
+        setAddTaskModal((prev) => ({
+            ...prev,
+            isOpen: true,
+        }));
+        // Fetch available employees for the current date/time
+        fetchAvailableEmployeesForAddTask(addTaskModal.date, addTaskModal.time);
+    };
+
+    // Fetch available employees for add task modal
+    const fetchAvailableEmployeesForAddTask = async (
+        selectedDate,
+        selectedTime
+    ) => {
+        if (!selectedDate || !selectedTime) {
+            setAddTaskModal((prev) => ({ ...prev, availableEmployees: [] }));
+            return;
+        }
+
+        setAddTaskModal((prev) => ({ ...prev, employeesLoading: true }));
+
+        try {
+            const response = await fetch(
+                `${API}/api/tasks/available-employees?date=${selectedDate}&time=${selectedTime}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (response.ok) {
+                const data = await response.json();
+                setAddTaskModal((prev) => ({
+                    ...prev,
+                    availableEmployees: data.availableEmployees,
+                }));
+            } else {
+                console.error(
+                    "Error fetching available employees:",
+                    await response.text()
+                );
+                setAddTaskModal((prev) => ({
+                    ...prev,
+                    availableEmployees: [],
+                }));
+            }
+        } catch (error) {
+            console.error("Error fetching available employees:", error);
+            setAddTaskModal((prev) => ({ ...prev, availableEmployees: [] }));
+        } finally {
+            setAddTaskModal((prev) => ({ ...prev, employeesLoading: false }));
+        }
+    };
+
+    // Handle add task form change
+    const handleAddTaskFormChange = async (field, value) => {
+        setAddTaskModal((prev) => ({ ...prev, [field]: value }));
+
+        // If date or time changes, refetch available employees
+        if (field === "date" || field === "time") {
+            const date = field === "date" ? value : addTaskModal.date;
+            const time = field === "time" ? value : addTaskModal.time;
+            if (date && time) {
+                await fetchAvailableEmployeesForAddTask(date, time);
+            }
+        }
+
+        // Reset dependent fields when category changes
+        if (field === "category") {
+            setAddTaskModal((prev) => ({
+                ...prev,
+                subcategory: "",
+                extraDetail: "",
+            }));
+        }
+    };
+
+    // Handle add task form submission
+    const handleAddTask = async (e) => {
+        e.preventDefault();
+
+        if (
+            !addTaskModal.title ||
+            !addTaskModal.assignedTo ||
+            !addTaskModal.date ||
+            !addTaskModal.time
+        ) {
+            setModal({
+                isOpen: true,
+                title: "Errore",
+                message: "Tutti i campi obbligatori devono essere compilati.",
+                type: "error",
+                onConfirm: null,
+                confirmText: "OK",
+            });
+            return;
+        }
+
+        setAddTaskModal((prev) => ({ ...prev, loading: true }));
+
+        try {
+            const response = await fetch(`${API}/api/tasks`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    title: addTaskModal.title,
+                    assignedTo: addTaskModal.assignedTo,
+                    simulator: addTaskModal.simulator,
+                    category: addTaskModal.category,
+                    subcategory: addTaskModal.subcategory,
+                    extraDetail: addTaskModal.extraDetail,
+                    date: addTaskModal.date,
+                    time: addTaskModal.time,
+                }),
+            });
+
+            if (response.ok) {
+                const newTask = await response.json();
+                // Update the tasks state
+                setTasks((prevTasks) => [...prevTasks, newTask]);
+                closeAddTaskModal();
+                setModal({
+                    isOpen: true,
+                    title: "Successo",
+                    message: "Task aggiunto con successo!",
+                    type: "success",
+                    onConfirm: null,
+                    confirmText: "OK",
+                });
+            } else {
+                const errorData = await response.json();
+                setModal({
+                    isOpen: true,
+                    title: "Errore",
+                    message:
+                        errorData.message ||
+                        "Errore durante l'aggiunta del task.",
+                    type: "error",
+                    onConfirm: null,
+                    confirmText: "OK",
+                });
+            }
+        } catch (error) {
+            console.error("Error adding task:", error);
+            setModal({
+                isOpen: true,
+                title: "Errore",
+                message: `Errore di connessione durante l'aggiunta del task: ${error.message}`,
+                type: "error",
+                onConfirm: null,
+                confirmText: "OK",
+            });
+        } finally {
+            setAddTaskModal((prev) => ({ ...prev, loading: false }));
+        }
+    };
+
     // Imposta il colore del bordo in base allo stato del task
     const getBorderColor = (status) => {
         switch (status) {
@@ -451,7 +674,8 @@ export default function Dashboard() {
                                     key={task.id}
                                     className={`display-task flex items-center justify-between dashboard-content p-2 rounded bg-gray-100 ${
                                         isIncompleteSection &&
-                                        task.status === "non completato"
+                                        task.status === "non completato" &&
+                                        currentUser?.role === "admin"
                                             ? "cursor-pointer hover:bg-gray-200 transition-colors"
                                             : ""
                                     }`}
@@ -463,7 +687,8 @@ export default function Dashboard() {
                                     onClick={() => {
                                         if (
                                             isIncompleteSection &&
-                                            task.status === "non completato"
+                                            task.status === "non completato" &&
+                                            currentUser?.role === "admin"
                                         ) {
                                             openReassignModal(task);
                                         }
@@ -490,7 +715,8 @@ export default function Dashboard() {
                                         </div>
                                     </div>
                                     {isIncompleteSection &&
-                                        task.status === "non completato" && (
+                                        task.status === "non completato" &&
+                                        currentUser?.role === "admin" && (
                                             <div className="text-xs text-blue-600 font-medium flex-shrink-0 ml-2">
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
@@ -684,6 +910,33 @@ export default function Dashboard() {
                                 />
                             </svg>{" "}
                             <p className="text-gray-600">Task da programmare</p>
+                            {currentUser?.role === "admin" && (
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    width="20"
+                                    height="20"
+                                    color="#3b82f6"
+                                    fill="none"
+                                    className="cursor-pointer hover:scale-110 transition-transform"
+                                    onClick={openAddTaskModal}
+                                >
+                                    <path
+                                        d="M22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12Z"
+                                        stroke="currentColor"
+                                        strokeWidth="1.5"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    />
+                                    <path
+                                        d="M12 8V16M16 12H8"
+                                        stroke="currentColor"
+                                        strokeWidth="1.5"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    />
+                                </svg>
+                            )}
                         </div>
                     </div>
 
@@ -1001,6 +1254,258 @@ export default function Dashboard() {
                                     : "Riassegna"}
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+            {/* Add Task Modal */}
+            {addTaskModal.isOpen && (
+                <div
+                    className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-60"
+                    onClick={closeAddTaskModal}
+                >
+                    <div
+                        className="bg-white rounded-lg p-6 w-96 max-w-full mx-4 max-h-[90vh] overflow-y-auto"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <h2 className="text-xl font-bold mb-4 text-gray-800">
+                            Aggiungi Task
+                        </h2>
+
+                        <form onSubmit={handleAddTask} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Titolo *
+                                </label>
+                                <input
+                                    type="text"
+                                    value={addTaskModal.title}
+                                    onChange={(e) =>
+                                        handleAddTaskFormChange(
+                                            "title",
+                                            e.target.value
+                                        )
+                                    }
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Inserisci un titolo"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Categoria
+                                </label>
+                                <select
+                                    value={addTaskModal.category}
+                                    onChange={(e) =>
+                                        handleAddTaskFormChange(
+                                            "category",
+                                            e.target.value
+                                        )
+                                    }
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    <option value="">
+                                        Seleziona categoria
+                                    </option>
+                                    {Object.keys(categories).map((c) => (
+                                        <option key={c} value={c}>
+                                            {c}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {addTaskModal.category && (
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Sotto-categoria
+                                    </label>
+                                    <select
+                                        value={addTaskModal.subcategory}
+                                        onChange={(e) =>
+                                            handleAddTaskFormChange(
+                                                "subcategory",
+                                                e.target.value
+                                            )
+                                        }
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    >
+                                        <option value="">
+                                            Seleziona sotto-categoria
+                                        </option>
+                                        {(
+                                            categories[addTaskModal.category] ||
+                                            []
+                                        ).map((sc) => (
+                                            <option key={sc} value={sc}>
+                                                {sc}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
+
+                            {addTaskModal.category === "troubleshooting" && (
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Dettaglio extra
+                                    </label>
+                                    <select
+                                        value={addTaskModal.extraDetail}
+                                        onChange={(e) =>
+                                            handleAddTaskFormChange(
+                                                "extraDetail",
+                                                e.target.value
+                                            )
+                                        }
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    >
+                                        <option value="">
+                                            Seleziona dettaglio
+                                        </option>
+                                        {troubleshootingDetails.map((d) => (
+                                            <option key={d} value={d}>
+                                                {d}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Simulatore
+                                </label>
+                                <select
+                                    value={addTaskModal.simulator}
+                                    onChange={(e) =>
+                                        handleAddTaskFormChange(
+                                            "simulator",
+                                            e.target.value
+                                        )
+                                    }
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    <option value="">
+                                        Seleziona simulatore...
+                                    </option>
+                                    <option value="FTD">FTD</option>
+                                    <option value="109FFS">109FFS</option>
+                                    <option value="139#1">139#1</option>
+                                    <option value="139#3">139#3</option>
+                                    <option value="169">169</option>
+                                    <option value="189">189</option>
+                                    <option value="Others">Others</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Data *
+                                </label>
+                                <input
+                                    type="date"
+                                    value={addTaskModal.date}
+                                    onChange={(e) =>
+                                        handleAddTaskFormChange(
+                                            "date",
+                                            e.target.value
+                                        )
+                                    }
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Orario *
+                                </label>
+                                <input
+                                    type="time"
+                                    value={addTaskModal.time}
+                                    onChange={(e) =>
+                                        handleAddTaskFormChange(
+                                            "time",
+                                            e.target.value
+                                        )
+                                    }
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Assegna a *
+                                </label>
+                                <select
+                                    value={addTaskModal.assignedTo}
+                                    onChange={(e) =>
+                                        handleAddTaskFormChange(
+                                            "assignedTo",
+                                            e.target.value
+                                        )
+                                    }
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    required
+                                    disabled={addTaskModal.employeesLoading}
+                                >
+                                    <option value="">
+                                        {addTaskModal.employeesLoading
+                                            ? "Caricamento dipendenti..."
+                                            : addTaskModal.availableEmployees
+                                                  .length === 0
+                                            ? "Nessun dipendente disponibile"
+                                            : "Seleziona dipendente"}
+                                    </option>
+                                    {addTaskModal.availableEmployees.map(
+                                        (employee) => (
+                                            <option
+                                                key={employee}
+                                                value={employee}
+                                            >
+                                                {employee}
+                                            </option>
+                                        )
+                                    )}
+                                </select>
+                                {addTaskModal.availableEmployees.length ===
+                                    0 && (
+                                    <p className="text-xs text-orange-600 mt-1">
+                                        Nessun dipendente disponibile per questa
+                                        data/ora
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="flex justify-end space-x-3 mt-6">
+                                <button
+                                    type="button"
+                                    onClick={closeAddTaskModal}
+                                    disabled={addTaskModal.loading}
+                                    className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+                                >
+                                    Annulla
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={
+                                        addTaskModal.loading ||
+                                        !addTaskModal.title ||
+                                        !addTaskModal.assignedTo ||
+                                        !addTaskModal.date ||
+                                        !addTaskModal.time
+                                    }
+                                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                                >
+                                    {addTaskModal.loading
+                                        ? "Aggiungendo..."
+                                        : "Aggiungi"}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

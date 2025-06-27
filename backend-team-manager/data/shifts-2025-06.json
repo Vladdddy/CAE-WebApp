@@ -1,7 +1,7 @@
 {
   "2025-05-31": {
     "Luca": {
-      "shift": "O",
+      "shift": "M",
       "note": "Riposo"
     },
     "Gianluca": {
@@ -92,7 +92,7 @@
   "2025-06-05": {
     "Luca": {
       "shift": "O",
-      "note": ""
+      "note": "ciao\n"
     },
     "Gianluca": {
       "shift": "OP",
@@ -110,7 +110,7 @@
   "2025-06-06": {
     "Luca": {
       "shift": "R",
-      "note": "Riposo"
+      "note": "Riposo 2"
     },
     "Gianluca": {
       "shift": "R",
@@ -163,7 +163,7 @@
   },
   "2025-06-09": {
     "Luca": {
-      "shift": "OP",
+      "shift": "F",
       "note": ""
     },
     "Gianluca": {
@@ -511,7 +511,7 @@
   },
   "2025-06-27": {
     "Luca": {
-      "shift": "R",
+      "shift": "O",
       "note": "Riposo"
     },
     "Gianluca": {
@@ -519,11 +519,11 @@
       "note": "Riposo"
     },
     "Mario": {
-      "shift": "R",
+      "shift": "O",
       "note": "Riposo"
     },
     "Simone": {
-      "shift": "R",
+      "shift": "OP",
       "note": "Riposo"
     }
   },
