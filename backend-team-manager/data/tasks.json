@@ -311,5 +311,66 @@
     "status": "riassegnato",
     "date": "2025-06-27",
     "time": "10:28"
+  },
+  {
+    "id": 53,
+    "title": "FGHTYD",
+    "assignedTo": "Sara",
+    "simulator": "109FFS",
+    "category": "others",
+    "subcategory": "",
+    "extraDetail": "",
+    "status": "non completato",
+    "date": "2025-07-04",
+    "time": "08:00",
+    "description": "ERE"
+  },
+  {
+    "id": 54,
+    "title": "CIAO",
+    "assignedTo": "Nicolo",
+    "simulator": "139#1",
+    "category": "troubleshooting",
+    "subcategory": "HW",
+    "extraDetail": "IOS",
+    "status": "da definire",
+    "date": null,
+    "time": null
+  },
+  {
+    "id": 55,
+    "title": "DDF",
+    "assignedTo": "Nicolo",
+    "simulator": "FTD",
+    "category": "troubleshooting",
+    "subcategory": "SW",
+    "extraDetail": "SOUND",
+    "status": "non iniziato",
+    "date": "2025-07-17",
+    "time": "08:00"
+  },
+  {
+    "id": 56,
+    "title": "thsrhth",
+    "assignedTo": "Andrea",
+    "simulator": "109FFS",
+    "category": "routine task",
+    "subcategory": "PM",
+    "extraDetail": "",
+    "status": "non iniziato",
+    "date": "2025-07-09",
+    "time": "08:00"
+  },
+  {
+    "id": 57,
+    "title": "bridge",
+    "assignedTo": "Francesco",
+    "simulator": "139#3",
+    "category": "troubleshooting",
+    "subcategory": "HW",
+    "extraDetail": "OTHERS",
+    "status": "da definire",
+    "date": null,
+    "time": null
   }
 ]

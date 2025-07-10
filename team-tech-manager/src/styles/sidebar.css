@@ -24,6 +24,31 @@
     }
 }
 
+/* Sidebar collapsed state styles */
+.sidebar-pc {
+    transition: width 0.3s ease-in-out;
+}
+
+.sidebar-pc.collapsed {
+    width: 4rem;
+}
+
+.sidebar-pc .nav-link {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Toggle button styles */
+.sidebar-toggle {
+    background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+    border: 1px solid #6b7280;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-toggle:hover {
+    background: linear-gradient(135deg, #4b5563 0%, #6b7280 100%);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
 @media only screen and (max-width: 768px) {
     .sidebar-pc {
         display: none;

@@ -37,20 +37,20 @@
   },
   "2025-11-02": {
     "Luca": {
-      "shift": "O",
-      "note": ""
+      "shift": "R",
+      "note": "Riposo"
     },
     "Gianluca": {
-      "shift": "OP",
-      "note": ""
+      "shift": "R",
+      "note": "Riposo"
     },
     "Mario": {
-      "shift": "O",
-      "note": ""
+      "shift": "R",
+      "note": "Riposo"
     },
     "Simone": {
-      "shift": "ON",
-      "note": ""
+      "shift": "R",
+      "note": "Riposo"
     }
   },
   "2025-11-03": {
@@ -59,15 +59,15 @@
       "note": ""
     },
     "Gianluca": {
-      "shift": "O",
+      "shift": "OP",
       "note": ""
     },
     "Mario": {
-      "shift": "ON",
+      "shift": "O",
       "note": ""
     },
     "Simone": {
-      "shift": "OP",
+      "shift": "ON",
       "note": ""
     }
   },
@@ -77,15 +77,15 @@
       "note": ""
     },
     "Gianluca": {
-      "shift": "O",
+      "shift": "OP",
       "note": ""
     },
     "Mario": {
-      "shift": "ON",
+      "shift": "O",
       "note": ""
     },
     "Simone": {
-      "shift": "OP",
+      "shift": "ON",
       "note": ""
     }
   },
@@ -95,15 +95,15 @@
       "note": ""
     },
     "Gianluca": {
-      "shift": "O",
+      "shift": "OP",
       "note": ""
     },
     "Mario": {
-      "shift": "ON",
+      "shift": "O",
       "note": ""
     },
     "Simone": {
-      "shift": "OP",
+      "shift": "ON",
       "note": ""
     }
   },
@@ -113,34 +113,34 @@
       "note": ""
     },
     "Gianluca": {
-      "shift": "O",
+      "shift": "OP",
       "note": ""
     },
     "Mario": {
-      "shift": "ON",
+      "shift": "O",
       "note": ""
     },
     "Simone": {
-      "shift": "OP",
+      "shift": "ON",
       "note": ""
     }
   },
   "2025-11-07": {
     "Luca": {
-      "shift": "R",
-      "note": "Riposo"
+      "shift": "OP",
+      "note": ""
     },
     "Gianluca": {
-      "shift": "R",
-      "note": "Riposo"
+      "shift": "OP",
+      "note": ""
     },
     "Mario": {
-      "shift": "R",
-      "note": "Riposo"
+      "shift": "O",
+      "note": ""
     },
     "Simone": {
-      "shift": "R",
-      "note": "Riposo"
+      "shift": "ON",
+      "note": ""
     }
   },
   "2025-11-08": {
@@ -163,20 +163,20 @@
   },
   "2025-11-09": {
     "Luca": {
-      "shift": "OP",
-      "note": ""
+      "shift": "R",
+      "note": "Riposo"
     },
     "Gianluca": {
-      "shift": "O",
-      "note": ""
+      "shift": "R",
+      "note": "Riposo"
     },
     "Mario": {
-      "shift": "ON",
-      "note": ""
+      "shift": "R",
+      "note": "Riposo"
     },
     "Simone": {
-      "shift": "OP",
-      "note": ""
+      "shift": "R",
+      "note": "Riposo"
     }
   },
   "2025-11-10": {
@@ -185,15 +185,15 @@
       "note": ""
     },
     "Gianluca": {
-      "shift": "ON",
+      "shift": "O",
       "note": ""
     },
     "Mario": {
-      "shift": "OP",
+      "shift": "ON",
       "note": ""
     },
     "Simone": {
-      "shift": "O",
+      "shift": "OP",
       "note": ""
     }
   },
@@ -203,15 +203,15 @@
       "note": ""
     },
     "Gianluca": {
-      "shift": "ON",
+      "shift": "O",
       "note": ""
     },
     "Mario": {
-      "shift": "OP",
+      "shift": "ON",
       "note": ""
     },
     "Simone": {
-      "shift": "O",
+      "shift": "OP",
       "note": ""
     }
   },
@@ -221,15 +221,15 @@
       "note": ""
     },
     "Gianluca": {
-      "shift": "ON",
+      "shift": "O",
       "note": ""
     },
     "Mario": {
-      "shift": "OP",
+      "shift": "ON",
       "note": ""
     },
     "Simone": {
-      "shift": "O",
+      "shift": "OP",
       "note": ""
     }
   },
@@ -239,34 +239,34 @@
       "note": ""
     },
     "Gianluca": {
-      "shift": "ON",
+      "shift": "O",
       "note": ""
     },
     "Mario": {
-      "shift": "OP",
+      "shift": "ON",
       "note": ""
     },
     "Simone": {
-      "shift": "O",
+      "shift": "OP",
       "note": ""
     }
   },
   "2025-11-14": {
     "Luca": {
-      "shift": "R",
-      "note": "Riposo"
+      "shift": "O",
+      "note": ""
     },
     "Gianluca": {
-      "shift": "R",
-      "note": "Riposo"
+      "shift": "O",
+      "note": ""
     },
     "Mario": {
-      "shift": "R",
-      "note": "Riposo"
+      "shift": "ON",
+      "note": ""
     },
     "Simone": {
-      "shift": "R",
-      "note": "Riposo"
+      "shift": "OP",
+      "note": ""
     }
   },
   "2025-11-15": {
@@ -289,110 +289,110 @@
   },
   "2025-11-16": {
     "Luca": {
-      "shift": "O",
-      "note": ""
+      "shift": "R",
+      "note": "Riposo"
     },
     "Gianluca": {
-      "shift": "ON",
-      "note": ""
+      "shift": "R",
+      "note": "Riposo"
     },
     "Mario": {
-      "shift": "OP",
-      "note": ""
+      "shift": "R",
+      "note": "Riposo"
     },
     "Simone": {
-      "shift": "O",
-      "note": ""
+      "shift": "R",
+      "note": "Riposo"
     }
   },
   "2025-11-17": {
     "Luca": {
-      "shift": "O",
+      "shift": "ON",
       "note": ""
     },
     "Gianluca": {
-      "shift": "OP",
+      "shift": "ON",
       "note": ""
     },
     "Mario": {
-      "shift": "O",
+      "shift": "OP",
       "note": ""
     },
     "Simone": {
-      "shift": "ON",
+      "shift": "O",
       "note": ""
     }
   },
   "2025-11-18": {
     "Luca": {
-      "shift": "O",
+      "shift": "ON",
       "note": ""
     },
     "Gianluca": {
-      "shift": "OP",
+      "shift": "ON",
       "note": ""
     },
     "Mario": {
-      "shift": "O",
+      "shift": "OP",
       "note": ""
     },
     "Simone": {
-      "shift": "ON",
+      "shift": "O",
       "note": ""
     }
   },
   "2025-11-19": {
     "Luca": {
-      "shift": "O",
+      "shift": "ON",
       "note": ""
     },
     "Gianluca": {
-      "shift": "OP",
+      "shift": "ON",
       "note": ""
     },
     "Mario": {
-      "shift": "O",
+      "shift": "OP",
       "note": ""
     },
     "Simone": {
-      "shift": "ON",
+      "shift": "O",
       "note": ""
     }
   },
   "2025-11-20": {
     "Luca": {
-      "shift": "O",
+      "shift": "ON",
       "note": ""
     },
     "Gianluca": {
-      "shift": "OP",
+      "shift": "ON",
       "note": ""
     },
     "Mario": {
-      "shift": "O",
+      "shift": "OP",
       "note": ""
     },
     "Simone": {
-      "shift": "ON",
+      "shift": "O",
       "note": ""
     }
   },
   "2025-11-21": {
     "Luca": {
-      "shift": "R",
-      "note": "Riposo"
+      "shift": "ON",
+      "note": ""
     },
     "Gianluca": {
-      "shift": "R",
-      "note": "Riposo"
+      "shift": "ON",
+      "note": ""
     },
     "Mario": {
-      "shift": "R",
-      "note": "Riposo"
+      "shift": "OP",
+      "note": ""
     },
     "Simone": {
-      "shift": "R",
-      "note": "Riposo"
+      "shift": "O",
+      "note": ""
     }
   },
   "2025-11-22": {
@@ -415,20 +415,20 @@
   },
   "2025-11-23": {
     "Luca": {
-      "shift": "O",
-      "note": ""
+      "shift": "R",
+      "note": "Riposo"
     },
     "Gianluca": {
-      "shift": "OP",
-      "note": ""
+      "shift": "R",
+      "note": "Riposo"
     },
     "Mario": {
-      "shift": "O",
-      "note": ""
+      "shift": "R",
+      "note": "Riposo"
     },
     "Simone": {
-      "shift": "ON",
-      "note": ""
+      "shift": "R",
+      "note": "Riposo"
     }
   },
   "2025-11-24": {
@@ -437,15 +437,15 @@
       "note": ""
     },
     "Gianluca": {
-      "shift": "O",
+      "shift": "OP",
       "note": ""
     },
     "Mario": {
-      "shift": "ON",
+      "shift": "O",
       "note": ""
     },
     "Simone": {
-      "shift": "OP",
+      "shift": "ON",
       "note": ""
     }
   },
@@ -455,15 +455,15 @@
       "note": ""
     },
     "Gianluca": {
-      "shift": "O",
+      "shift": "OP",
       "note": ""
     },
     "Mario": {
-      "shift": "ON",
+      "shift": "O",
       "note": ""
     },
     "Simone": {
-      "shift": "OP",
+      "shift": "ON",
       "note": ""
     }
   },
@@ -473,15 +473,15 @@
       "note": ""
     },
     "Gianluca": {
-      "shift": "O",
+      "shift": "OP",
       "note": ""
     },
     "Mario": {
-      "shift": "ON",
+      "shift": "O",
       "note": ""
     },
     "Simone": {
-      "shift": "OP",
+      "shift": "ON",
       "note": ""
     }
   },
@@ -491,34 +491,34 @@
       "note": ""
     },
     "Gianluca": {
-      "shift": "O",
+      "shift": "OP",
       "note": ""
     },
     "Mario": {
-      "shift": "ON",
+      "shift": "O",
       "note": ""
     },
     "Simone": {
-      "shift": "OP",
+      "shift": "ON",
       "note": ""
     }
   },
   "2025-11-28": {
     "Luca": {
-      "shift": "R",
-      "note": "Riposo"
+      "shift": "OP",
+      "note": ""
     },
     "Gianluca": {
-      "shift": "R",
-      "note": "Riposo"
+      "shift": "OP",
+      "note": ""
     },
     "Mario": {
-      "shift": "R",
-      "note": "Riposo"
+      "shift": "O",
+      "note": ""
     },
     "Simone": {
-      "shift": "R",
-      "note": "Riposo"
+      "shift": "ON",
+      "note": ""
     }
   },
   "2025-11-29": {

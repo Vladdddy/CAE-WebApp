@@ -5,6 +5,7 @@ import {
     useLocation,
     Navigate,
 } from "react-router-dom";
+import { useState } from "react";
 import Sidebar from "./components/Sidebar";
 import Dashboard from "./pages/Dashboard";
 import Tasks from "./pages/Tasks";
@@ -21,11 +22,25 @@ function ProtectedRoute({ children }) {
 function AppContent() {
     const location = useLocation();
     const isLoginPage = location.pathname === "/login";
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+    const toggleSidebar = () => {
+        setIsSidebarCollapsed(!isSidebarCollapsed);
+    };
 
     return (
         <div className="flex">
-            {!isLoginPage && <Sidebar />}{" "}
-            <div className={`p-6 w-full ${!isLoginPage ? "ml-64" : ""}`}>
+            {!isLoginPage && (
+                <Sidebar
+                    isCollapsed={isSidebarCollapsed}
+                    onToggle={toggleSidebar}
+                />
+            )}
+            <div
+                className={`p-6 w-full transition-all duration-300 ${
+                    !isLoginPage ? (isSidebarCollapsed ? "ml-16" : "ml-64") : ""
+                }`}
+            >
                 <Routes>
                     <Route path="/login" element={<Login />} />
                     <Route

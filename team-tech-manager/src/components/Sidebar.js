@@ -2,9 +2,10 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import "../styles/sidebar.css";
 import logo from "../assets/cae2.png";
+import Logo from "../assets/logo.png";
 import Modal from "./Modal";
 
-export default function Sidebar() {
+export default function Sidebar({ isCollapsed, onToggle }) {
     const location = useLocation();
     const navigate = useNavigate();
     const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -122,21 +123,58 @@ export default function Sidebar() {
     };
 
     return (
-        <div className="sidebar-pc flex flex-col w-64 h-screen bg-gray-800 text-white p-4 fixed">
-            <h2 className="flex justify-center align-items-center text-2xl font-bold mb-6">
-                Simtech
+        <div
+            className={`sidebar-pc flex flex-col h-screen bg-gray-800 text-white p-4 fixed transition-all duration-300 ${
+                isCollapsed ? "w-20" : "w-64"
+            }`}
+        >
+            <button
+                onClick={onToggle}
+                className="absolute top-1/2 -right-3 transform -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white rounded-full w-8 h-12 flex items-center justify-center shadow-lg transition-all duration-200 z-10"
+                title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    width="20"
+                    height="20"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className={`transform transition-transform duration-200 ${
+                        isCollapsed ? "rotate-180" : ""
+                    }`}
+                >
+                    <path d="M15 18L9 12L15 6" />
+                </svg>
+            </button>
+
+            <h2
+                className={`flex justify-center align-items-center text-2xl font-bold mb-6 transition-all duration-300 ${
+                    isCollapsed ? "hidden" : "opacity-100"
+                }`}
+            >
+                {isCollapsed ? "" : "Simtech"}
             </h2>
-            <ul className="flex flex-col gap-2 my-16 space-y-1">
-                {" "}
+            <ul
+                className={
+                    !isCollapsed
+                        ? `flex flex-col gap-2 my-16 space-y-1`
+                        : `flex flex-col gap-2 my-2 space-y-1`
+                }
+            >
                 <li className="rounded">
                     <Link
                         to="/"
-                        className={`flex align-items-center gap-2 p-2 hover:bg-gray-700 rounded ${
+                        className={`flex align-items-center gap-2 p-2 hover:bg-gray-700 rounded transition-all duration-200 ${
                             location.pathname === "/" ? "active-link" : ""
-                        }`}
+                        } ${isCollapsed ? "justify-center" : ""}`}
+                        title={isCollapsed ? "Dashboard" : ""}
                     >
                         <svg
-                            className="dashboard-icon"
+                            className="dashboard-icon flex-shrink-0"
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 24 24"
                             width=""
@@ -169,64 +207,75 @@ export default function Sidebar() {
                                 strokeLinejoin="round"
                             ></path>
                         </svg>
-                        <p className="text-l">Dashboard</p>
+                        {!isCollapsed && <p className="text-l">Dashboard</p>}
                     </Link>
-                </li>{" "}
+                </li>
                 <li>
                     <Link
                         to="/tasks"
-                        className={`flex align-items-center gap-2 p-2 hover:bg-gray-700 rounded ${
+                        className={`flex align-items-center gap-2 p-2 hover:bg-gray-700 rounded transition-all duration-200 ${
                             location.pathname === "/tasks" ? "active-link" : ""
-                        }`}
+                        } ${isCollapsed ? "justify-center" : ""}`}
+                        title={isCollapsed ? "Tasks" : ""}
                     >
-                        <svg
-                            className="dashboard-icon"
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            width=""
-                            height=""
-                            color=""
-                            fill="none"
-                        >
-                            <path
-                                d="M7.99805 16H11.998M7.99805 11H15.998"
-                                stroke=""
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                            ></path>
-                            <path
-                                d="M7.5 3.5C5.9442 3.54667 5.01661 3.71984 4.37477 4.36227C3.49609 5.24177 3.49609 6.6573 3.49609 9.48836L3.49609 15.9944C3.49609 18.8255 3.49609 20.241 4.37477 21.1205C5.25345 22 6.66767 22 9.49609 22L14.4961 22C17.3245 22 18.7387 22 19.6174 21.1205C20.4961 20.241 20.4961 18.8255 20.4961 15.9944V9.48836C20.4961 6.6573 20.4961 5.24177 19.6174 4.36228C18.9756 3.71984 18.048 3.54667 16.4922 3.5"
-                                stroke=""
-                                strokeWidth="1.5"
-                            ></path>
-                            <path
-                                d="M7.49609 3.75C7.49609 2.7835 8.2796 2 9.24609 2H14.7461C15.7126 2 16.4961 2.7835 16.4961 3.75C16.4961 4.7165 15.7126 5.5 14.7461 5.5H9.24609C8.2796 5.5 7.49609 4.7165 7.49609 3.75Z"
-                                stroke=""
-                                strokeWidth="1.5"
-                                strokeLinejoin="round"
-                            ></path>
-                        </svg>
-                        <div className="flex items-center justify-between w-full">
-                            <p className="text-l">Tasks</p>{" "}
-                            {todayTaskCount > 0 && (
-                                <span className="bg-blue-400 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center min-w-[20px]">
+                        <div className="relative flex-shrink-0">
+                            <svg
+                                className="dashboard-icon"
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                width=""
+                                height=""
+                                color=""
+                                fill="none"
+                            >
+                                <path
+                                    d="M7.99805 16H11.998M7.99805 11H15.998"
+                                    stroke=""
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                ></path>
+                                <path
+                                    d="M7.5 3.5C5.9442 3.54667 5.01661 3.71984 4.37477 4.36227C3.49609 5.24177 3.49609 6.6573 3.49609 9.48836L3.49609 15.9944C3.49609 18.8255 3.49609 20.241 4.37477 21.1205C5.25345 22 6.66767 22 9.49609 22L14.4961 22C17.3245 22 18.7387 22 19.6174 21.1205C20.4961 20.241 20.4961 18.8255 20.4961 15.9944V9.48836C20.4961 6.6573 20.4961 5.24177 19.6174 4.36228C18.9756 3.71984 18.048 3.54667 16.4922 3.5"
+                                    stroke=""
+                                    strokeWidth="1.5"
+                                ></path>
+                                <path
+                                    d="M7.49609 3.75C7.49609 2.7835 8.2796 2 9.24609 2H14.7461C15.7126 2 16.4961 2.7835 16.4961 3.75C16.4961 4.7165 15.7126 5.5 14.7461 5.5H9.24609C8.2796 5.5 7.49609 4.7165 7.49609 3.75Z"
+                                    stroke=""
+                                    strokeWidth="1.5"
+                                    strokeLinejoin="round"
+                                ></path>
+                            </svg>
+                            {todayTaskCount > 0 && !isCollapsed && (
+                                <span className="absolute -top-1 -right-1 bg-blue-400 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center min-w-[16px]">
+                                    {todayTaskCount}
+                                </span>
+                            )}
+                            {todayTaskCount > 0 && isCollapsed && (
+                                <span className="absolute -top-1 -right-1 bg-blue-400 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
                                     {todayTaskCount}
                                 </span>
                             )}
                         </div>
+                        {!isCollapsed && (
+                            <div className="flex items-center justify-between w-full">
+                                <p className="text-l">Tasks</p>
+                            </div>
+                        )}
                     </Link>
-                </li>{" "}
+                </li>
                 <li>
                     <Link
                         to="/logbook"
-                        className={`flex align-items-center gap-2 p-2 hover:bg-gray-700 rounded ${
+                        className={`flex align-items-center gap-2 p-2 hover:bg-gray-700 rounded transition-all duration-200 ${
                             location.pathname === "/logbook"
                                 ? "active-link"
                                 : ""
-                        }`}
+                        } ${isCollapsed ? "justify-center" : ""}`}
+                        title={isCollapsed ? "Logbook" : ""}
                     >
                         <svg
-                            className="dashboard-icon"
+                            className="dashboard-icon flex-shrink-0"
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 24 24"
                             width=""
@@ -256,18 +305,19 @@ export default function Sidebar() {
                                 strokeLinejoin="round"
                             ></path>
                         </svg>
-                        <p className="text-l">Logbook</p>
+                        {!isCollapsed && <p className="text-l">Logbook</p>}
                     </Link>
-                </li>{" "}
+                </li>
                 <li>
                     <Link
                         to="/shifts"
-                        className={`flex align-items-center gap-2 p-2 hover:bg-gray-700 rounded ${
+                        className={`flex align-items-center gap-2 p-2 hover:bg-gray-700 rounded transition-all duration-200 ${
                             location.pathname === "/shifts" ? "active-link" : ""
-                        }`}
+                        } ${isCollapsed ? "justify-center" : ""}`}
+                        title={isCollapsed ? "Shifts" : ""}
                     >
                         <svg
-                            className="dashboard-icon"
+                            className="dashboard-icon flex-shrink-0"
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 24 24"
                             width=""
@@ -290,45 +340,86 @@ export default function Sidebar() {
                                 strokeLinejoin="round"
                             ></path>
                         </svg>
-                        <p className="text-l">Shifts</p>
-                    </Link>{" "}
-                </li>{" "}
+                        {!isCollapsed && <p className="text-l">Shifts</p>}
+                    </Link>
+                </li>
             </ul>
-            <div className="flex items-center justify-between p-2 rounded mt-auto transition-colors">
-                <div className="flex items-center gap-3">
-                    <img
-                        src={logo}
-                        alt="Logo"
-                        className="w-10 h-10 rounded-full object-cover"
-                    />
-                    <div className="flex flex-col">
-                        <span className="text-sm font-medium text-white">
-                            {currentUser?.name || "User"}
-                        </span>
-                        <span className="text-xs text-gray-300">
-                            {currentUser?.role || "Role"}
-                        </span>
-                    </div>
-                </div>
-                <button
-                    onClick={handleLogout}
-                    className="p-2 hover:bg-red-600 rounded transition-colors"
-                    title="Logout"
-                >
-                    <svg
-                        className="w-5 h-5"
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                    >
-                        <path d="M11 3L10.3374 3.23384C7.75867 4.144 6.46928 4.59908 5.73464 5.63742C5 6.67576 5 8.0431 5 10.7778V13.2222C5 15.9569 5 17.3242 5.73464 18.3626C6.46928 19.4009 7.75867 19.856 10.3374 20.7662L11 21" />
-                        <path d="M21 12L11 12M21 12C21 11.2998 19.0057 9.99153 18.5 9.5M21 12C21 12.7002 19.0057 14.0085 18.5 14.5" />{" "}
-                    </svg>
-                </button>
+            <div
+                className={`flex items-center justify-between p-2 rounded mt-auto transition-all duration-300 ${
+                    isCollapsed ? "flex-col gap-2" : ""
+                }`}
+            >
+                {!isCollapsed ? (
+                    <>
+                        <div className="flex items-center gap-3">
+                            <img
+                                src={logo}
+                                alt="Logo"
+                                className="w-10 h-10 rounded-full object-cover"
+                            />
+                            <div className="flex flex-col">
+                                <span className="text-sm font-medium text-white">
+                                    {currentUser?.name || "User"}
+                                </span>
+                                <span className="text-xs text-gray-300">
+                                    {currentUser?.role || "Role"}
+                                </span>
+                            </div>
+                        </div>
+                        <button
+                            onClick={handleLogout}
+                            className="p-2 hover:bg-red-600 rounded transition-colors"
+                            title="Logout"
+                        >
+                            <svg
+                                className="w-5 h-5"
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            >
+                                <path d="M11 3L10.3374 3.23384C7.75867 4.144 6.46928 4.59908 5.73464 5.63742C5 6.67576 5 8.0431 5 10.7778V13.2222C5 15.9569 5 17.3242 5.73464 18.3626C6.46928 19.4009 7.75867 19.856 10.3374 20.7662L11 21" />
+                                <path d="M21 12L11 12M21 12C21 11.2998 19.0057 9.99153 18.5 9.5M21 12C21 12.7002 19.0057 14.0085 18.5 14.5" />
+                            </svg>
+                        </button>
+                    </>
+                ) : (
+                    <>
+                        <img
+                            src={logo}
+                            alt="Logo"
+                            className="w-8 h-8 rounded-full object-cover"
+                            title={currentUser?.name || "User"}
+                        />
+                        <div className="flex flex-col mb-4">
+                            <span className="text-xs font-medium text-white">
+                                {currentUser?.name || "User"}
+                            </span>
+                        </div>
+                        <button
+                            onClick={handleLogout}
+                            className="p-1.5 hover:bg-red-600 rounded transition-colors"
+                            title="Logout"
+                        >
+                            <svg
+                                className="w-6 h-6"
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            >
+                                <path d="M11 3L10.3374 3.23384C7.75867 4.144 6.46928 4.59908 5.73464 5.63742C5 6.67576 5 8.0431 5 10.7778V13.2222C5 15.9569 5 17.3242 5.73464 18.3626C6.46928 19.4009 7.75867 19.856 10.3374 20.7662L11 21" />
+                                <path d="M21 12L11 12M21 12C21 11.2998 19.0057 9.99153 18.5 9.5M21 12C21 12.7002 19.0057 14.0085 18.5 14.5" />
+                            </svg>
+                        </button>
+                    </>
+                )}
             </div>
 
             <Modal

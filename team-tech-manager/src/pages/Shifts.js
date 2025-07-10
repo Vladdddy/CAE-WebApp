@@ -5,6 +5,23 @@ import "../styles/shifts.css";
 const API = process.env.REACT_APP_API_URL;
 const shifts = ["O", "OP", "ON", "F", "M", "R"];
 
+// Helper function to get today's date in local timezone
+const getTodayDateKey = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+};
+
+// Helper function to get date key from a Date object (local timezone)
+const getDateKey = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+};
+
 // Helper function to get shift color
 const getShiftColor = (shift) => {
     const colors = {
@@ -48,7 +65,48 @@ export default function Shifts() {
     });
     const [users, setUsers] = useState([]);
     const [expandedRows, setExpandedRows] = useState(new Set());
+    const [isHoursSummaryExpanded, setIsHoursSummaryExpanded] = useState(true);
+    const [patternModal, setPatternModal] = useState({
+        isOpen: false,
+        selectedUsers: [],
+        patternType: "admin",
+        startDate: "",
+    });
     const tableRef = useRef();
+
+    // Shift patterns
+    const shiftPatterns = {
+        admin: {
+            name: "Admin Pattern",
+            description: "",
+            weekdayPattern: ["ON", "OP", "O", "ON", "OP"],
+            weekendShift: "R",
+            type: "weekday",
+        },
+        employee: {
+            name: "Employee Pattern",
+            description: "",
+            pattern: [
+                "D",
+                "D",
+                "D",
+                "D",
+                "R",
+                "R",
+                "R",
+                "R",
+                "N",
+                "N",
+                "N",
+                "N",
+                "R",
+                "R",
+                "R",
+                "R",
+            ],
+            type: "cycle",
+        },
+    };
 
     // Get current user's role from JWT token
     const getCurrentUser = () => {
@@ -142,7 +200,7 @@ export default function Shifts() {
     }, [year, month]);
 
     const handleChange = (name, day, field, value) => {
-        const dateKey = day.toISOString().split("T")[0];
+        const dateKey = getDateKey(day);
         const updated = {
             ...data,
             [dateKey]: {
@@ -251,6 +309,19 @@ export default function Shifts() {
                 const nameSpan = document.createElement("span");
                 nameSpan.textContent = name;
                 userHeader.appendChild(nameSpan);
+
+                // Add hours calculation to PDF
+                const hoursSpan = document.createElement("span");
+                const userHours = calculateUserHours(name);
+                hoursSpan.textContent = ` (${userHours}h/160h)`;
+                hoursSpan.style.cssText = `
+                    font-size: 14px;
+                    margin-left: 8px;
+                    color: ${userHours < 160 ? "#dc2626" : "#16a34a"};
+                    font-weight: bold;
+                `;
+                userHeader.appendChild(hoursSpan);
+
                 userSection.appendChild(userHeader);
 
                 // Days table for this user
@@ -262,10 +333,9 @@ export default function Shifts() {
 
                 // Create rows for each day
                 days.forEach((day, dayIndex) => {
-                    const dateKey = day.toISOString().split("T")[0];
+                    const dateKey = getDateKey(day);
                     const entry = data?.[dateKey]?.[name] || {};
-                    const isToday =
-                        dateKey === new Date().toISOString().split("T")[0];
+                    const isToday = dateKey === getTodayDateKey();
 
                     const row = document.createElement("tr");
                     row.style.cssText = `
@@ -464,6 +534,200 @@ export default function Shifts() {
         });
     };
 
+    const openPatternModal = () => {
+        setPatternModal({
+            isOpen: true,
+            selectedUsers: [],
+            patternType: "admin",
+        });
+    };
+
+    const closePatternModal = () => {
+        setPatternModal({
+            isOpen: false,
+            selectedUsers: [],
+            patternType: "admin",
+        });
+    };
+
+    const applyShiftPattern = () => {
+        if (patternModal.selectedUsers.length === 0) {
+            alert("Seleziona almeno un utente");
+            return;
+        }
+
+        if (!patternModal.startDate) {
+            alert("Seleziona una data di inizio");
+            return;
+        }
+
+        const pattern = shiftPatterns[patternModal.patternType];
+        const monthStart = new Date(year, month, 1);
+        const monthEnd = new Date(year, month + 1, 0);
+        const startDate = new Date(patternModal.startDate);
+
+        // Create updated data structure
+        const updatedData = { ...data };
+
+        patternModal.selectedUsers.forEach((userName, userIndex) => {
+            // Start from the selected date instead of the beginning of the month
+            let currentDate = new Date(startDate);
+            let dayCounter = 0; // Counter for cycle-based patterns
+
+            while (currentDate <= monthEnd) {
+                const dateKey = getDateKey(currentDate);
+                const dayOfWeek = currentDate.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+
+                // Initialize date entry if it doesn't exist
+                if (!updatedData[dateKey]) {
+                    updatedData[dateKey] = {};
+                }
+
+                // Initialize user entry if it doesn't exist
+                if (!updatedData[dateKey][userName]) {
+                    updatedData[dateKey][userName] = {};
+                }
+
+                let shiftToAssign;
+                let noteToAdd = "";
+
+                if (pattern.type === "weekday") {
+                    // Admin pattern: weekly-based with user offset
+                    if (dayOfWeek === 0 || dayOfWeek === 6) {
+                        // Weekend
+                        shiftToAssign = pattern.weekendShift;
+                        noteToAdd = "Riposo";
+                    } else {
+                        // Weekday: calculate which calendar week we're in
+                        // Get the Monday of the current date's week
+                        const currentDateCopy = new Date(currentDate);
+                        const dayOfWeekOffset =
+                            currentDate.getDay() === 0
+                                ? 6
+                                : currentDate.getDay() - 1; // Convert Sunday=0 to Sunday=6, Monday=1 to Monday=0, etc.
+                        currentDateCopy.setDate(
+                            currentDate.getDate() - dayOfWeekOffset
+                        );
+
+                        // Get the Monday of the start date's week
+                        const startDateCopy = new Date(startDate);
+                        const startDayOfWeekOffset =
+                            startDate.getDay() === 0
+                                ? 6
+                                : startDate.getDay() - 1;
+                        startDateCopy.setDate(
+                            startDate.getDate() - startDayOfWeekOffset
+                        );
+
+                        // Calculate weeks difference between the two Mondays
+                        const weeksPassed = Math.floor(
+                            (currentDateCopy - startDateCopy) /
+                                (7 * 24 * 60 * 60 * 1000)
+                        );
+
+                        // Add user offset to ensure different users have different shifts
+                        let userPatternIndex =
+                            (weeksPassed + userIndex) %
+                            pattern.weekdayPattern.length;
+
+                        shiftToAssign =
+                            pattern.weekdayPattern[userPatternIndex];
+                    }
+                } else if (pattern.type === "cycle") {
+                    // Employee pattern: continuous 12-day cycle
+                    // Each user gets a different offset in the cycle
+                    let userPatternIndex =
+                        (dayCounter + userIndex * 4) % pattern.pattern.length;
+                    shiftToAssign = pattern.pattern[userPatternIndex];
+
+                    // Add note for rest days
+                    if (shiftToAssign === "R") {
+                        noteToAdd = "Riposo";
+                    }
+                }
+
+                updatedData[dateKey][userName] = {
+                    ...updatedData[dateKey][userName],
+                    shift: shiftToAssign,
+                    note: noteToAdd,
+                };
+
+                currentDate.setDate(currentDate.getDate() + 1);
+                dayCounter++; // Increment day counter for cycle patterns
+            }
+        });
+
+        // Update local state
+        setData(updatedData);
+
+        // Send to server
+        const token = localStorage.getItem("authToken");
+        fetch(`${API}/api/shifts/${year}/${month + 1}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(updatedData),
+        })
+            .then((response) => {
+                if (response.ok) {
+                    alert("Pattern applicato con successo!");
+                    closePatternModal();
+                } else {
+                    throw new Error("Errore nell'applicare il pattern");
+                }
+            })
+            .catch((error) => {
+                console.error("Error applying pattern:", error);
+                alert("Errore nell'applicare il pattern");
+            });
+    };
+
+    const toggleUserSelection = (userName) => {
+        setPatternModal((prev) => ({
+            ...prev,
+            selectedUsers: prev.selectedUsers.includes(userName)
+                ? prev.selectedUsers.filter((name) => name !== userName)
+                : [...prev.selectedUsers, userName],
+        }));
+    };
+
+    // Function to calculate total working hours for a user in the current month
+    const calculateUserHours = (userName) => {
+        let totalHours = 0;
+
+        days.forEach((day) => {
+            const dateKey = getDateKey(day);
+            const entry = data?.[dateKey]?.[userName];
+
+            if (entry && entry.shift) {
+                const shift = entry.shift;
+                // Count working shifts: O, OP, ON, M (exclude R=Riposo, F=Festa)
+                if (["O", "OP", "ON", "M"].includes(shift)) {
+                    totalHours += 8; // Each shift is 8 hours
+                }
+            }
+        });
+
+        return totalHours;
+    };
+
+    // Function to get hour display style
+    const getHourDisplayStyle = (hours) => {
+        const targetHours = 160;
+        if (hours < targetHours) {
+            return {
+                color: "#dc2626", // red-600
+                fontWeight: "bold",
+            };
+        }
+        return {
+            color: "#16a34a", // green-600
+            fontWeight: "bold",
+        };
+    };
+
     return (
         <div className="flex gap-4 flex-col lg:flex-col justify-between max-w-full p-4">
             {/* Header Section */}
@@ -555,6 +819,55 @@ export default function Shifts() {
                             </svg>
                             <p className="text-white">Export</p>
                         </button>
+                        {isAdmin && (
+                            <>
+                                <button
+                                    onClick={openPatternModal}
+                                    className="aggiungi-btn flex items-center gap-2 col-span-1 sm:col-span-2 border border-blue-600 px-6 py-2 rounded mr-2 hover:bg-blue-600 transition-colors group"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 24 24"
+                                        width="20"
+                                        height="20"
+                                        className="text-blue-600 group-hover:text-white transition-colors"
+                                        fill="none"
+                                    >
+                                        <path
+                                            d="M18 2V4M6 2V4"
+                                            stroke="currentColor"
+                                            strokeWidth="1.5"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        />
+                                        <path
+                                            d="M11.9955 13H12.0045M11.9955 17H12.0045M15.991 13H16M8 13H8.00897M8 17H8.00897"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        />
+                                        <path
+                                            d="M3.5 8H20.5"
+                                            stroke="currentColor"
+                                            strokeWidth="1.5"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        />
+                                        <path
+                                            d="M2.5 12.2432C2.5 7.88594 2.5 5.70728 3.75212 4.35364C5.00424 3 7.01949 3 11.05 3H12.95C16.9805 3 18.9958 3 20.2479 4.35364C21.5 5.70728 21.5 7.88594 21.5 12.2432V12.7568C21.5 17.1141 21.5 19.2927 20.2479 20.6464C18.9958 22 16.9805 22 12.95 22H11.05C7.01949 22 5.00424 22 3.75212 20.6464C2.5 19.2927 2.5 17.1141 2.5 12.7568V12.2432Z"
+                                            stroke="currentColor"
+                                            strokeWidth="1.5"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        />
+                                    </svg>
+                                    <p className="text-blue-600 group-hover:text-white transition-colors">
+                                        Scegli Pattern
+                                    </p>
+                                </button>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
@@ -639,7 +952,7 @@ export default function Shifts() {
             </div>
 
             {/* Shifts Table */}
-            <div className="bg-white rounded-xl shadow-sm border overflow-hidden w-[80vw]">
+            <div className="bg-white rounded-xl shadow-sm border overflow-hidden w-[90vw]">
                 <div ref={tableRef} className="shifts-container overflow-auto">
                     <table className="w-full">
                         <thead className="bg-gray-50 border-b border-gray-200">
@@ -730,18 +1043,37 @@ export default function Shifts() {
                                                 </svg>
                                             </button>
                                         </div>
+
+                                        {/* Expandable Hours Display */}
+                                        <div
+                                            className={`transition-all duration-500 ease-in-out ${
+                                                expandedRows.has(name)
+                                                    ? "max-h-20 opacity-100 mt-2"
+                                                    : "max-h-0 opacity-0 overflow-hidden"
+                                            }`}
+                                        >
+                                            {(() => {
+                                                const userHours =
+                                                    calculateUserHours(name);
+                                                return (
+                                                    <div
+                                                        className="text-xs text-center px-2 py-1 rounded"
+                                                        style={getHourDisplayStyle(
+                                                            userHours
+                                                        )}
+                                                    >
+                                                        {userHours}h/160h
+                                                    </div>
+                                                );
+                                            })()}
+                                        </div>
                                     </td>
                                     {days.map((d) => {
-                                        const dateKey = d
-                                            .toISOString()
-                                            .split("T")[0];
+                                        const dateKey = getDateKey(d);
                                         const entry =
                                             data?.[dateKey]?.[name] || {};
                                         const isToday =
-                                            dateKey ===
-                                            new Date()
-                                                .toISOString()
-                                                .split("T")[0];
+                                            dateKey === getTodayDateKey();
 
                                         return (
                                             <td
@@ -894,10 +1226,6 @@ export default function Shifts() {
                                                         )}
                                                     </div>
                                                 </div>
-
-                                                {isToday && (
-                                                    <div className="today-indicator absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full"></div>
-                                                )}
                                             </td>
                                         );
                                     })}
@@ -906,6 +1234,96 @@ export default function Shifts() {
                         </tbody>
                     </table>
                 </div>
+            </div>
+
+            {/* Hours Summary Section */}
+            <div className="bg-white rounded-xl shadow-sm border mb-6 w-1/2">
+                {/* Title/Header */}
+                <div
+                    className="p-4 border-b border-gray-200 cursor-pointer select-none hover:bg-gray-50 transition-colors duration-150"
+                    onClick={() =>
+                        setIsHoursSummaryExpanded(!isHoursSummaryExpanded)
+                    }
+                >
+                    <div className="flex items-center justify-between">
+                        <h3 className="text-md text-gray-600">
+                            Riepilogo Ore Mensili
+                        </h3>
+                        <svg
+                            className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${
+                                isHoursSummaryExpanded
+                                    ? "transform rotate-180"
+                                    : ""
+                            }`}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 9l-7 7-7-7"
+                            />
+                        </svg>
+                    </div>
+                </div>
+
+                {/* Collapsible Content */}
+                {isHoursSummaryExpanded && (
+                    <div className="p-4">
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            {names.map((name) => {
+                                const userHours = calculateUserHours(name);
+                                const isUnderTarget = userHours < 160;
+                                return (
+                                    <div
+                                        key={name}
+                                        className="flex flex-col items-center p-3 bg-gray-50 rounded-lg"
+                                    >
+                                        <div className="flex items-center gap-2 mb-2">
+                                            {isUserAdmin(name) && (
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    viewBox="0 0 24 24"
+                                                    width="16"
+                                                    height="16"
+                                                    color="#fbbf24"
+                                                    fill="currentColor"
+                                                >
+                                                    <path d="M13.7276 3.44418L15.4874 6.99288C15.7274 7.48687 16.3673 7.9607 16.9073 8.05143L20.0969 8.58575C22.1367 8.92853 22.6167 10.4206 21.1468 11.8925L18.6671 14.3927C18.2471 14.8161 18.0172 15.6327 18.1471 16.2175L18.8571 19.3125C19.417 21.7623 18.1271 22.71 15.9774 21.4296L12.9877 19.6452C12.4478 19.3226 11.5579 19.3226 11.0079 19.6452L8.01827 21.4296C5.8785 22.71 4.57865 21.7522 5.13859 19.3125L5.84851 16.2175C5.97849 15.6327 5.74852 14.8161 5.32856 14.3927L2.84884 11.8925C1.389 10.4206 1.85895 8.92853 3.89872 8.58575L7.08837 8.05143C7.61831 7.9607 8.25824 7.48687 8.49821 6.99288L10.258 3.44418C11.2179 1.51861 12.7777 1.51861 13.7276 3.44418Z" />
+                                                </svg>
+                                            )}
+                                            <span className="text-sm font-medium text-gray-900">
+                                                {name}
+                                            </span>
+                                        </div>
+                                        <div className="text-center">
+                                            <span
+                                                className="text-lg font-bold"
+                                                style={{
+                                                    color: isUnderTarget
+                                                        ? "#dc2626"
+                                                        : "#16a34a",
+                                                }}
+                                            >
+                                                {userHours}h
+                                            </span>
+                                            <span className="text-xs text-gray-400">
+                                                /160h
+                                            </span>
+                                        </div>
+                                        {isUnderTarget && (
+                                            <div className="text-xs text-red-600 mt-1 text-center">
+                                                Mancano {160 - userHours}h
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Note Modal */}
@@ -1023,6 +1441,376 @@ export default function Shifts() {
                                 className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                             >
                                 Ok
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Pattern Modal */}
+            {patternModal.isOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-semibold text-gray-900">
+                                Applica Pattern Turni
+                            </h3>
+                            <button
+                                onClick={closePatternModal}
+                                className="text-gray-400 hover:text-gray-600"
+                            >
+                                <svg
+                                    className="w-6 h-6"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M6 18L18 6M6 6l12 12"
+                                    />
+                                </svg>
+                            </button>
+                        </div>
+
+                        {/* Pattern Type Selection */}
+                        <div className="mb-6">
+                            <div className="grid grid-cols-1 gap-3">
+                                <div className="relative">
+                                    <input
+                                        type="radio"
+                                        id="admin-pattern"
+                                        name="patternType"
+                                        value="admin"
+                                        checked={
+                                            patternModal.patternType === "admin"
+                                        }
+                                        onChange={(e) =>
+                                            setPatternModal((prev) => ({
+                                                ...prev,
+                                                patternType: e.target.value,
+                                            }))
+                                        }
+                                        className="sr-only"
+                                    />
+                                    <label
+                                        htmlFor="admin-pattern"
+                                        className={`block p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                                            patternModal.patternType === "admin"
+                                                ? "border-green-500 bg-green-50"
+                                                : "border-gray-200 hover:border-gray-300"
+                                        }`}
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <h4 className="font-medium text-gray-900">
+                                                    {shiftPatterns.admin.name}
+                                                </h4>
+                                                <p className="text-sm text-gray-600 mt-1">
+                                                    {
+                                                        shiftPatterns.admin
+                                                            .description
+                                                    }
+                                                </p>
+                                                <div className="flex gap-2 mt-2">
+                                                    {shiftPatterns.admin.weekdayPattern.map(
+                                                        (shift, index) => (
+                                                            <span
+                                                                key={index}
+                                                                className={`px-2 py-1 text-xs rounded ${getShiftColor(
+                                                                    shift
+                                                                )}`}
+                                                            >
+                                                                {shift}
+                                                            </span>
+                                                        )
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div
+                                                className={`w-4 h-4 rounded-full border-2 ${
+                                                    patternModal.patternType ===
+                                                    "admin"
+                                                        ? "border-green-500 bg-green-500"
+                                                        : "border-gray-300"
+                                                }`}
+                                            >
+                                                {patternModal.patternType ===
+                                                    "admin" && (
+                                                    <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <div className="relative">
+                                    <input
+                                        type="radio"
+                                        id="employee-pattern"
+                                        name="patternType"
+                                        value="employee"
+                                        checked={
+                                            patternModal.patternType ===
+                                            "employee"
+                                        }
+                                        onChange={(e) =>
+                                            setPatternModal((prev) => ({
+                                                ...prev,
+                                                patternType: e.target.value,
+                                            }))
+                                        }
+                                        className="sr-only"
+                                    />
+                                    <label
+                                        htmlFor="employee-pattern"
+                                        className={`block p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                                            patternModal.patternType ===
+                                            "employee"
+                                                ? "border-blue-500 bg-blue-50"
+                                                : "border-gray-200 hover:border-gray-300"
+                                        }`}
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <h4 className="font-medium text-gray-900">
+                                                    {
+                                                        shiftPatterns.employee
+                                                            .name
+                                                    }
+                                                </h4>
+                                                <p className="text-sm text-gray-600 mt-1">
+                                                    {
+                                                        shiftPatterns.employee
+                                                            .description
+                                                    }
+                                                </p>
+                                                <div className="flex gap-2 mt-2">
+                                                    {shiftPatterns.employee.pattern.map(
+                                                        (shift, index) => (
+                                                            <span
+                                                                key={index}
+                                                                className={`px-2 py-1 text-xs rounded ${getShiftColor(
+                                                                    shift
+                                                                )}`}
+                                                            >
+                                                                {shift}
+                                                            </span>
+                                                        )
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div
+                                                className={`w-4 h-4 rounded-full border-2 ${
+                                                    patternModal.patternType ===
+                                                    "employee"
+                                                        ? "border-blue-500 bg-blue-500"
+                                                        : "border-gray-300"
+                                                }`}
+                                            >
+                                                {patternModal.patternType ===
+                                                    "employee" && (
+                                                    <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Start Date Selection */}
+                        <div className="mb-6">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Dal giorno
+                            </label>
+                            <input
+                                type="date"
+                                value={patternModal.startDate}
+                                onChange={(e) =>
+                                    setPatternModal((prev) => ({
+                                        ...prev,
+                                        startDate: e.target.value,
+                                    }))
+                                }
+                                min={`${year}-${String(month + 1).padStart(
+                                    2,
+                                    "0"
+                                )}-01`}
+                                max={`${year}-${String(month + 1).padStart(
+                                    2,
+                                    "0"
+                                )}-${String(
+                                    new Date(year, month + 1, 0).getDate()
+                                ).padStart(2, "0")}`}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
+                            />
+                            <p className="text-xs text-gray-500 mt-1">
+                                Seleziona il giorno da cui iniziare ad applicare
+                                il pattern
+                            </p>
+                        </div>
+
+                        {/* User Selection */}
+                        <div className="mb-6">
+                            <label className="block text-sm font-medium text-gray-700 mb-3">
+                                Seleziona Utenti (
+                                {patternModal.selectedUsers.length} selezionati)
+                            </label>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-60 overflow-y-auto border border-gray-200 rounded-lg p-3">
+                                {names.map((name) => {
+                                    const user = users.find(
+                                        (u) => u.name === name
+                                    );
+                                    const isSelected =
+                                        patternModal.selectedUsers.includes(
+                                            name
+                                        );
+
+                                    return (
+                                        <div
+                                            key={name}
+                                            onClick={() =>
+                                                toggleUserSelection(name)
+                                            }
+                                            className={`flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                                                isSelected
+                                                    ? "border-blue-500 bg-blue-50"
+                                                    : "border-gray-200 hover:border-gray-300"
+                                            }`}
+                                        >
+                                            <div
+                                                className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                                                    isSelected
+                                                        ? "border-blue-500 bg-blue-500"
+                                                        : "border-gray-300"
+                                                }`}
+                                            >
+                                                {isSelected && (
+                                                    <svg
+                                                        className="w-2.5 h-2.5 text-white"
+                                                        fill="currentColor"
+                                                        viewBox="0 0 20 20"
+                                                    >
+                                                        <path
+                                                            fillRule="evenodd"
+                                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                            clipRule="evenodd"
+                                                        />
+                                                    </svg>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                                {user &&
+                                                    user.role === "admin" && (
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            viewBox="0 0 24 24"
+                                                            width="12"
+                                                            height="12"
+                                                            color="#fbbf24"
+                                                            fill="currentColor"
+                                                        >
+                                                            <path d="M13.7276 3.44418L15.4874 6.99288C15.7274 7.48687 16.3673 7.9607 16.9073 8.05143L20.0969 8.58575C22.1367 8.92853 22.6167 10.4206 21.1468 11.8925L18.6671 14.3927C18.2471 14.8161 18.0172 15.6327 18.1471 16.2175L18.8571 19.3125C19.417 21.7623 18.1271 22.71 15.9774 21.4296L12.9877 19.6452C12.4478 19.3226 11.5579 19.3226 11.0079 19.6452L8.01827 21.4296C5.8785 22.71 4.57865 21.7522 5.13859 19.3125L5.84851 16.2175C5.97849 15.6327 5.74852 14.8161 5.32856 14.3927L2.84884 11.8925C1.389 10.4206 1.85895 8.92853 3.89872 8.58575L7.08837 8.05143C7.61831 7.9607 8.25824 7.48687 8.49821 6.99288L10.258 3.44418C11.2179 1.51861 12.7777 1.51861 13.7276 3.44418Z" />
+                                                        </svg>
+                                                    )}
+                                                <span className="text-sm font-medium text-gray-700">
+                                                    {name}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Quick Selection Buttons */}
+                        <div className="mb-6">
+                            <div className="flex gap-2 flex-wrap">
+                                <button
+                                    onClick={() => {
+                                        const adminUsers = names.filter(
+                                            (name) => {
+                                                const user = users.find(
+                                                    (u) => u.name === name
+                                                );
+                                                return (
+                                                    user &&
+                                                    user.role === "admin"
+                                                );
+                                            }
+                                        );
+                                        setPatternModal((prev) => ({
+                                            ...prev,
+                                            selectedUsers: adminUsers,
+                                            patternType: "admin",
+                                        }));
+                                    }}
+                                    className="px-3 py-1.5 text-sm bg-yellow-100 text-yellow-800 rounded-md hover:bg-yellow-200 transition-colors"
+                                >
+                                    Tutti Admin
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        const employeeUsers = names.filter(
+                                            (name) => {
+                                                const user = users.find(
+                                                    (u) => u.name === name
+                                                );
+                                                return (
+                                                    user &&
+                                                    user.role === "employee"
+                                                );
+                                            }
+                                        );
+                                        setPatternModal((prev) => ({
+                                            ...prev,
+                                            selectedUsers: employeeUsers,
+                                            patternType: "employee",
+                                        }));
+                                    }}
+                                    className="px-3 py-1.5 text-sm bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200 transition-colors"
+                                >
+                                    Tutti Dipendenti
+                                </button>
+                                <button
+                                    onClick={() =>
+                                        setPatternModal((prev) => ({
+                                            ...prev,
+                                            selectedUsers: [],
+                                        }))
+                                    }
+                                    className="px-3 py-1.5 text-sm bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200 transition-colors"
+                                >
+                                    Deseleziona tutto
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={closePatternModal}
+                                className="px-6 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                            >
+                                Annulla
+                            </button>
+                            <button
+                                onClick={applyShiftPattern}
+                                disabled={
+                                    patternModal.selectedUsers.length === 0 ||
+                                    !patternModal.startDate
+                                }
+                                className={`px-6 py-2 rounded-md transition-colors ${
+                                    patternModal.selectedUsers.length === 0 ||
+                                    !patternModal.startDate
+                                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                        : "bg-green-600 text-white hover:bg-green-700"
+                                }`}
+                            >
+                                Applica Pattern
                             </button>
                         </div>
                     </div>
