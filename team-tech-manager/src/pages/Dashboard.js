@@ -648,6 +648,60 @@ export default function Dashboard() {
 
         return [];
     };
+
+    const getAllShiftEmployees = () => {
+        const today = new Date().toISOString().split("T")[0];
+        const shiftGroups = {
+            Mattino: [],
+            Pomeriggio: [],
+            Notte: [],
+        };
+
+        if (shifts[today]) {
+            const todayShifts = shifts[today];
+
+            users.forEach((user) => {
+                const userShiftData = todayShifts[user.name];
+                if (userShiftData) {
+                    switch (userShiftData.shift) {
+                        case "O":
+                            shiftGroups.Mattino.push(user.name);
+                            break;
+                        case "OP":
+                            shiftGroups.Pomeriggio.push(user.name);
+                            break;
+                        case "ON":
+                            shiftGroups.Notte.push(user.name);
+                            break;
+                    }
+                }
+            });
+        }
+
+        return shiftGroups;
+    };
+
+    const getAdminUsers = () => {
+        const today = new Date().toISOString().split("T")[0];
+
+        if (!shifts[today]) {
+            return [];
+        }
+
+        const todayShifts = shifts[today];
+
+        return users
+            .filter((user) => {
+                // Check if user is admin and has a shift today
+                const hasShiftToday =
+                    todayShifts[user.name] && todayShifts[user.name].shift;
+                return user.role === "admin" && hasShiftToday;
+            })
+            .map((user) => ({
+                name: user.name,
+                shift: todayShifts[user.name].shift,
+            }));
+    };
     const renderTaskList = (
         taskList,
         showDates = false,
@@ -1124,8 +1178,9 @@ export default function Dashboard() {
 
                     <div className="separator"></div>
 
-                    <div className="mb-4 mt-8">
-                        <div className="flex items-center gap-2 mb-3">
+                    {/* Shift Leader Section */}
+                    <div className="shift-column mb-6">
+                        <h5 className="flex gap-2 items-center">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24"
@@ -1149,21 +1204,89 @@ export default function Dashboard() {
                                     strokeLinejoin="round"
                                 ></path>
                             </svg>
-                            <h4 className="text-gray-600">Turno</h4>
-                            <span className="span">{getShiftName()}</span>
-                        </div>
+                            <p className="text-gray-600">Shift Leader</p>
+                        </h5>
+                        {(() => {
+                            const adminUsers = getAdminUsers();
+                            return adminUsers.length > 0 ? (
+                                adminUsers.map((admin, index) => (
+                                    <div
+                                        key={index}
+                                        className="display-task flex justify-center items-center dashboard-content gap-2 p-3 border border-gray-200 rounded my-4 bg-blue-50"
+                                    >
+                                        <p className="text-gray-600 text-sm text-center font-medium">
+                                            {admin.name}
+                                        </p>
+                                        <p className="text-gray-400 text-sm text-center">
+                                            |
+                                        </p>
+                                        <p className="text-blue-500 font-bold text-xs text-center">
+                                            {admin.shift}
+                                        </p>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-center py-2 text-gray-400 text-xs">
+                                    Nessun shift leader
+                                </div>
+                            );
+                        })()}
                     </div>
 
-                    {getCurrentShiftEmployees().map((employee, index) => (
-                        <div
-                            key={index}
-                            className="display-task dashboard-content p-4 border border-gray-200 rounded mt-4 bg-gray-100"
-                        >
-                            <p className="text-gray-600 text-sm max-w-md">
-                                {employee}
-                            </p>
-                        </div>
-                    ))}
+                    <div className="separator"></div>
+
+                    <div className="flex flex-col">
+                        {Object.entries(getAllShiftEmployees()).map(
+                            ([shiftName, employees]) => (
+                                <div key={shiftName} className="shift-column">
+                                    <h5 className="flex gap-2 items-center">
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 24 24"
+                                            width="20"
+                                            height="20"
+                                            color="oklch(44.6% 0.03 256.802)"
+                                            fill="none"
+                                        >
+                                            <circle
+                                                cx="12"
+                                                cy="12"
+                                                r="10"
+                                                stroke="oklch(44.6% 0.03 256.802)"
+                                                strokeWidth="1.5"
+                                            ></circle>
+                                            <path
+                                                d="M12 8V12L14 14"
+                                                stroke="oklch(44.6% 0.03 256.802)"
+                                                strokeWidth="1.5"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            ></path>
+                                        </svg>
+                                        <p className="text-gray-600">
+                                            {shiftName}
+                                        </p>
+                                    </h5>
+                                    {employees.length > 0 ? (
+                                        employees.map((employee, index) => (
+                                            <div
+                                                key={index}
+                                                className="display-task dashboard-content p-3 border border-gray-200 rounded my-4 bg-gray-100"
+                                            >
+                                                <p className="text-gray-600 text-sm text-center">
+                                                    {employee}
+                                                </p>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="text-center py-2 text-gray-400 text-xs">
+                                            Nessun dipendente
+                                        </div>
+                                    )}
+                                </div>
+                            )
+                        )}
+                    </div>
                 </div>
             </div>{" "}
             <Modal

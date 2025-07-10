@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import html2pdf from "html2pdf.js";
 import "../styles/shifts.css";
 
@@ -72,6 +72,9 @@ export default function Shifts() {
         patternType: "admin",
         startDate: "",
     });
+    const [draggedUser, setDraggedUser] = useState(null);
+    const [dragOverUser, setDragOverUser] = useState(null);
+    const [employeeOrderKey, setEmployeeOrderKey] = useState(0);
     const tableRef = useRef();
 
     // Shift patterns
@@ -167,13 +170,47 @@ export default function Shifts() {
         return sortedUsers.map((user) => user.name);
     };
 
-    // Calculate names dynamically based on users state
-    const names = getShiftUsers();
+    // Separate admins and employees for drag and drop
+    const { admins, employees } = useMemo(() => {
+        const filteredUsers = users.filter(
+            (user) =>
+                user.active &&
+                (user.role === "employee" ||
+                    user.role === "admin" ||
+                    user.role === "manager")
+        );
+
+        const admins = filteredUsers.filter(user => user.role === "admin").map(user => user.name);
+        const employees = filteredUsers.filter(user => user.role !== "admin").map(user => user.name);
+        
+        // Get custom order from localStorage or use default
+        const savedOrder = localStorage.getItem(`employee-order-${year}-${month}`);
+        let orderedEmployees = employees;
+        
+        if (savedOrder) {
+            try {
+                const parsedOrder = JSON.parse(savedOrder);
+                // Filter to only include employees that still exist
+                orderedEmployees = parsedOrder.filter(name => employees.includes(name));
+                // Add any new employees that weren't in the saved order
+                const newEmployees = employees.filter(name => !orderedEmployees.includes(name));
+                orderedEmployees = [...orderedEmployees, ...newEmployees];
+            } catch (e) {
+                console.error("Error parsing saved employee order:", e);
+            }
+        }
+        
+        return { admins, employees: orderedEmployees };
+    }, [users, year, month, employeeOrderKey]);
+
+    // Calculate names dynamically based on users state - combine admins and employees
+    const names = [...admins, ...employees];
     console.log("Current users:", users);
     console.log("Generated names:", names);
 
     useEffect(() => {
         setDays(getMonthDays(year, month));
+        setEmployeeOrderKey(0); // Reset employee order when month changes
         const token = localStorage.getItem("authToken");
 
         // Fetch shifts data
@@ -693,6 +730,65 @@ export default function Shifts() {
         }));
     };
 
+    // Drag and drop functions for employee reordering
+    const handleDragStart = (e, userName) => {
+        // Only allow dragging employees, not admins
+        if (isUserAdmin(userName)) {
+            e.preventDefault();
+            return;
+        }
+        setDraggedUser(userName);
+        e.dataTransfer.effectAllowed = "move";
+    };
+
+    const handleDragOver = (e, userName) => {
+        e.preventDefault();
+        // Only allow dropping on employees
+        if (!isUserAdmin(userName)) {
+            setDragOverUser(userName);
+            e.dataTransfer.dropEffect = "move";
+        }
+    };
+
+    const handleDragLeave = () => {
+        setDragOverUser(null);
+    };
+
+    const handleDrop = (e, targetUserName) => {
+        e.preventDefault();
+        
+        if (!draggedUser || isUserAdmin(targetUserName) || draggedUser === targetUserName) {
+            setDraggedUser(null);
+            setDragOverUser(null);
+            return;
+        }
+
+        // Reorder employees array
+        const newEmployees = [...employees];
+        const draggedIndex = newEmployees.indexOf(draggedUser);
+        const targetIndex = newEmployees.indexOf(targetUserName);
+
+        if (draggedIndex !== -1 && targetIndex !== -1) {
+            // Remove dragged item and insert at new position
+            newEmployees.splice(draggedIndex, 1);
+            newEmployees.splice(targetIndex, 0, draggedUser);
+
+            // Save new order to localStorage
+            localStorage.setItem(`employee-order-${year}-${month}`, JSON.stringify(newEmployees));
+            
+            // Force re-render by updating the key
+            setEmployeeOrderKey(prev => prev + 1);
+        }
+
+        setDraggedUser(null);
+        setDragOverUser(null);
+    };
+
+    const handleDragEnd = () => {
+        setDraggedUser(null);
+        setDragOverUser(null);
+    };
+
     // Function to calculate total working hours for a user in the current month
     const calculateUserHours = (userName) => {
         let totalHours = 0;
@@ -719,11 +815,13 @@ export default function Shifts() {
         if (hours < targetHours) {
             return {
                 color: "#dc2626", // red-600
+                backgroundColor: "#dc262615", // red-200
                 fontWeight: "bold",
             };
         }
         return {
             color: "#16a34a", // green-600
+            backgroundColor: "#16a34a15", // green-200
             fontWeight: "bold",
         };
     };
@@ -978,15 +1076,64 @@ export default function Shifts() {
                             {names.map((name, nameIndex) => (
                                 <tr
                                     key={name}
-                                    className={`shift-row  ${
+                                    className={`shift-row ${
                                         nameIndex % 2 === 0
                                             ? "bg-white"
                                             : "bg-gray-50"
+                                    } ${
+                                        dragOverUser === name ? "bg-blue-100 border-blue-300" : ""
+                                    } ${
+                                        draggedUser === name ? "opacity-50" : ""
                                     }`}
+                                    draggable={!isUserAdmin(name)}
+                                    onDragStart={(e) => handleDragStart(e, name)}
+                                    onDragOver={(e) => handleDragOver(e, name)}
+                                    onDragLeave={handleDragLeave}
+                                    onDrop={(e) => handleDrop(e, name)}
+                                    onDragEnd={handleDragEnd}
                                 >
                                     <td className="gap-2 px-4 py-2 text-gray-700 border-r border-gray-200">
                                         <div className="flex flex-row justify-between items-center gap-4">
                                             <div className="flex items-center gap-2">
+                                                {!isUserAdmin(name) ? (
+                                                    <div 
+                                                        className="cursor-grab active:cursor-grabbing p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                                                        title="Trascina per riordinare"
+                                                    >
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            viewBox="0 0 24 24"
+                                                            width="16"
+                                                            height="16"
+                                                            fill="none"
+                                                        >
+                                                            <path
+                                                                d="M8 6.5C8 7.32843 7.32843 8 6.5 8C5.67157 8 5 7.32843 5 6.5C5 5.67157 5.67157 5 6.5 5C7.32843 5 8 5.67157 8 6.5Z"
+                                                                fill="currentColor"
+                                                            />
+                                                            <path
+                                                                d="M8 12C8 12.8284 7.32843 13.5 6.5 13.5C5.67157 13.5 5 12.8284 5 12C5 11.1716 5.67157 10.5 6.5 10.5C7.32843 10.5 8 11.1716 8 12Z"
+                                                                fill="currentColor"
+                                                            />
+                                                            <path
+                                                                d="M8 17.5C8 18.3284 7.32843 19 6.5 19C5.67157 19 5 18.3284 5 17.5C5 16.6716 5.67157 16 6.5 16C7.32843 16 8 16.6716 8 17.5Z"
+                                                                fill="currentColor"
+                                                            />
+                                                            <path
+                                                                d="M13.5 6.5C13.5 7.32843 12.8284 8 12 8C11.1716 8 10.5 7.32843 10.5 6.5C10.5 5.67157 11.1716 5 12 5C12.8284 5 13.5 5.67157 13.5 6.5Z"
+                                                                fill="currentColor"
+                                                            />
+                                                            <path
+                                                                d="M13.5 12C13.5 12.8284 12.8284 13.5 12 13.5C11.1716 13.5 10.5 12.8284 10.5 12C10.5 11.1716 11.1716 10.5 12 10.5C12.8284 10.5 13.5 11.1716 13.5 12Z"
+                                                                fill="currentColor"
+                                                            />
+                                                            <path
+                                                                d="M13.5 17.5C13.5 18.3284 12.8284 19 12 19C11.1716 19 10.5 18.3284 10.5 17.5C10.5 16.6716 11.1716 16 12 16C12.8284 16 13.5 16.6716 13.5 17.5Z"
+                                                                fill="currentColor"
+                                                            />
+                                                        </svg>
+                                                    </div>
+                                                ) : null}
                                                 {isUserAdmin(name) ? (
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"
