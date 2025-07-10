@@ -180,26 +180,36 @@ export default function Shifts() {
                     user.role === "manager")
         );
 
-        const admins = filteredUsers.filter(user => user.role === "admin").map(user => user.name);
-        const employees = filteredUsers.filter(user => user.role !== "admin").map(user => user.name);
-        
+        const admins = filteredUsers
+            .filter((user) => user.role === "admin")
+            .map((user) => user.name);
+        const employees = filteredUsers
+            .filter((user) => user.role !== "admin")
+            .map((user) => user.name);
+
         // Get custom order from localStorage or use default
-        const savedOrder = localStorage.getItem(`employee-order-${year}-${month}`);
+        const savedOrder = localStorage.getItem(
+            `employee-order-${year}-${month}`
+        );
         let orderedEmployees = employees;
-        
+
         if (savedOrder) {
             try {
                 const parsedOrder = JSON.parse(savedOrder);
                 // Filter to only include employees that still exist
-                orderedEmployees = parsedOrder.filter(name => employees.includes(name));
+                orderedEmployees = parsedOrder.filter((name) =>
+                    employees.includes(name)
+                );
                 // Add any new employees that weren't in the saved order
-                const newEmployees = employees.filter(name => !orderedEmployees.includes(name));
+                const newEmployees = employees.filter(
+                    (name) => !orderedEmployees.includes(name)
+                );
                 orderedEmployees = [...orderedEmployees, ...newEmployees];
             } catch (e) {
                 console.error("Error parsing saved employee order:", e);
             }
         }
-        
+
         return { admins, employees: orderedEmployees };
     }, [users, year, month, employeeOrderKey]);
 
@@ -756,8 +766,12 @@ export default function Shifts() {
 
     const handleDrop = (e, targetUserName) => {
         e.preventDefault();
-        
-        if (!draggedUser || isUserAdmin(targetUserName) || draggedUser === targetUserName) {
+
+        if (
+            !draggedUser ||
+            isUserAdmin(targetUserName) ||
+            draggedUser === targetUserName
+        ) {
             setDraggedUser(null);
             setDragOverUser(null);
             return;
@@ -774,10 +788,13 @@ export default function Shifts() {
             newEmployees.splice(targetIndex, 0, draggedUser);
 
             // Save new order to localStorage
-            localStorage.setItem(`employee-order-${year}-${month}`, JSON.stringify(newEmployees));
-            
+            localStorage.setItem(
+                `employee-order-${year}-${month}`,
+                JSON.stringify(newEmployees)
+            );
+
             // Force re-render by updating the key
-            setEmployeeOrderKey(prev => prev + 1);
+            setEmployeeOrderKey((prev) => prev + 1);
         }
 
         setDraggedUser(null);
@@ -1081,12 +1098,16 @@ export default function Shifts() {
                                             ? "bg-white"
                                             : "bg-gray-50"
                                     } ${
-                                        dragOverUser === name ? "bg-blue-100 border-blue-300" : ""
+                                        dragOverUser === name
+                                            ? "bg-blue-100 border-blue-300"
+                                            : ""
                                     } ${
                                         draggedUser === name ? "opacity-50" : ""
                                     }`}
                                     draggable={!isUserAdmin(name)}
-                                    onDragStart={(e) => handleDragStart(e, name)}
+                                    onDragStart={(e) =>
+                                        handleDragStart(e, name)
+                                    }
                                     onDragOver={(e) => handleDragOver(e, name)}
                                     onDragLeave={handleDragLeave}
                                     onDrop={(e) => handleDrop(e, name)}
@@ -1096,7 +1117,7 @@ export default function Shifts() {
                                         <div className="flex flex-row justify-between items-center gap-4">
                                             <div className="flex items-center gap-2">
                                                 {!isUserAdmin(name) ? (
-                                                    <div 
+                                                    <div
                                                         className="cursor-grab active:cursor-grabbing p-1 text-gray-400 hover:text-gray-600 transition-colors"
                                                         title="Trascina per riordinare"
                                                     >
