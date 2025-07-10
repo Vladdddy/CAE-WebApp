@@ -93,16 +93,19 @@ exports.createTask = (req, res) => {
         status,
     } = req.body;
 
-    // Check if the assigned employee exists in users.json and is active
-    const activeEmployees = getActiveEmployees();
-    const assignedEmployee = activeEmployees.find(
-        (emp) => emp.name === assignedTo
-    );
+    // Skip active employee check for "da definire" tasks
+    if (status !== "da definire") {
+        // Check if the assigned employee exists in users.json and is active
+        const activeEmployees = getActiveEmployees();
+        const assignedEmployee = activeEmployees.find(
+            (emp) => emp.name === assignedTo
+        );
 
-    if (!assignedEmployee) {
-        return res.status(400).json({
-            message: `${assignedTo} non è un dipendente attivo nel sistema.`,
-        });
+        if (!assignedEmployee) {
+            return res.status(400).json({
+                message: `${assignedTo} non è un dipendente attivo nel sistema.`,
+            });
+        }
     }
 
     // Skip shift validation for "da definire" tasks since they don't have real date/time
