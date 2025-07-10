@@ -412,7 +412,20 @@
   {
     "id": 62,
     "title": "fdf",
-    "assignedTo": "Sara",
+    "assignedTo": "Francesco",
+    "simulator": "139#1",
+    "category": "",
+    "subcategory": "",
+    "extraDetail": "",
+    "status": "riassegnato",
+    "date": "2025-07-10",
+    "time": "07:30",
+    "description": ""
+  },
+  {
+    "id": 63,
+    "title": "Prova 10.07",
+    "assignedTo": "Andrea",
     "simulator": "",
     "category": "",
     "subcategory": "",

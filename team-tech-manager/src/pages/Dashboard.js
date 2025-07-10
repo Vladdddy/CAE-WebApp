@@ -116,7 +116,15 @@ export default function Dashboard() {
             .catch((error) => {
                 console.error("Error fetching users:", error);
             });
-    }, [navigate]); // Fetcha tutti i turni del mese corrente
+    }, [navigate]); // Update assignedTo in addTaskModal when currentUser is available
+    useEffect(() => {
+        if (currentUser?.name && addTaskModal.assignedTo === "") {
+            setAddTaskModal((prev) => ({
+                ...prev,
+                assignedTo: currentUser.name,
+            }));
+        }
+    }, [currentUser?.name]); // Fetcha tutti i turni del mese corrente
     const [shifts, setShifts] = useState({});
     useEffect(() => {
         const currentDate = new Date();
@@ -175,7 +183,7 @@ export default function Dashboard() {
     const [addTaskModal, setAddTaskModal] = useState({
         isOpen: false,
         title: "",
-        assignedTo: "",
+        assignedTo: currentUser?.name || "",
         simulator: "",
         category: "",
         subcategory: "",
@@ -200,10 +208,13 @@ export default function Dashboard() {
 
     // Close add task modal
     const closeAddTaskModal = () => {
+        // Reset to current user when closing modal
+        const currentUserName = currentUser?.name || "";
+
         setAddTaskModal({
             isOpen: false,
             title: "",
-            assignedTo: "",
+            assignedTo: currentUserName,
             simulator: "",
             category: "",
             subcategory: "",
@@ -393,9 +404,13 @@ export default function Dashboard() {
         // since we don't care about availability for a specific time
         const allEmployeeNames = users.map((user) => user.name).filter(Boolean);
 
+        // Automatically assign to current logged-in user
+        const currentUserName = currentUser?.name || "";
+
         setAddTaskModal((prev) => ({
             ...prev,
             isOpen: true,
+            assignedTo: currentUserName,
             availableEmployees: allEmployeeNames,
         }));
     };
@@ -1425,38 +1440,17 @@ export default function Dashboard() {
                                 </select>
                             </div>
 
+                            {/* Assigned user is automatically set to current user */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Assegna a *
+                                    Assegnato a
                                 </label>
-                                <select
+                                <input
+                                    type="text"
                                     value={addTaskModal.assignedTo}
-                                    onChange={(e) =>
-                                        handleAddTaskFormChange(
-                                            "assignedTo",
-                                            e.target.value
-                                        )
-                                    }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    required
-                                    disabled={addTaskModal.employeesLoading}
-                                >
-                                    <option value="">
-                                        {addTaskModal.employeesLoading
-                                            ? "Caricamento dipendenti..."
-                                            : "Seleziona dipendente"}
-                                    </option>
-                                    {addTaskModal.availableEmployees.map(
-                                        (employee) => (
-                                            <option
-                                                key={employee}
-                                                value={employee}
-                                            >
-                                                {employee}
-                                            </option>
-                                        )
-                                    )}
-                                </select>
+                                    disabled
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600 cursor-not-allowed"
+                                />
                             </div>
 
                             <div className="flex justify-end space-x-3 mt-6">
