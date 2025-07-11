@@ -28,14 +28,14 @@ const getDateKey = (date) => {
 // Helper function to get shift color
 const getShiftColor = (shift) => {
     const colors = {
-        O: "bg-yellow-100 text-yellow-800",
+        O: "bg-green-100 text-green-800",
         OP: "bg-orange-100 text-orange-800",
         ON: "bg-purple-100 text-purple-800",
-        D: "bg-pink-100 text-pink-800",
-        N: "bg-slate-100 text-slate-800",
-        F: "bg-green-100 text-green-800",
+        D: "bg-green-100 text-green-800",
+        N: "bg-blue-100 text-blue-800",
+        F: "bg-yellow-100 text-yellow-800",
         M: "bg-red-100 text-red-800",
-        R: "bg-blue-100 text-blue-800",
+        R: "bg-slate-100 text-slate-800",
         C: "bg-cyan-100 text-cyan-800",
     };
     return colors[shift] || "bg-gray-100 text-gray-800";
@@ -99,7 +99,7 @@ export default function Shifts() {
             type: "weekday",
         },
         employee: {
-            name: "Employee Pattern",
+            name: "Employee Pattern 1",
             description: "",
             pattern: [
                 "D",
@@ -114,6 +114,29 @@ export default function Shifts() {
                 "N",
                 "N",
                 "N",
+                "R",
+                "R",
+                "R",
+                "R",
+            ],
+            type: "cycle",
+        },
+        employee_night: {
+            name: "Employee Pattern 2",
+            description: "",
+            pattern: [
+                "N",
+                "N",
+                "N",
+                "N",
+                "R",
+                "R",
+                "R",
+                "R",
+                "D",
+                "D",
+                "D",
+                "D",
                 "R",
                 "R",
                 "R",
@@ -758,10 +781,8 @@ export default function Shifts() {
                             pattern.weekdayPattern[userPatternIndex];
                     }
                 } else if (pattern.type === "cycle") {
-                    // Employee pattern: continuous 12-day cycle
-                    // Each user gets a different offset in the cycle
-                    let userPatternIndex =
-                        (dayCounter + userIndex * 4) % pattern.pattern.length;
+                    // Employee pattern: continuous cycle - all users get the same pattern
+                    let userPatternIndex = dayCounter % pattern.pattern.length;
                     shiftToAssign = pattern.pattern[userPatternIndex];
 
                     // Add note for rest days
@@ -1205,7 +1226,7 @@ export default function Shifts() {
                     <table className="w-full">
                         <thead className="bg-gray-50 border-b border-gray-200">
                             <tr>
-                                <th className="px-6 py-4 text-center text-sm text-gray-500 border-r border-gray-200">
+                                <th className="px-6 py-4 text-center text-xs text-gray-500 border-r border-gray-200">
                                     Turni
                                 </th>
                                 {days.map((d) => (
@@ -1214,7 +1235,7 @@ export default function Shifts() {
                                         className="px-3 py-4 text-center text-xs font-medium text-gray-500 border-r border-gray-200 min-w-[100px]"
                                     >
                                         <div className="flex flex-col items-center gap-1">
-                                            <span className="font-semibold text-sm">
+                                            <span className="font-semibold text-xs">
                                                 {d.getDate()}/{d.getMonth() + 1}
                                             </span>
                                         </div>
@@ -1226,7 +1247,7 @@ export default function Shifts() {
                             {/* Shift Counter Row */}
                             {admins.length > 0 && (
                                 <tr className="bg-gray-100 border-gray-300">
-                                    <td className="px-3 py-4 text-center text-sm font-medium text-gray-500 border-r border-gray-200">
+                                    <td className="px-3 py-4 text-center text-xs font-medium text-gray-500 border-r border-gray-200">
                                         <div className="text-center">
                                             Conteggio Turni
                                         </div>
@@ -1255,7 +1276,7 @@ export default function Shifts() {
                                                             }`}
                                                         >
                                                             <span
-                                                                className={`font-bold ${
+                                                                className={`font-bold text-xs ${
                                                                     counts.D < 2
                                                                         ? "text-red-600"
                                                                         : "text-sky-700"
@@ -1281,7 +1302,7 @@ export default function Shifts() {
                                                             }`}
                                                         >
                                                             <span
-                                                                className={`font-bold ${
+                                                                className={`font-bold text-xs ${
                                                                     counts.N < 2
                                                                         ? "text-red-600"
                                                                         : "text-indigo-700"
@@ -1391,7 +1412,7 @@ export default function Shifts() {
                                                         ></path>
                                                     </svg>
                                                 ) : null}
-                                                <div className="text-sm">
+                                                <div className="text-xs">
                                                     {name}
                                                 </div>
                                             </div>
@@ -1464,7 +1485,7 @@ export default function Shifts() {
                                         return (
                                             <td
                                                 key={dateKey}
-                                                className={`px-3 py-4 text-center border-r border-gray-200 relative ${
+                                                className={`px-3 py-2 text-center border-r border-gray-200 relative ${
                                                     isToday ? "bg-blue-50" : ""
                                                 }`}
                                             >
@@ -1484,15 +1505,26 @@ export default function Shifts() {
                                                                         .value
                                                                 )
                                                             }
-                                                            className={`shift-select w-full p-2 px-4 text-xs font-bold rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 transition-colors duration-200 ${
+                                                            className={`shift-select w-full p-2 px-4 text-2xs font-bold rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 transition-colors duration-200 ${
                                                                 entry.shift
                                                                     ? getShiftColor(
                                                                           entry.shift
                                                                       )
                                                                     : "bg-gray-100"
                                                             }`}
+                                                            style={{
+                                                                fontSize:
+                                                                    "10px",
+                                                            }}
                                                         >
-                                                            <option value="">
+                                                            <option
+                                                                value=""
+                                                                className="text-2xs"
+                                                                style={{
+                                                                    fontSize:
+                                                                        "10px",
+                                                                }}
+                                                            >
                                                                 --
                                                             </option>
                                                             {adminShifts.map(
@@ -1502,6 +1534,11 @@ export default function Shifts() {
                                                                         value={
                                                                             s
                                                                         }
+                                                                        className="text-2xs"
+                                                                        style={{
+                                                                            fontSize:
+                                                                                "10px",
+                                                                        }}
                                                                     >
                                                                         {s}
                                                                     </option>
@@ -1510,7 +1547,7 @@ export default function Shifts() {
                                                         </select>
                                                     ) : (
                                                         <p
-                                                            className={`w-full p-1 px-4 text-sm font-bold rounded-md border-gray-300 transition-colors duration-200 ${
+                                                            className={`w-full p-1 px-4 text-xs font-bold rounded-md border-gray-300 transition-colors duration-200 ${
                                                                 entry.shift
                                                                     ? getShiftColor(
                                                                           entry.shift
@@ -1706,7 +1743,7 @@ export default function Shifts() {
                                                         ></path>
                                                     </svg>
                                                 ) : null}
-                                                <div className="text-sm">
+                                                <div className="text-xs">
                                                     {name}
                                                 </div>
                                             </div>
@@ -1799,15 +1836,26 @@ export default function Shifts() {
                                                                         .value
                                                                 )
                                                             }
-                                                            className={`shift-select w-full p-2 px-4 text-xs font-bold rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 transition-colors duration-200 ${
+                                                            className={`shift-select w-full p-2 px-4 text-2xs font-bold rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 transition-colors duration-200 ${
                                                                 entry.shift
                                                                     ? getShiftColor(
                                                                           entry.shift
                                                                       )
                                                                     : "bg-gray-100"
                                                             }`}
+                                                            style={{
+                                                                fontSize:
+                                                                    "10px",
+                                                            }}
                                                         >
-                                                            <option value="">
+                                                            <option
+                                                                value=""
+                                                                className="text-2xs"
+                                                                style={{
+                                                                    fontSize:
+                                                                        "10px",
+                                                                }}
+                                                            >
                                                                 --
                                                             </option>
                                                             {employeeShifts.map(
@@ -1817,6 +1865,11 @@ export default function Shifts() {
                                                                         value={
                                                                             s
                                                                         }
+                                                                        className="text-2xs"
+                                                                        style={{
+                                                                            fontSize:
+                                                                                "10px",
+                                                                        }}
                                                                     >
                                                                         {s}
                                                                     </option>
@@ -1825,7 +1878,7 @@ export default function Shifts() {
                                                         </select>
                                                     ) : (
                                                         <p
-                                                            className={`w-full p-1 px-4 text-sm font-bold rounded-md border-gray-300 transition-colors duration-200 ${
+                                                            className={`w-full p-1 px-4 text-xs font-bold rounded-md border-gray-300 transition-colors duration-200 ${
                                                                 entry.shift
                                                                     ? getShiftColor(
                                                                           entry.shift
@@ -1999,7 +2052,7 @@ export default function Shifts() {
                                                     <path d="M13.7276 3.44418L15.4874 6.99288C15.7274 7.48687 16.3673 7.9607 16.9073 8.05143L20.0969 8.58575C22.1367 8.92853 22.6167 10.4206 21.1468 11.8925L18.6671 14.3927C18.2471 14.8161 18.0172 15.6327 18.1471 16.2175L18.8571 19.3125C19.417 21.7623 18.1271 22.71 15.9774 21.4296L12.9877 19.6452C12.4478 19.3226 11.5579 19.3226 11.0079 19.6452L8.01827 21.4296C5.8785 22.71 4.57865 21.7522 5.13859 19.3125L5.84851 16.2175C5.97849 15.6327 5.74852 14.8161 5.32856 14.3927L2.84884 11.8925C1.389 10.4206 1.85895 8.92853 3.89872 8.58575L7.08837 8.05143C7.61831 7.9607 8.25824 7.48687 8.49821 6.99288L10.258 3.44418C11.2179 1.51861 12.7777 1.51861 13.7276 3.44418Z" />
                                                 </svg>
                                             )}
-                                            <span className="text-sm font-medium text-gray-900">
+                                            <span className="text-xs font-medium text-gray-900">
                                                 {name}
                                             </span>
                                         </div>
@@ -2323,6 +2376,80 @@ export default function Shifts() {
                                         </div>
                                     </label>
                                 </div>
+
+                                <div className="relative">
+                                    <input
+                                        type="radio"
+                                        id="employee-night-pattern"
+                                        name="patternType"
+                                        value="employee_night"
+                                        checked={
+                                            patternModal.patternType ===
+                                            "employee_night"
+                                        }
+                                        onChange={(e) =>
+                                            setPatternModal((prev) => ({
+                                                ...prev,
+                                                patternType: e.target.value,
+                                            }))
+                                        }
+                                        className="sr-only"
+                                    />
+                                    <label
+                                        htmlFor="employee-night-pattern"
+                                        className={`block p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                                            patternModal.patternType ===
+                                            "employee_night"
+                                                ? "border-purple-500 bg-purple-50"
+                                                : "border-gray-200 hover:border-gray-300"
+                                        }`}
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <h4 className="font-medium text-gray-900">
+                                                    {
+                                                        shiftPatterns
+                                                            .employee_night.name
+                                                    }
+                                                </h4>
+                                                <p className="text-sm text-gray-600 mt-1">
+                                                    {
+                                                        shiftPatterns
+                                                            .employee_night
+                                                            .description
+                                                    }
+                                                </p>
+                                                <div className="flex gap-2 mt-2">
+                                                    {shiftPatterns.employee_night.pattern.map(
+                                                        (shift, index) => (
+                                                            <span
+                                                                key={index}
+                                                                className={`px-2 py-1 text-xs rounded ${getShiftColor(
+                                                                    shift
+                                                                )}`}
+                                                            >
+                                                                {shift}
+                                                            </span>
+                                                        )
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div
+                                                className={`w-4 h-4 rounded-full border-2 ${
+                                                    patternModal.patternType ===
+                                                    "employee_night"
+                                                        ? "border-purple-500 bg-purple-500"
+                                                        : "border-gray-300"
+                                                }`}
+                                            >
+                                                {patternModal.patternType ===
+                                                    "employee_night" && (
+                                                    <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
                             </div>
                         </div>
 
@@ -2478,7 +2605,30 @@ export default function Shifts() {
                                     }}
                                     className="px-3 py-1.5 text-sm bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200 transition-colors"
                                 >
-                                    Tutti Dipendenti
+                                    Tutti Dipendenti 1
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        const employeeUsers = names.filter(
+                                            (name) => {
+                                                const user = users.find(
+                                                    (u) => u.name === name
+                                                );
+                                                return (
+                                                    user &&
+                                                    user.role === "employee"
+                                                );
+                                            }
+                                        );
+                                        setPatternModal((prev) => ({
+                                            ...prev,
+                                            selectedUsers: employeeUsers,
+                                            patternType: "employee_night",
+                                        }));
+                                    }}
+                                    className="px-3 py-1.5 text-sm bg-purple-100 text-purple-800 rounded-md hover:bg-purple-200 transition-colors"
+                                >
+                                    Tutti Dipendenti 2
                                 </button>
                                 <button
                                     onClick={() =>
