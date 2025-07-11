@@ -1316,26 +1316,32 @@ export default function Logbook() {
                     <div className="text-xs">{task.time}</div>
                     <div className="flex items-center justify-between">
                         {" "}
-                        <span
-                            className={
-                                task.type === "logbook-entry"
-                                    ? "px-2 py-1 rounded text-xs bg-blue-100 text-blue-600"
-                                    : `px-2 py-1 rounded text-xs ${
-                                          task.status === "completato"
-                                              ? "bg-green-100 text-green-600"
-                                              : task.status === "in corso"
-                                              ? "bg-yellow-100 text-yellow-600"
-                                              : task.status === "non completato"
-                                              ? "bg-red-100 text-red-600"
-                                              : "bg-gray-100 text-gray-600"
-                                      }`
-                            }
-                            style={{ fontSize: "10px" }}
-                        >
-                            {task.type === "logbook-entry"
-                                ? "logbook"
-                                : task.status}
-                        </span>
+                        <div className="flex flex-col gap-1">
+                            <span
+                                className={
+                                    task.type === "logbook-entry"
+                                        ? "px-2 py-1 rounded text-xs bg-blue-100 text-blue-600"
+                                        : `px-2 py-1 rounded text-xs ${
+                                              task.status === "completato"
+                                                  ? "bg-green-100 text-green-600"
+                                                  : task.status === "in corso"
+                                                  ? "bg-yellow-100 text-yellow-600"
+                                                  : task.status ===
+                                                    "non completato"
+                                                  ? "bg-red-100 text-red-600"
+                                                  : "bg-gray-100 text-gray-600"
+                                          }`
+                                }
+                                style={{ fontSize: "10px" }}
+                            >
+                                {task.type === "logbook-entry"
+                                    ? "logbook"
+                                    : task.status}
+                            </span>
+                            <span className="text-xs text-gray-500 px-2">
+                                {task.assignedTo}
+                            </span>
+                        </div>
                         {task.notes && task.notes.length > 0 && (
                             <div className="flex items-center gap-1 text-blue-600">
                                 <svg
@@ -1530,6 +1536,7 @@ export default function Logbook() {
                                                 <div className="text-xs text-gray-500 capitalize">
                                                     {entry.date} • {entry.time}{" "}
                                                     • {entry.duration} •{" "}
+                                                    {entry.author} •{" "}
                                                     {entry.category}
                                                     {entry.subcategory &&
                                                         ` / ${entry.subcategory}`}

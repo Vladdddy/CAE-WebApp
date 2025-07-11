@@ -154,9 +154,9 @@
   {
     "id": 34,
     "title": "task2",
-    "assignedTo": "Nicolo",
-    "status": "non completato",
-    "date": "2025-06-27",
+    "assignedTo": "Sara",
+    "status": "riassegnato",
+    "date": "2025-07-11",
     "time": "13:00",
     "description": "",
     "simulator": "109FFS"
@@ -289,18 +289,6 @@
     "time": null
   },
   {
-    "id": 51,
-    "title": "rhythd",
-    "assignedTo": "Francesco",
-    "simulator": "109FFS",
-    "category": "routine task",
-    "subcategory": "PM",
-    "extraDetail": "",
-    "status": "da definire",
-    "date": null,
-    "time": null
-  },
-  {
     "id": 52,
     "title": "ghdfhf",
     "assignedTo": "Andrea",
@@ -311,19 +299,6 @@
     "status": "riassegnato",
     "date": "2025-06-27",
     "time": "10:28"
-  },
-  {
-    "id": 53,
-    "title": "FGHTYD",
-    "assignedTo": "Sara",
-    "simulator": "109FFS",
-    "category": "others",
-    "subcategory": "",
-    "extraDetail": "",
-    "status": "non completato",
-    "date": "2025-07-04",
-    "time": "08:00",
-    "description": "ERE"
   },
   {
     "id": 54,
@@ -426,6 +401,18 @@
     "id": 63,
     "title": "Prova 10.07",
     "assignedTo": "Andrea",
+    "simulator": "",
+    "category": "",
+    "subcategory": "",
+    "extraDetail": "",
+    "status": "da definire",
+    "date": null,
+    "time": null
+  },
+  {
+    "id": 64,
+    "title": "Prova",
+    "assignedTo": "Gianluca",
     "simulator": "",
     "category": "",
     "subcategory": "",

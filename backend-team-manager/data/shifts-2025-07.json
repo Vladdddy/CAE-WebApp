@@ -9,7 +9,7 @@
       "note": ""
     },
     "Mario": {
-      "shift": "ON",
+      "shift": "OP",
       "note": ""
     },
     "Simone": {
@@ -30,6 +30,10 @@
     },
     "Sara": {
       "shift": "N",
+      "note": ""
+    },
+    "Thomas": {
+      "shift": "D",
       "note": ""
     }
   },
@@ -65,6 +69,10 @@
     "Sara": {
       "shift": "N",
       "note": ""
+    },
+    "Thomas": {
+      "shift": "D",
+      "note": ""
     }
   },
   "2025-07-03": {
@@ -98,6 +106,10 @@
     },
     "Sara": {
       "shift": "N",
+      "note": ""
+    },
+    "Thomas": {
+      "shift": "D",
       "note": ""
     }
   },
@@ -133,6 +145,10 @@
     "Sara": {
       "shift": "N",
       "note": ""
+    },
+    "Thomas": {
+      "shift": "D",
+      "note": ""
     }
   },
   "2025-07-05": {
@@ -165,6 +181,10 @@
       "note": ""
     },
     "Sara": {
+      "shift": "R",
+      "note": "Riposo"
+    },
+    "Thomas": {
       "shift": "R",
       "note": "Riposo"
     }
@@ -201,6 +221,10 @@
     "Sara": {
       "shift": "R",
       "note": "Riposo"
+    },
+    "Thomas": {
+      "shift": "R",
+      "note": "Riposo"
     }
   },
   "2025-07-07": {
@@ -233,6 +257,10 @@
       "note": ""
     },
     "Sara": {
+      "shift": "R",
+      "note": "Riposo"
+    },
+    "Thomas": {
       "shift": "R",
       "note": "Riposo"
     }
@@ -269,6 +297,10 @@
     "Sara": {
       "shift": "R",
       "note": "Riposo"
+    },
+    "Thomas": {
+      "shift": "R",
+      "note": "Riposo"
     }
   },
   "2025-07-09": {
@@ -302,6 +334,10 @@
     },
     "Sara": {
       "shift": "D",
+      "note": ""
+    },
+    "Thomas": {
+      "shift": "N",
       "note": ""
     }
   },
@@ -337,6 +373,10 @@
     "Sara": {
       "shift": "D",
       "note": ""
+    },
+    "Thomas": {
+      "shift": "N",
+      "note": ""
     }
   },
   "2025-07-11": {
@@ -370,6 +410,10 @@
     },
     "Sara": {
       "shift": "D",
+      "note": ""
+    },
+    "Thomas": {
+      "shift": "N",
       "note": ""
     }
   },
@@ -405,6 +449,10 @@
     "Sara": {
       "shift": "D",
       "note": ""
+    },
+    "Thomas": {
+      "shift": "N",
+      "note": ""
     }
   },
   "2025-07-13": {
@@ -437,6 +485,10 @@
       "note": ""
     },
     "Sara": {
+      "shift": "R",
+      "note": "Riposo"
+    },
+    "Thomas": {
       "shift": "R",
       "note": "Riposo"
     }
@@ -473,6 +525,10 @@
     "Sara": {
       "shift": "R",
       "note": "Riposo"
+    },
+    "Thomas": {
+      "shift": "R",
+      "note": "Riposo"
     }
   },
   "2025-07-15": {
@@ -505,6 +561,10 @@
       "note": ""
     },
     "Sara": {
+      "shift": "R",
+      "note": "Riposo"
+    },
+    "Thomas": {
       "shift": "R",
       "note": "Riposo"
     }
@@ -541,6 +601,10 @@
     "Sara": {
       "shift": "R",
       "note": "Riposo"
+    },
+    "Thomas": {
+      "shift": "R",
+      "note": "Riposo"
     }
   },
   "2025-07-17": {
@@ -574,6 +638,10 @@
     },
     "Sara": {
       "shift": "N",
+      "note": ""
+    },
+    "Thomas": {
+      "shift": "D",
       "note": ""
     }
   },
@@ -609,6 +677,10 @@
     "Sara": {
       "shift": "N",
       "note": ""
+    },
+    "Thomas": {
+      "shift": "D",
+      "note": ""
     }
   },
   "2025-07-19": {
@@ -642,6 +714,10 @@
     },
     "Sara": {
       "shift": "N",
+      "note": ""
+    },
+    "Thomas": {
+      "shift": "D",
       "note": ""
     }
   },
@@ -677,6 +753,10 @@
     "Sara": {
       "shift": "N",
       "note": ""
+    },
+    "Thomas": {
+      "shift": "D",
+      "note": ""
     }
   },
   "2025-07-21": {
@@ -709,6 +789,10 @@
       "note": ""
     },
     "Sara": {
+      "shift": "R",
+      "note": "Riposo"
+    },
+    "Thomas": {
       "shift": "R",
       "note": "Riposo"
     }
@@ -745,6 +829,10 @@
     "Sara": {
       "shift": "R",
       "note": "Riposo"
+    },
+    "Thomas": {
+      "shift": "R",
+      "note": "Riposo"
     }
   },
   "2025-07-23": {
@@ -777,6 +865,10 @@
       "note": ""
     },
     "Sara": {
+      "shift": "R",
+      "note": "Riposo"
+    },
+    "Thomas": {
       "shift": "R",
       "note": "Riposo"
     }
@@ -813,6 +905,10 @@
     "Sara": {
       "shift": "R",
       "note": "Riposo"
+    },
+    "Thomas": {
+      "shift": "R",
+      "note": "Riposo"
     }
   },
   "2025-07-25": {
@@ -846,6 +942,10 @@
     },
     "Sara": {
       "shift": "D",
+      "note": ""
+    },
+    "Thomas": {
+      "shift": "N",
       "note": ""
     }
   },
@@ -881,6 +981,10 @@
     "Sara": {
       "shift": "D",
       "note": ""
+    },
+    "Thomas": {
+      "shift": "N",
+      "note": ""
     }
   },
   "2025-07-27": {
@@ -914,6 +1018,10 @@
     },
     "Sara": {
       "shift": "D",
+      "note": ""
+    },
+    "Thomas": {
+      "shift": "N",
       "note": ""
     }
   },
@@ -949,6 +1057,10 @@
     "Sara": {
       "shift": "D",
       "note": ""
+    },
+    "Thomas": {
+      "shift": "N",
+      "note": ""
     }
   },
   "2025-07-29": {
@@ -983,6 +1095,10 @@
     "Sara": {
       "shift": "R",
       "note": "Riposo"
+    },
+    "Thomas": {
+      "shift": "R",
+      "note": "Riposo"
     }
   },
   "2025-07-30": {
@@ -1015,6 +1131,10 @@
       "note": ""
     },
     "Sara": {
+      "shift": "R",
+      "note": "Riposo"
+    },
+    "Thomas": {
       "shift": "R",
       "note": "Riposo"
     }
@@ -1055,7 +1175,7 @@
       "note": ""
     },
     "Andrea": {
-      "shift": "",
+      "shift": "D",
       "note": ""
     },
     "Francesco": {
@@ -1063,12 +1183,15 @@
       "note": "Riposo"
     },
     "Nicolo": {
-      "shift": "",
+      "shift": "N",
       "note": ""
     },
     "Sara": {
-      "shift": "",
+      "shift": "R",
       "note": ""
+    },
+    "Thomas": {
+      "shift": "R"
     }
   }
 }

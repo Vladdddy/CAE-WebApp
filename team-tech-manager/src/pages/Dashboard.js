@@ -1192,7 +1192,7 @@ export default function Dashboard() {
                                 strokeLinejoin="round"
                             ></circle>
                         </svg>
-                        <p className="text-gray-600">Dipendenti in turno</p>
+                        <p className="text-gray-600">Turni di oggi</p>
                     </div>
 
                     <div className="separator"></div>

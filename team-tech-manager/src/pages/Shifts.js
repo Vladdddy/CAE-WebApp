@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useMemo } from "react";
 import html2pdf from "html2pdf.js";
+import Modal from "../components/Modal";
 import "../styles/shifts.css";
 
 const API = process.env.REACT_APP_API_URL;
@@ -78,8 +79,14 @@ export default function Shifts() {
         startDate: "",
     });
     const [draggedUser, setDraggedUser] = useState(null);
+    const [successModal, setSuccessModal] = useState({
+        isOpen: false,
+        message: "",
+    });
     const [dragOverUser, setDragOverUser] = useState(null);
     const [employeeOrderKey, setEmployeeOrderKey] = useState(0);
+    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+    const [originalData, setOriginalData] = useState({});
     const tableRef = useRef();
 
     // Shift patterns
@@ -235,7 +242,11 @@ export default function Shifts() {
             },
         })
             .then((res) => res.json())
-            .then((json) => setData(json));
+            .then((json) => {
+                setData(json);
+                setOriginalData(json); // Store original data
+                setHasUnsavedChanges(false); // Reset unsaved changes flag
+            });
 
         // Fetch users data
         fetch(`${API}/api/users`, {
@@ -251,6 +262,24 @@ export default function Shifts() {
             .catch((error) => console.error("Error fetching users:", error));
     }, [year, month]);
 
+    // Add warning for unsaved changes when leaving page
+    useEffect(() => {
+        const handleBeforeUnload = (e) => {
+            if (hasUnsavedChanges) {
+                e.preventDefault();
+                e.returnValue =
+                    "Hai modifiche non salvate. Sei sicuro di voler uscire?";
+                return "Hai modifiche non salvate. Sei sicuro di voler uscire?";
+            }
+        };
+
+        window.addEventListener("beforeunload", handleBeforeUnload);
+
+        return () => {
+            window.removeEventListener("beforeunload", handleBeforeUnload);
+        };
+    }, [hasUnsavedChanges]);
+
     const handleChange = (name, day, field, value) => {
         const dateKey = getDateKey(day);
         const updated = {
@@ -264,18 +293,55 @@ export default function Shifts() {
             },
         };
         setData(updated);
+        setHasUnsavedChanges(true); // Mark as having unsaved changes
+    };
+
+    const saveChanges = async () => {
         const token = localStorage.getItem("authToken");
-        fetch(`${API}/api/shifts/${year}/${month + 1}`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(updated),
-        });
+        try {
+            const response = await fetch(
+                `${API}/api/shifts/${year}/${month + 1}`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify(data),
+                }
+            );
+
+            if (response.ok) {
+                setOriginalData(data); // Update original data with saved data
+                setHasUnsavedChanges(false); // Reset unsaved changes flag
+                setSuccessModal({
+                    isOpen: true,
+                    message: "Modifiche salvate con successo!",
+                });
+            } else {
+                throw new Error("Errore durante il salvataggio");
+            }
+        } catch (error) {
+            console.error("Error saving changes:", error);
+            alert("Errore durante il salvataggio delle modifiche");
+        }
+    };
+
+    const discardChanges = () => {
+        setData(originalData); // Restore original data
+        setHasUnsavedChanges(false); // Reset unsaved changes flag
     };
 
     const changeMonth = (offset) => {
+        if (hasUnsavedChanges) {
+            const confirmChange = window.confirm(
+                "Hai modifiche non salvate. Sei sicuro di voler cambiare mese? Le modifiche andranno perse."
+            );
+            if (!confirmChange) {
+                return;
+            }
+        }
+
         let newMonth = month + offset;
         let newYear = year;
         if (newMonth < 0) {
@@ -604,12 +670,18 @@ export default function Shifts() {
 
     const applyShiftPattern = () => {
         if (patternModal.selectedUsers.length === 0) {
-            alert("Seleziona almeno un utente");
+            setSuccessModal({
+                isOpen: true,
+                message: "Seleziona almeno un utente",
+            });
             return;
         }
 
         if (!patternModal.startDate) {
-            alert("Seleziona una data di inizio");
+            setSuccessModal({
+                isOpen: true,
+                message: "Seleziona una data di inizio",
+            });
             return;
         }
 
@@ -711,29 +783,13 @@ export default function Shifts() {
 
         // Update local state
         setData(updatedData);
+        setHasUnsavedChanges(true); // Mark as having unsaved changes
 
-        // Send to server
-        const token = localStorage.getItem("authToken");
-        fetch(`${API}/api/shifts/${year}/${month + 1}`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(updatedData),
-        })
-            .then((response) => {
-                if (response.ok) {
-                    alert("Pattern applicato con successo!");
-                    closePatternModal();
-                } else {
-                    throw new Error("Errore nell'applicare il pattern");
-                }
-            })
-            .catch((error) => {
-                console.error("Error applying pattern:", error);
-                alert("Errore nell'applicare il pattern");
-            });
+        setSuccessModal({
+            isOpen: true,
+            message: "Pattern applicato! Ricorda di salvare le modifiche.",
+        });
+        closePatternModal();
     };
 
     const toggleUserSelection = (userName) => {
@@ -854,19 +910,25 @@ export default function Shifts() {
     const calculateShiftCounts = (dateKey) => {
         const counts = { D: 0, N: 0 };
 
-        // Count both admins and employees for shift counts
-        const allUsers = [...admins, ...employees];
-        allUsers.forEach((userName) => {
+        // Both D and N counters: only count employees (exclude admins)
+
+        // Count D shifts (only employees for day shifts)
+        employees.forEach((userName) => {
             const entry = data?.[dateKey]?.[userName] || {};
             const shift = entry.shift;
 
-            if (shift) {
-                // Group shifts: D, O, OP go to "D"; ON, N go to "N"
-                if (shift === "D" || shift === "O" || shift === "OP") {
-                    counts.D++;
-                } else if (shift === "ON" || shift === "N") {
-                    counts.N++;
-                }
+            if (shift && (shift === "D" || shift === "O" || shift === "OP")) {
+                counts.D++;
+            }
+        });
+
+        // Count N shifts (only employees for night shifts)
+        employees.forEach((userName) => {
+            const entry = data?.[dateKey]?.[userName] || {};
+            const shift = entry.shift;
+
+            if (shift && (shift === "ON" || shift === "N")) {
+                counts.N++;
             }
         });
 
@@ -907,6 +969,14 @@ export default function Shifts() {
                                 "0"
                             )}`}
                             onChange={(e) => {
+                                if (hasUnsavedChanges) {
+                                    const confirmChange = window.confirm(
+                                        "Hai modifiche non salvate. Sei sicuro di voler cambiare mese? Le modifiche andranno perse."
+                                    );
+                                    if (!confirmChange) {
+                                        return;
+                                    }
+                                }
                                 const [newYear, newMonth] =
                                     e.target.value.split("-");
                                 setYear(parseInt(newYear));
@@ -1075,6 +1145,60 @@ export default function Shifts() {
                 )}
             </div>
 
+            {/* Save Changes Section */}
+            {hasUnsavedChanges && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-4">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                width="20"
+                                height="20"
+                                color="#d97706"
+                                fill="none"
+                            >
+                                <path
+                                    d="M12 7V13"
+                                    stroke="currentColor"
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                />
+                                <path
+                                    d="M12 16.01L12.01 15.9989"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
+                                <path
+                                    d="M2.5 12C2.5 7.52166 2.5 5.28249 3.89124 3.89124C5.28249 2.5 7.52166 2.5 12 2.5C16.4783 2.5 18.7175 2.5 20.1088 3.89124C21.5 5.28249 21.5 7.52166 21.5 12C21.5 16.4783 21.5 18.7175 20.1088 20.1088C18.7175 21.5 16.4783 21.5 12 21.5C7.52166 21.5 5.28249 21.5 3.89124 20.1088C2.5 18.7175 2.5 16.4783 2.5 12Z"
+                                    stroke="currentColor"
+                                    strokeWidth="1.5"
+                                />
+                            </svg>
+                            <span className="text-yellow-800 font-medium">
+                                Hai modifiche non salvate
+                            </span>
+                        </div>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={discardChanges}
+                                className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                            >
+                                Annulla
+                            </button>
+                            <button
+                                onClick={saveChanges}
+                                className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                            >
+                                Salva modifiche
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Shifts Table */}
             <div className="bg-white rounded-xl shadow-sm border overflow-hidden w-[90vw]">
                 <div ref={tableRef} className="shifts-container overflow-auto">
@@ -1132,8 +1256,7 @@ export default function Shifts() {
                                                         >
                                                             <span
                                                                 className={`font-bold ${
-                                                                    counts.D <
-                                                                    2
+                                                                    counts.D < 2
                                                                         ? "text-red-600"
                                                                         : "text-sky-700"
                                                                 }`}
@@ -1142,8 +1265,7 @@ export default function Shifts() {
                                                             </span>
                                                             <span
                                                                 className={`text-xs font-bold min-w-[20px] ${
-                                                                    counts.D <
-                                                                    2
+                                                                    counts.D < 2
                                                                         ? "text-red-600"
                                                                         : "text-sky-800"
                                                                 }`}
@@ -1160,8 +1282,7 @@ export default function Shifts() {
                                                         >
                                                             <span
                                                                 className={`font-bold ${
-                                                                    counts.N <
-                                                                    2
+                                                                    counts.N < 2
                                                                         ? "text-red-600"
                                                                         : "text-indigo-700"
                                                                 }`}
@@ -1170,8 +1291,7 @@ export default function Shifts() {
                                                             </span>
                                                             <span
                                                                 className={`text-xs font-bold min-w-[20px] ${
-                                                                    counts.N <
-                                                                    2
+                                                                    counts.N < 2
                                                                         ? "text-red-600"
                                                                         : "text-indigo-800"
                                                                 }`}
@@ -2401,6 +2521,15 @@ export default function Shifts() {
                     </div>
                 </div>
             )}
+
+            {/* Success Modal */}
+            <Modal
+                isOpen={successModal.isOpen}
+                onClose={() => setSuccessModal({ isOpen: false, message: "" })}
+                title="Successo"
+                message={successModal.message}
+                type="success"
+            />
         </div>
     );
 }

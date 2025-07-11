@@ -70,5 +70,14 @@
         "role": "admin",
         "department": "Operations",
         "active": true
+    },
+    {
+        "id": 12,
+        "email": "thomas",
+        "password": "thomas123",
+        "name": "Thomas",
+        "role": "employee",
+        "department": "Operations",
+        "active": true
     }
 ]
