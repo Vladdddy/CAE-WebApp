@@ -588,29 +588,29 @@ export default function Dashboard() {
     // Prende le task del turno diurno
     const dayTasks = dailyTasks.filter((task) => {
         const hour = parseInt(task.time.split(":")[0]);
-        return hour >= 7 && hour < 19;
+        return hour >= 7 && hour < 23;
     });
     const incompleteDayTasks = incompleteTasks.filter((task) => {
         const hour = parseInt(task.time.split(":")[0]);
-        return hour >= 7 && hour < 19;
+        return hour >= 7 && hour < 23;
     });
 
     // Prende le task del turno notturno
     const nightTasks = dailyTasks.filter((task) => {
         const hour = parseInt(task.time.split(":")[0]);
-        return hour >= 19 || hour < 7;
+        return hour >= 23 || hour < 7;
     });
     const incompleteNightTasks = incompleteTasks.filter((task) => {
         const hour = parseInt(task.time.split(":")[0]);
-        return hour >= 19 || hour < 7;
+        return hour >= 23 || hour < 7;
     });
 
     // Filtra i turni in base all'orario
     const getCurrentShift = () => {
         const currentHour = currentTime.getHours();
-        if (currentHour >= 7 && currentHour < 12) {
+        if (currentHour >= 7 && currentHour < 14) {
             return "O";
-        } else if (currentHour >= 12 && currentHour < 19) {
+        } else if (currentHour >= 14 && currentHour < 23) {
             return "OP";
         } else {
             return "ON";
@@ -638,8 +638,18 @@ export default function Dashboard() {
 
             users.forEach((user) => {
                 const userShiftData = todayShifts[user.name];
-                if (userShiftData && userShiftData.shift === shift) {
-                    employeesInShift.push(user.name);
+                if (userShiftData && userShiftData.shift) {
+                    const userShift = userShiftData.shift;
+
+                    // Check if user's shift matches current time period
+                    if (
+                        userShift === shift ||
+                        (userShift === "D" &&
+                            (shift === "O" || shift === "OP")) ||
+                        (userShift === "N" && shift === "ON")
+                    ) {
+                        employeesInShift.push(user.name);
+                    }
                 }
             });
 
@@ -671,6 +681,15 @@ export default function Dashboard() {
                             shiftGroups.Pomeriggio.push(user.name);
                             break;
                         case "ON":
+                            shiftGroups.Notte.push(user.name);
+                            break;
+                        case "D":
+                            // D (Day) shift appears in both Mattino and Pomeriggio
+                            shiftGroups.Mattino.push(user.name);
+                            shiftGroups.Pomeriggio.push(user.name);
+                            break;
+                        case "N":
+                            // N (Night) shift appears in Notte
                             shiftGroups.Notte.push(user.name);
                             break;
                     }

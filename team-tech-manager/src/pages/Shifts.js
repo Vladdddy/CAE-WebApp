@@ -3,7 +3,9 @@ import html2pdf from "html2pdf.js";
 import "../styles/shifts.css";
 
 const API = process.env.REACT_APP_API_URL;
-const shifts = ["O", "OP", "ON", "F", "M", "R"];
+const adminShifts = ["O", "OP", "ON", "F", "M", "R", "C"];
+const employeeShifts = ["D", "N", "F", "M", "R", "C"];
+const shifts = ["O", "OP", "ON", "D", "N", "F", "M", "R", "C"]; // Combined for pattern display
 
 // Helper function to get today's date in local timezone
 const getTodayDateKey = () => {
@@ -28,9 +30,12 @@ const getShiftColor = (shift) => {
         O: "bg-yellow-100 text-yellow-800",
         OP: "bg-orange-100 text-orange-800",
         ON: "bg-purple-100 text-purple-800",
+        D: "bg-pink-100 text-pink-800",
+        N: "bg-slate-100 text-slate-800",
         F: "bg-green-100 text-green-800",
         M: "bg-red-100 text-red-800",
         R: "bg-blue-100 text-blue-800",
+        C: "bg-cyan-100 text-cyan-800",
     };
     return colors[shift] || "bg-gray-100 text-gray-800";
 };
@@ -816,9 +821,11 @@ export default function Shifts() {
 
             if (entry && entry.shift) {
                 const shift = entry.shift;
-                // Count working shifts: O, OP, ON, M (exclude R=Riposo, F=Festa)
-                if (["O", "OP", "ON", "M"].includes(shift)) {
-                    totalHours += 8; // Each shift is 8 hours
+                // Count working shifts: exclude R=Riposo, F=Festa
+                if (["O", "OP", "ON", "M", "C"].includes(shift)) {
+                    totalHours += 8; // Admin shifts are 8 hours
+                } else if (["D", "N"].includes(shift)) {
+                    totalHours += 11; // Employee day/night shifts are 11 hours
                 }
             }
         });
@@ -841,6 +848,29 @@ export default function Shifts() {
             backgroundColor: "#16a34a15", // green-200
             fontWeight: "bold",
         };
+    };
+
+    // Function to calculate shift counts for a specific day
+    const calculateShiftCounts = (dateKey) => {
+        const counts = { D: 0, N: 0 };
+
+        // Count both admins and employees for shift counts
+        const allUsers = [...admins, ...employees];
+        allUsers.forEach((userName) => {
+            const entry = data?.[dateKey]?.[userName] || {};
+            const shift = entry.shift;
+
+            if (shift) {
+                // Group shifts: D, O, OP go to "D"; ON, N go to "N"
+                if (shift === "D" || shift === "O" || shift === "OP") {
+                    counts.D++;
+                } else if (shift === "ON" || shift === "N") {
+                    counts.N++;
+                }
+            }
+        });
+
+        return counts;
     };
 
     return (
@@ -989,81 +1019,60 @@ export default function Shifts() {
 
             {/* Summary Section */}
             <div className="flex gap-2 mb-6 w-[50vw]">
-                {["O", "OP", "ON", "F", "M", "R"].map((shiftType) => {
-                    const count = Object.values(data).reduce(
-                        (total, dayData) => {
-                            return (
-                                total +
-                                Object.values(dayData).filter(
-                                    (entry) => entry.shift === shiftType
-                                ).length
-                            );
-                        },
-                        0
-                    );
+                {["O", "OP", "ON", "D", "N", "F", "M", "R", "C"].map(
+                    (shiftType) => {
+                        const count = Object.values(data).reduce(
+                            (total, dayData) => {
+                                return (
+                                    total +
+                                    Object.values(dayData).filter(
+                                        (entry) => entry.shift === shiftType
+                                    ).length
+                                );
+                            },
+                            0
+                        );
 
-                    const shiftNames = {
-                        O: "Mattino",
-                        OP: "Pomeriggio",
-                        ON: "Notte",
-                        F: "Ferie",
-                        M: "Malattia",
-                        R: "Riposo",
-                    };
+                        const shiftNames = {
+                            O: "Mattino",
+                            OP: "Pomeriggio",
+                            ON: "Notturno",
+                            D: "Giorno",
+                            N: "Notte",
+                            F: "Ferie",
+                            M: "Malattia",
+                            R: "Riposo",
+                            C: "Corso",
+                        };
 
-                    return (
-                        <div
-                            key={shiftType}
-                            className="bg-white rounded-xl shadow-md border px-2 py-2 w-1/2"
-                        >
-                            <div className="flex flex-col items-center justify-between gap-2">
-                                <div
-                                    className={`px-3 py-2 text-xs rounded-lg flex items-center justify-center ${getShiftColor(
-                                        shiftType
-                                    )}`}
-                                >
-                                    <span className="font-bold ">
-                                        {shiftType}
+                        return (
+                            <div
+                                key={shiftType}
+                                className="bg-white rounded-xl shadow-md border px-2 py-2 w-1/2"
+                            >
+                                <div className="flex flex-col items-center justify-between gap-2">
+                                    <div
+                                        className={`px-3 py-2 text-xs rounded-lg flex items-center justify-center ${getShiftColor(
+                                            shiftType
+                                        )}`}
+                                    >
+                                        <span className="font-bold ">
+                                            {shiftType}
+                                        </span>
+                                    </div>
+
+                                    <span
+                                        className={`text-xs ${getShiftColor(
+                                            shiftType
+                                        )} bg-opacity-0`}
+                                    >
+                                        {shiftNames[shiftType] || shiftType}
                                     </span>
                                 </div>
-
-                                <span
-                                    className={`text-xs ${getShiftColor(
-                                        shiftType
-                                    )} bg-opacity-0`}
-                                >
-                                    {shiftNames[shiftType] || shiftType}
-                                </span>
-
-                                <div className="flex flex-row items-center gap-1">
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 24 24"
-                                        width="20"
-                                        height="20"
-                                        color={"#1051b9"}
-                                        fill="none"
-                                    >
-                                        <path
-                                            d="M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z"
-                                            stroke="currentColor"
-                                            stroke-width="1.5"
-                                        />
-                                        <path
-                                            d="M14 14H10C7.23858 14 5 16.2386 5 19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19C19 16.2386 16.7614 14 14 14Z"
-                                            stroke="currentColor"
-                                            stroke-width="1.5"
-                                            stroke-linejoin="round"
-                                        />
-                                    </svg>
-                                    <p className="text-xl text-blue-600">
-                                        {count}
-                                    </p>
-                                </div>
                             </div>
-                        </div>
-                    );
-                })}
+                        );
+                    }
+                )}
             </div>
 
             {/* Shifts Table */}
@@ -1090,7 +1099,96 @@ export default function Shifts() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
-                            {names.map((name, nameIndex) => (
+                            {/* Shift Counter Row */}
+                            {admins.length > 0 && (
+                                <tr className="bg-gray-100 border-gray-300">
+                                    <td className="px-3 py-4 text-center text-sm font-medium text-gray-500 border-r border-gray-200">
+                                        <div className="text-center">
+                                            Conteggio Turni
+                                        </div>
+                                    </td>
+                                    {days.map((d) => {
+                                        const dateKey = getDateKey(d);
+                                        const counts =
+                                            calculateShiftCounts(dateKey);
+                                        const isToday =
+                                            dateKey === getTodayDateKey();
+
+                                        return (
+                                            <td
+                                                key={dateKey}
+                                                className={`px-3 py-3 text-center border-r border-gray-200 ${
+                                                    isToday ? "bg-blue-50" : ""
+                                                }`}
+                                            >
+                                                <div className="space-y-1">
+                                                    <div className="grid grid-cols-2 gap-1 text-xs font-medium">
+                                                        <div
+                                                            className={`flex flex-col items-center rounded px-1 py-1 ${
+                                                                counts.D < 2
+                                                                    ? "bg-red-100 text-white"
+                                                                    : "bg-sky-100"
+                                                            }`}
+                                                        >
+                                                            <span
+                                                                className={`font-bold ${
+                                                                    counts.D <
+                                                                    2
+                                                                        ? "text-red-600"
+                                                                        : "text-sky-700"
+                                                                }`}
+                                                            >
+                                                                D
+                                                            </span>
+                                                            <span
+                                                                className={`text-xs font-bold min-w-[20px] ${
+                                                                    counts.D <
+                                                                    2
+                                                                        ? "text-red-600"
+                                                                        : "text-sky-800"
+                                                                }`}
+                                                            >
+                                                                {counts.D}
+                                                            </span>
+                                                        </div>
+                                                        <div
+                                                            className={`flex flex-col items-center rounded px-1 py-1 ${
+                                                                counts.N < 2
+                                                                    ? "bg-red-100 text-white"
+                                                                    : "bg-indigo-100"
+                                                            }`}
+                                                        >
+                                                            <span
+                                                                className={`font-bold ${
+                                                                    counts.N <
+                                                                    2
+                                                                        ? "text-red-600"
+                                                                        : "text-indigo-700"
+                                                                }`}
+                                                            >
+                                                                N
+                                                            </span>
+                                                            <span
+                                                                className={`text-xs font-bold min-w-[20px] ${
+                                                                    counts.N <
+                                                                    2
+                                                                        ? "text-red-600"
+                                                                        : "text-indigo-800"
+                                                                }`}
+                                                            >
+                                                                {counts.N}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        );
+                                    })}
+                                </tr>
+                            )}
+
+                            {/* Render admin users first */}
+                            {admins.map((name, nameIndex) => (
                                 <tr
                                     key={name}
                                     className={`shift-row ${
@@ -1277,14 +1375,333 @@ export default function Shifts() {
                                                             <option value="">
                                                                 --
                                                             </option>
-                                                            {shifts.map((s) => (
-                                                                <option
-                                                                    key={s}
-                                                                    value={s}
+                                                            {adminShifts.map(
+                                                                (s) => (
+                                                                    <option
+                                                                        key={s}
+                                                                        value={
+                                                                            s
+                                                                        }
+                                                                    >
+                                                                        {s}
+                                                                    </option>
+                                                                )
+                                                            )}
+                                                        </select>
+                                                    ) : (
+                                                        <p
+                                                            className={`w-full p-1 px-4 text-sm font-bold rounded-md border-gray-300 transition-colors duration-200 ${
+                                                                entry.shift
+                                                                    ? getShiftColor(
+                                                                          entry.shift
+                                                                      )
+                                                                    : "bg-gray-50"
+                                                            }`}
+                                                        >
+                                                            {entry.shift ||
+                                                                "--"}
+                                                        </p>
+                                                    )}
+
+                                                    <div
+                                                        className={`flex justify-between items-center transition-all duration-500 ease-in-out ${
+                                                            expandedRows.has(
+                                                                name
+                                                            )
+                                                                ? "max-h-20 opacity-100"
+                                                                : "max-h-0 opacity-0 overflow-hidden"
+                                                        }`}
+                                                    >
+                                                        <button
+                                                            onClick={() =>
+                                                                isAdmin &&
+                                                                openNoteModal(
+                                                                    name,
+                                                                    dateKey
+                                                                )
+                                                            }
+                                                            disabled={!isAdmin}
+                                                            className={`flex justify-center w-full p-1 rounded transition-colors ${
+                                                                isAdmin
+                                                                    ? "hover:bg-gray-100 cursor-pointer"
+                                                                    : "opacity-60"
+                                                            }`}
+                                                            title={
+                                                                isAdmin
+                                                                    ? "Aggiungi nota"
+                                                                    : "Solo gli admin possono aggiungere note"
+                                                            }
+                                                        >
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                viewBox="0 0 24 24"
+                                                                width="20"
+                                                                height="20"
+                                                                color="#1051b9"
+                                                                fill="none"
+                                                            >
+                                                                <path
+                                                                    d="M2.5 12.0001C2.5 7.52171 2.5 5.28254 3.89124 3.8913C5.28249 2.50005 7.52166 2.50005 12 2.50005C16.4783 2.50005 18.7175 2.50005 20.1088 3.8913C21.5 5.28254 21.5 7.52171 21.5 12.0001C21.5 16.4784 21.5 18.7176 20.1088 20.1088C18.7175 21.5001 16.4783 21.5001 12 21.5001C7.52166 21.5001 5.28249 21.5001 3.89124 20.1088C2.5 18.7176 2.5 16.4784 2.5 12.0001Z"
+                                                                    stroke="currentColor"
+                                                                    stroke-width="1.5"
+                                                                    stroke-linecap="round"
+                                                                    stroke-linejoin="round"
+                                                                ></path>
+                                                                <path
+                                                                    d="M12 8.00005V16.0001M16 12.0001L8 12.0001"
+                                                                    stroke="currentColor"
+                                                                    stroke-width="1.5"
+                                                                    stroke-linecap="round"
+                                                                    stroke-linejoin="round"
+                                                                ></path>
+                                                            </svg>{" "}
+                                                        </button>
+
+                                                        {entry.note && (
+                                                            <div className="flex items-center justify-center w-full">
+                                                                <button
+                                                                    onClick={() =>
+                                                                        openViewNoteModal(
+                                                                            name,
+                                                                            dateKey,
+                                                                            entry.note
+                                                                        )
+                                                                    }
+                                                                    className="flex justify-center w-full hover:bg-gray-100 p-1 rounded transition-colors"
+                                                                    title={`Visualizza nota`}
                                                                 >
-                                                                    {s}
-                                                                </option>
-                                                            ))}
+                                                                    <svg
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                        viewBox="0 0 24 24"
+                                                                        width="20"
+                                                                        height="20"
+                                                                        color="#1051b9"
+                                                                        fill="none"
+                                                                    >
+                                                                        <path
+                                                                            d="M12.8809 7.01656L17.6538 8.28825M11.8578 10.8134L14.2442 11.4492M11.9765 17.9664L12.9311 18.2208C15.631 18.9401 16.981 19.2998 18.0445 18.6893C19.108 18.0787 19.4698 16.7363 20.1932 14.0516L21.2163 10.2548C21.9398 7.57005 22.3015 6.22768 21.6875 5.17016C21.0735 4.11264 19.7235 3.75295 17.0235 3.03358L16.0689 2.77924C13.369 2.05986 12.019 1.70018 10.9555 2.31074C9.89196 2.9213 9.53023 4.26367 8.80678 6.94841L7.78366 10.7452C7.0602 13.4299 6.69848 14.7723 7.3125 15.8298C7.92652 16.8874 9.27651 17.2471 11.9765 17.9664Z"
+                                                                            stroke="currentColor"
+                                                                            stroke-width="1.5"
+                                                                            stroke-linecap="round"
+                                                                        ></path>
+                                                                        <path
+                                                                            d="M12 20.9462L11.0477 21.2055C8.35403 21.939 7.00722 22.3057 5.94619 21.6832C4.88517 21.0607 4.52429 19.692 3.80253 16.9546L2.78182 13.0833C2.06006 10.3459 1.69918 8.97718 2.31177 7.89892C2.84167 6.96619 4 7.00015 5.5 7.00003"
+                                                                            stroke="currentColor"
+                                                                            stroke-width="1.5"
+                                                                            stroke-linecap="round"
+                                                                        ></path>
+                                                                    </svg>
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        );
+                                    })}
+                                </tr>
+                            ))}
+
+                            {/* Render employee users */}
+                            {employees.map((name, nameIndex) => (
+                                <tr
+                                    key={name}
+                                    className={`shift-row ${
+                                        nameIndex % 2 === 0
+                                            ? "bg-white"
+                                            : "bg-gray-50"
+                                    } ${
+                                        dragOverUser === name
+                                            ? "bg-blue-100 border-blue-300"
+                                            : ""
+                                    } ${
+                                        draggedUser === name ? "opacity-50" : ""
+                                    }`}
+                                    draggable={!isUserAdmin(name)}
+                                    onDragStart={(e) =>
+                                        handleDragStart(e, name)
+                                    }
+                                    onDragOver={(e) => handleDragOver(e, name)}
+                                    onDragLeave={handleDragLeave}
+                                    onDrop={(e) => handleDrop(e, name)}
+                                    onDragEnd={handleDragEnd}
+                                >
+                                    <td className="gap-2 px-4 py-2 text-gray-700 border-r border-gray-200">
+                                        <div className="flex flex-row justify-between items-center gap-4">
+                                            <div className="flex items-center gap-2">
+                                                {!isUserAdmin(name) ? (
+                                                    <div
+                                                        className="cursor-grab active:cursor-grabbing p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                                                        title="Trascina per riordinare"
+                                                    >
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            viewBox="0 0 24 24"
+                                                            width="16"
+                                                            height="16"
+                                                            fill="none"
+                                                        >
+                                                            <path
+                                                                d="M8 6.5C8 7.32843 7.32843 8 6.5 8C5.67157 8 5 7.32843 5 6.5C5 5.67157 5.67157 5 6.5 5C7.32843 5 8 5.67157 8 6.5Z"
+                                                                fill="currentColor"
+                                                            />
+                                                            <path
+                                                                d="M8 12C8 12.8284 7.32843 13.5 6.5 13.5C5.67157 13.5 5 12.8284 5 12C5 11.1716 5.67157 10.5 6.5 10.5C7.32843 10.5 8 11.1716 8 12Z"
+                                                                fill="currentColor"
+                                                            />
+                                                            <path
+                                                                d="M8 17.5C8 18.3284 7.32843 19 6.5 19C5.67157 19 5 18.3284 5 17.5C5 16.6716 5.67157 16 6.5 16C7.32843 16 8 16.6716 8 17.5Z"
+                                                                fill="currentColor"
+                                                            />
+                                                            <path
+                                                                d="M13.5 6.5C13.5 7.32843 12.8284 8 12 8C11.1716 8 10.5 7.32843 10.5 6.5C10.5 5.67157 11.1716 5 12 5C12.8284 5 13.5 5.67157 13.5 6.5Z"
+                                                                fill="currentColor"
+                                                            />
+                                                            <path
+                                                                d="M13.5 12C13.5 12.8284 12.8284 13.5 12 13.5C11.1716 13.5 10.5 12.8284 10.5 12C10.5 11.1716 11.1716 10.5 12 10.5C12.8284 10.5 13.5 11.1716 13.5 12Z"
+                                                                fill="currentColor"
+                                                            />
+                                                            <path
+                                                                d="M13.5 17.5C13.5 18.3284 12.8284 19 12 19C11.1716 19 10.5 18.3284 10.5 17.5C10.5 16.6716 11.1716 16 12 16C12.8284 16 13.5 16.6716 13.5 17.5Z"
+                                                                fill="currentColor"
+                                                            />
+                                                        </svg>
+                                                    </div>
+                                                ) : null}
+                                                {isUserAdmin(name) ? (
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        viewBox="0 0 24 24"
+                                                        width="16"
+                                                        height="16"
+                                                        color="#222"
+                                                        fill="none"
+                                                    >
+                                                        <path
+                                                            d="M13.7276 3.44418L15.4874 6.99288C15.7274 7.48687 16.3673 7.9607 16.9073 8.05143L20.0969 8.58575C22.1367 8.92853 22.6167 10.4206 21.1468 11.8925L18.6671 14.3927C18.2471 14.8161 18.0172 15.6327 18.1471 16.2175L18.8571 19.3125C19.417 21.7623 18.1271 22.71 15.9774 21.4296L12.9877 19.6452C12.4478 19.3226 11.5579 19.3226 11.0079 19.6452L8.01827 21.4296C5.8785 22.71 4.57865 21.7522 5.13859 19.3125L5.84851 16.2175C5.97849 15.6327 5.74852 14.8161 5.32856 14.3927L2.84884 11.8925C1.389 10.4206 1.85895 8.92853 3.89872 8.58575L7.08837 8.05143C7.61831 7.9607 8.25824 7.48687 8.49821 6.99288L10.258 3.44418C11.2179 1.51861 12.7777 1.51861 13.7276 3.44418Z"
+                                                            stroke="currentColor"
+                                                            stroke-width="1.5"
+                                                            stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                        ></path>
+                                                    </svg>
+                                                ) : null}
+                                                <div className="text-sm">
+                                                    {name}
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() =>
+                                                    toggleRowExpansion(name)
+                                                }
+                                                className="flex items-center justify-center p-1 bg-blue-50 hover:bg-blue-100 rounded transition-colors"
+                                                title={
+                                                    expandedRows.has(name)
+                                                        ? "Nascondi controlli"
+                                                        : "Mostra controlli"
+                                                }
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    viewBox="0 0 24 24"
+                                                    width="16"
+                                                    height="16"
+                                                    color="#1051b9"
+                                                    fill="none"
+                                                    className={`transform transition-transform duration-200 ${
+                                                        expandedRows.has(name)
+                                                            ? "rotate-180"
+                                                            : ""
+                                                    }`}
+                                                >
+                                                    <path
+                                                        d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
+                                                        stroke="currentColor"
+                                                        strokeWidth="1.5"
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                    />
+                                                </svg>
+                                            </button>
+                                        </div>
+
+                                        {/* Expandable Hours Display */}
+                                        <div
+                                            className={`transition-all duration-500 ease-in-out ${
+                                                expandedRows.has(name)
+                                                    ? "max-h-20 opacity-100 mt-2"
+                                                    : "max-h-0 opacity-0 overflow-hidden"
+                                            }`}
+                                        >
+                                            {(() => {
+                                                const userHours =
+                                                    calculateUserHours(name);
+                                                return (
+                                                    <div
+                                                        className="text-xs text-center px-2 py-1 rounded"
+                                                        style={getHourDisplayStyle(
+                                                            userHours
+                                                        )}
+                                                    >
+                                                        {userHours}h/160h
+                                                    </div>
+                                                );
+                                            })()}
+                                        </div>
+                                    </td>
+                                    {days.map((d) => {
+                                        const dateKey = getDateKey(d);
+                                        const entry =
+                                            data?.[dateKey]?.[name] || {};
+                                        const isToday =
+                                            dateKey === getTodayDateKey();
+
+                                        return (
+                                            <td
+                                                key={dateKey}
+                                                className={`px-3 py-4 text-center border-r border-gray-200 relative ${
+                                                    isToday ? "bg-blue-50" : ""
+                                                }`}
+                                            >
+                                                <div className="space-y-2">
+                                                    {isAdmin ? (
+                                                        <select
+                                                            value={
+                                                                entry.shift ||
+                                                                ""
+                                                            }
+                                                            onChange={(e) =>
+                                                                handleChange(
+                                                                    name,
+                                                                    d,
+                                                                    "shift",
+                                                                    e.target
+                                                                        .value
+                                                                )
+                                                            }
+                                                            className={`shift-select w-full p-2 px-4 text-xs font-bold rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 transition-colors duration-200 ${
+                                                                entry.shift
+                                                                    ? getShiftColor(
+                                                                          entry.shift
+                                                                      )
+                                                                    : "bg-gray-100"
+                                                            }`}
+                                                        >
+                                                            <option value="">
+                                                                --
+                                                            </option>
+                                                            {employeeShifts.map(
+                                                                (s) => (
+                                                                    <option
+                                                                        key={s}
+                                                                        value={
+                                                                            s
+                                                                        }
+                                                                    >
+                                                                        {s}
+                                                                    </option>
+                                                                )
+                                                            )}
                                                         </select>
                                                     ) : (
                                                         <p
