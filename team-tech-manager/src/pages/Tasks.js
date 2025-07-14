@@ -2,6 +2,8 @@ import { useEffect, useState, useRef, useMemo } from "react";
 import Modal from "../components/Modal";
 import TaskDetailsModal from "../components/TaskDetailsModal";
 import DescriptionModal from "../components/DescriptionModal";
+import Calendar from "../components/Calendar";
+import TaskTable from "../components/TaskTable";
 import html2pdf from "html2pdf.js";
 import "../styles/tasks.css";
 import {
@@ -89,6 +91,10 @@ export default function Tasks() {
     const [showFilterResults, setShowFilterResults] = useState(false);
     const [isAddTaskAccordionOpen, setIsAddTaskAccordionOpen] = useState(false);
     const [isFilterAccordionOpen, setIsFilterAccordionOpen] = useState(false);
+
+    // Calendar and view state
+    const [showCalendar, setShowCalendar] = useState(true);
+    const [showTable, setShowTable] = useState(false);
 
     // Notes state
     const [taskNotes, setTaskNotes] = useState({});
@@ -977,1310 +983,747 @@ export default function Tasks() {
         return timeInMinutes >= 1140 || timeInMinutes <= 420;
     });
 
+    // Handle calendar day click
+    const handleCalendarDayClick = (dateStr) => {
+        setSelectedDate(dateStr);
+        setShowCalendar(false);
+        setShowTable(true);
+    };
+
+    // Handle back to calendar
+    const handleBackToCalendar = () => {
+        setShowCalendar(true);
+        setShowTable(false);
+    };
+
     if (loading) return <div>Caricamento task...</div>;
 
     return (
         <>
             <div className="flex gap-4 flex-col lg:flex-col justify-between max-w-full p-4">
                 <div className="flex flex-col min-w-0 justify-start">
-                    <div className="date-selector flex items-center justify-start gap-8 flex-wrap">
-                        <button
-                            onClick={() => handleChangeDay(-1)}
-                            className="arroww bg-[#3b82f620] p-2 rounded-md"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                width="24"
-                                height="24"
-                                color="#3b82f6"
-                                fill="none"
-                            >
-                                <path
-                                    d="M15 6C15 6 9.00001 10.4189 9 12C8.99999 13.5812 15 18 15 18"
-                                    stroke="#3b82f6"
-                                    strokeWidth="1.5"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                ></path>
-                            </svg>
-                        </button>{" "}
-                        <input
-                            type="date"
-                            value={selectedDate}
-                            onChange={(e) => {
-                                setSelectedDate(e.target.value);
-                                setDate(e.target.value);
-                            }}
-                        />
-                        <button
-                            onClick={() => handleChangeDay(1)}
-                            className="arroww bg-[#3b82f620] p-2 rounded-md"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                width="24"
-                                height="24"
-                                color="#3b82f6"
-                                fill="none"
-                            >
-                                <path
-                                    d="M9.00005 6C9.00005 6 15 10.4189 15 12C15 13.5812 9 18 9 18"
-                                    stroke="#3b82f6"
-                                    strokeWidth="1.5"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                ></path>
-                            </svg>{" "}
-                        </button>
-                        <button
-                            onClick={handleExportPDF}
-                            className="aggiungi-btn flex items-center gap-2 col-span-1 sm:col-span-2 bg-blue-600 px-8 py-2 rounded"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                width="20"
-                                height="20"
-                                color="#fff"
-                                fill="none"
-                            >
-                                <path
-                                    d="M20 13V10.6569C20 9.83935 20 9.4306 19.8478 9.06306C19.6955 8.69552 19.4065 8.40649 18.8284 7.82843L14.0919 3.09188C13.593 2.593 13.3436 2.34355 13.0345 2.19575C12.9702 2.165 12.9044 2.13772 12.8372 2.11401C12.5141 2 12.1614 2 11.4558 2C8.21082 2 6.58831 2 5.48933 2.88607C5.26731 3.06508 5.06508 3.26731 4.88607 3.48933C4 4.58831 4 6.21082 4 9.45584V13M13 2.5V3C13 5.82843 13 7.24264 13.8787 8.12132C14.7574 9 16.1716 9 19 9H19.5"
-                                    stroke="currentColor"
-                                    strokeWidth="1.5"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                />
-                                <path
-                                    d="M19.75 16H17.25C16.6977 16 16.25 16.4477 16.25 17V19M16.25 19V22M16.25 19H19.25M4.25 22V19.5M4.25 19.5V16H6C6.9665 16 7.75 16.7835 7.75 17.75C7.75 18.7165 6.9665 19.5 6 19.5H4.25ZM10.25 16H11.75C12.8546 16 13.75 16.8954 13.75 18V20C13.75 21.1046 12.8546 22 11.75 22H10.25V16Z"
-                                    stroke="currentColor"
-                                    strokeWidth="1.5"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                />
-                            </svg>
-                            <p className="text-white">Export</p>
-                        </button>
-                    </div>
-                    <div
-                        ref={tasksListRef}
-                        className="tasks flex flex-col w-full border p-4 rounded-xl bg-white my-8 overflow-y-auto max-h-[80vh] flex-1 max-w-full"
-                    >
-                        <div className="title flex flex-row items-center gap-2">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                width="20"
-                                height="20"
-                                color="oklch(44.6% 0.03 256.802)"
-                                fill="none"
-                            >
-                                <path
-                                    d="M20.1069 20.1088C18.7156 21.5001 16.4765 21.5001 11.9981 21.5001C7.51976 21.5001 5.28059 21.5001 3.88935 20.1088C2.49811 18.7176 2.49811 16.4784 2.49811 12.0001C2.49811 7.52172 2.49811 5.28255 3.88935 3.89131C5.28059 2.50006 7.51976 2.50006 11.9981 2.50006C16.4764 2.50006 18.7156 2.50006 20.1069 3.8913C21.4981 5.28255 21.4981 7.52172 21.4981 12.0001C21.4981 16.4784 21.4981 18.7176 20.1069 20.1088Z"
-                                    stroke="currentColor"
-                                    stroke-width="1.5"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                />
-                                <path
-                                    d="M8.99811 21.5001L8.99811 2.50006"
-                                    stroke="currentColor"
-                                    stroke-width="1.5"
-                                />
-                                <path
-                                    d="M21.4981 8.00006L2.49811 8.00006"
-                                    stroke="currentColor"
-                                    stroke-width="1.5"
-                                />
-                                <path
-                                    d="M21.4981 16.0001H2.49811"
-                                    stroke="currentColor"
-                                    stroke-width="1.5"
-                                />
-                            </svg>
-                            <p className="text-gray-600">
-                                {showFilterResults ? (
-                                    <>
-                                        Risultato{" "}
-                                        <span className="span ml-1">
-                                            {filteredTasks.length} task
-                                        </span>
-                                    </>
-                                ) : (
-                                    <>Tabella delle task</>
-                                )}
-                            </p>
-                        </div>{" "}
-                        {!showFilterResults && (
-                            <>
-                                <div className="separator w-full border-b border-gray-200"></div>
-                                <div className="flex flex-row items-center gap-16 mb-2">
-                                    <div className="flex items-center gap-2">
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 24 24"
-                                            width="20"
-                                            height="20"
-                                            color="oklch(44.6% 0.03 256.802)"
-                                            fill="none"
-                                        >
-                                            <path
-                                                d="M17 12C17 14.7614 14.7614 17 12 17C9.23858 17 7 14.7614 7 12C7 9.23858 9.23858 7 12 7C14.7614 7 17 9.23858 17 12Z"
-                                                stroke="oklch(44.6% 0.03 256.802)"
-                                                strokeWidth="1.5"
-                                            ></path>
-                                            <path
-                                                d="M12 2V3.5M12 20.5V22M19.0708 19.0713L18.0101 18.0106M5.98926 5.98926L4.9286 4.9286M22 12H20.5M3.5 12H2M19.0713 4.92871L18.0106 5.98937M5.98975 18.0107L4.92909 19.0714"
-                                                stroke="oklch(44.6% 0.03 256.802)"
-                                                strokeWidth="1.5"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                            ></path>
-                                        </svg>{" "}
-                                        <h4 className="text-gray-600">
-                                            Giorno
-                                        </h4>
-                                        <span className="span">
-                                            {dayShiftTasks.length} task
-                                        </span>
-                                    </div>{" "}
-                                    <div className="flex flex-row justify-between items-center w-[80%]">
-                                        {/* Simulator headers will be displayed below with their tasks */}
-                                    </div>
-                                </div>{" "}
-                            </>
-                        )}
-                        {showFilterResults ? (
-                            <>
-                                <div className="separator w-full border-b border-gray-200 mb-4"></div>
-                                {/* Show filtered results */}
-                                {filteredTasks.length === 0 ? (
-                                    <div className="text-center py-4 text-gray-500">
-                                        Nessun task trovato con i filtri
-                                        applicati
-                                    </div>
-                                ) : (
-                                    filteredTasks.map((task) => (
-                                        <>
-                                            <div
-                                                key={task.id}
-                                                className="display-task flex items-center gap-4 justify-between dashboard-content p-3 rounded mt-3 bg-gray-100 cursor-pointer hover:bg-gray-200 transition-colors"
-                                                style={{
-                                                    border: `2px solid ${getBorderColor(
-                                                        task.status
-                                                    )}`,
-                                                }}
-                                                onClick={() =>
-                                                    openTaskDetails(task)
-                                                }
-                                            >
-                                                {" "}
-                                                <div className="task-info">
-                                                    <p className="text-gray-600 max-w-md font-bold text-sm">
-                                                        {task.title}
-                                                    </p>
-                                                    <div className="text-xs text-gray-500 capitalize">
-                                                        {task.date} •{" "}
-                                                        {task.time} •{" "}
-                                                        {task.assignedTo} •{" "}
-                                                        {task.status}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </>
-                                    ))
-                                )}
-                            </>
-                        ) : (
-                            (() => {
-                                // Group tasks by simulator
-                                const tasksBySimulator = {};
-                                const simulators = [
-                                    "FTD",
-                                    "109FFS",
-                                    "139#1",
-                                    "139#3",
-                                    "169",
-                                    "189",
-                                    "Others",
-                                ];
-
-                                // Initialize each simulator group
-                                simulators.forEach((sim) => {
-                                    tasksBySimulator[sim] = [];
-                                }); // Group tasks by simulator
-                                dayShiftTasks.forEach((task) => {
-                                    const simulator = task.simulator || "";
-                                    if (
-                                        simulators
-                                            .slice(0, -1)
-                                            .includes(simulator)
-                                    ) {
-                                        tasksBySimulator[simulator].push(task);
-                                    } else {
-                                        tasksBySimulator["Others"].push(task);
-                                    }
-                                });
-
-                                return (
-                                    <div className="simulator-container">
-                                        <div className="simulators-row flex flex-wrap justify-between gap-4 mb-4">
-                                            {simulators.map((simulator) => {
-                                                const tasks =
-                                                    tasksBySimulator[simulator];
-
-                                                return (
-                                                    <div
-                                                        key={simulator}
-                                                        className="simulator-column flex-1 min-w-[120px]"
-                                                    >
-                                                        {" "}
-                                                        <div className="simulator-header flex flex-row items-center justify-center gap-2 mb-4">
-                                                            <p className="text-xs font-medium text-gray-600">
-                                                                {simulator}
-                                                                {simulatorSchedules[
-                                                                    simulator
-                                                                ] && (
-                                                                    <span className="ml-2 bg-blue-100 p-1 rounded text-blue-600 text-xs">
-                                                                        {
-                                                                            simulatorSchedules[
-                                                                                simulator
-                                                                            ]
-                                                                                .startTime
-                                                                        }
-                                                                        -
-                                                                        {
-                                                                            simulatorSchedules[
-                                                                                simulator
-                                                                            ]
-                                                                                .endTime
-                                                                        }
-                                                                    </span>
-                                                                )}{" "}
-                                                            </p>
-                                                            {(() => {
-                                                                const today =
-                                                                    new Date()
-                                                                        .toISOString()
-                                                                        .split(
-                                                                            "T"
-                                                                        )[0];
-                                                                const isToday =
-                                                                    selectedDate ===
-                                                                    today;
-
-                                                                return (
-                                                                    <svg
-                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                        viewBox="0 0 24 24"
-                                                                        width="16"
-                                                                        height="16"
-                                                                        color={
-                                                                            isToday
-                                                                                ? "#3b82f6"
-                                                                                : "#9ca3af"
-                                                                        }
-                                                                        fill="none"
-                                                                        className={
-                                                                            isToday
-                                                                                ? "cursor-pointer hover:scale-110 transition-transform"
-                                                                                : "cursor-not-allowed opacity-50"
-                                                                        }
-                                                                        onClick={() => {
-                                                                            if (
-                                                                                isToday
-                                                                            ) {
-                                                                                openScheduleModal(
-                                                                                    simulator
-                                                                                );
-                                                                            }
-                                                                        }}
-                                                                        title={
-                                                                            isToday
-                                                                                ? "Modifica orari"
-                                                                                : "Puoi modificare gli orari solo per oggi"
-                                                                        }
-                                                                    >
-                                                                        <path
-                                                                            d="M22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12Z"
-                                                                            stroke="currentColor"
-                                                                            stroke-width="1.5"
-                                                                            stroke-linecap="round"
-                                                                            stroke-linejoin="round"
-                                                                        />
-                                                                        <path
-                                                                            d="M12 8V16M16 12H8"
-                                                                            stroke="currentColor"
-                                                                            stroke-width="1.5"
-                                                                            stroke-linecap="round"
-                                                                            stroke-linejoin="round"
-                                                                        />
-                                                                    </svg>
-                                                                );
-                                                            })()}
-                                                        </div>
-                                                        <div className="simulator-tasks space-y-2">
-                                                            {tasks.length ===
-                                                            0 ? (
-                                                                <div className="text-center py-2">
-                                                                    <span className="text-xs text-gray-400 italic"></span>
-                                                                </div>
-                                                            ) : (
-                                                                tasks.map(
-                                                                    (task) => (
-                                                                        <div
-                                                                            key={
-                                                                                task.id
-                                                                            }
-                                                                            className="task-card-small p-2 rounded-xl border bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
-                                                                            style={{
-                                                                                border: `1px solid ${getBorderColor(
-                                                                                    task.status
-                                                                                )}`,
-                                                                            }}
-                                                                            onClick={() =>
-                                                                                openTaskDetails(
-                                                                                    task
-                                                                                )
-                                                                            }
-                                                                        >
-                                                                            <div className="task-info h-full flex flex-col justify-between">
-                                                                                <p className="text-gray-900 font-bold text-xs leading-tight mb-1 overflow-hidden">
-                                                                                    {task
-                                                                                        .title
-                                                                                        .length >
-                                                                                    20
-                                                                                        ? task.title.substring(
-                                                                                              0,
-                                                                                              20
-                                                                                          ) +
-                                                                                          "..."
-                                                                                        : task.title}
-                                                                                </p>
-                                                                                <div className="task-details text-xs text-gray-500 space-y-4">
-                                                                                    <div className="text-xs">
-                                                                                        {
-                                                                                            task.time
-                                                                                        }
-                                                                                    </div>
-                                                                                    <div className="flex items-center justify-between">
-                                                                                        <div className="flex flex-col gap-1">
-                                                                                            <span
-                                                                                                className={`px-2 py-1 rounded text-xs ${
-                                                                                                    task.status ===
-                                                                                                    "completato"
-                                                                                                        ? "bg-green-100 text-green-600"
-                                                                                                        : task.status ===
-                                                                                                          "in corso"
-                                                                                                        ? "bg-yellow-100 text-yellow-600"
-                                                                                                        : task.status ===
-                                                                                                          "non completato"
-                                                                                                        ? "bg-red-100 text-red-600"
-                                                                                                        : "bg-gray-100 text-gray-600"
-                                                                                                }`}
-                                                                                                style={{
-                                                                                                    fontSize:
-                                                                                                        "12px",
-                                                                                                }}
-                                                                                            >
-                                                                                                {
-                                                                                                    task.status
-                                                                                                }
-                                                                                            </span>
-                                                                                            <span className="text-xs text-gray-500 px-2">
-                                                                                                {
-                                                                                                    task.assignedTo
-                                                                                                }
-                                                                                            </span>
-                                                                                        </div>
-                                                                                        {task.notes &&
-                                                                                            task
-                                                                                                .notes
-                                                                                                .length >
-                                                                                                0 && (
-                                                                                                <div className="flex items-center gap-1 text-blue-600">
-                                                                                                    <svg
-                                                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                                                        viewBox="0 0 24 24"
-                                                                                                        width="12"
-                                                                                                        height="12"
-                                                                                                        fill="currentColor"
-                                                                                                    >
-                                                                                                        <path d="M20 2H4C2.9 2 2 2.9 2 4V16C2 17.1 2.9 18 4 18H6L10 22L14 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H13.2L10 19.2L6.8 16H4V4H20V16Z" />
-                                                                                                    </svg>
-                                                                                                    <span className="text-xs">
-                                                                                                        {
-                                                                                                            task
-                                                                                                                .notes
-                                                                                                                .length
-                                                                                                        }
-                                                                                                    </span>
-                                                                                                </div>
-                                                                                            )}
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    )
-                                                                )
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-                                );
-                            })()
-                        )}
-                        {/* Night Section */}{" "}
-                        {!showFilterResults &&
-                            (() => {
-                                // Use already filtered night shift tasks
-                                const nightTasks = nightShiftTasks;
-
-                                return (
-                                    <>
-                                        <div className="separator w-full border-b border-gray-200 mt-6"></div>
-
-                                        <div className="flex flex-row items-center gap-16 mb-2">
-                                            <div className="flex items-center gap-2">
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    viewBox="0 0 24 24"
-                                                    width="20"
-                                                    height="20"
-                                                    color="oklch(44.6% 0.03 256.802)"
-                                                    fill="none"
-                                                >
-                                                    <path
-                                                        d="M21.5 14.0784C20.3003 14.7189 18.9301 15.0821 17.4751 15.0821C12.7491 15.0821 8.91792 11.2509 8.91792 6.52485C8.91792 5.06986 9.28105 3.69968 9.92163 2.5C5.66765 3.49698 2.5 7.31513 2.5 11.8731C2.5 17.1899 6.8101 21.5 12.1269 21.5C16.6849 21.5 20.503 18.3324 21.5 14.0784Z"
-                                                        stroke="oklch(44.6% 0.03 256.802)"
-                                                        strokeWidth="1.5"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                    />
-                                                </svg>
-                                                <h4 className="text-gray-600">
-                                                    Notte
-                                                </h4>
-                                                <span className="span">
-                                                    {nightTasks.length} task
-                                                </span>
-                                            </div>
-                                            <div className="flex flex-row justify-between items-center w-[80%]">
-                                                {/* Simulator headers will be displayed below with their tasks */}
-                                            </div>
-                                        </div>
-
-                                        {(() => {
-                                            // Group night tasks by simulator
-                                            const tasksBySimulator = {};
-                                            const simulators = [
-                                                "FTD",
-                                                "109FFS",
-                                                "139#1",
-                                                "139#3",
-                                                "169",
-                                                "189",
-                                                "Others",
-                                            ];
-
-                                            // Initialize each simulator group
-                                            simulators.forEach((sim) => {
-                                                tasksBySimulator[sim] = [];
-                                            });
-
-                                            // Group night tasks by simulator
-                                            nightTasks.forEach((task) => {
-                                                const simulator =
-                                                    task.simulator || "";
-                                                if (
-                                                    simulators
-                                                        .slice(0, -1)
-                                                        .includes(simulator)
-                                                ) {
-                                                    tasksBySimulator[
-                                                        simulator
-                                                    ].push(task);
-                                                } else {
-                                                    tasksBySimulator[
-                                                        "Others"
-                                                    ].push(task);
-                                                }
-                                            });
-
-                                            return (
-                                                <div className="simulator-container">
-                                                    <div className="simulators-row flex flex-wrap justify-between gap-4 mb-4">
-                                                        {simulators.map(
-                                                            (simulator) => {
-                                                                const tasks =
-                                                                    tasksBySimulator[
-                                                                        simulator
-                                                                    ];
-
-                                                                return (
-                                                                    <div
-                                                                        key={`night-${simulator}`}
-                                                                        className="simulator-column flex-1 min-w-[120px]"
-                                                                    >
-                                                                        {" "}
-                                                                        <div className="simulator-header flex flex-row items-center justify-center gap-2 mb-4">
-                                                                            <p className="text-xs font-medium text-gray-600">
-                                                                                {
-                                                                                    simulator
-                                                                                }
-                                                                                {simulatorSchedules[
-                                                                                    simulator
-                                                                                ] && (
-                                                                                    <span className="ml-2 bg-blue-100 p-1 rounded text-blue-600 text-xs">
-                                                                                        {
-                                                                                            simulatorSchedules[
-                                                                                                simulator
-                                                                                            ]
-                                                                                                .startTime
-                                                                                        }
-
-                                                                                        -
-                                                                                        {
-                                                                                            simulatorSchedules[
-                                                                                                simulator
-                                                                                            ]
-                                                                                                .endTime
-                                                                                        }
-                                                                                    </span>
-                                                                                )}
-                                                                            </p>
-                                                                            {(() => {
-                                                                                const today =
-                                                                                    new Date()
-                                                                                        .toISOString()
-                                                                                        .split(
-                                                                                            "T"
-                                                                                        )[0];
-                                                                                const isToday =
-                                                                                    selectedDate ===
-                                                                                    today;
-
-                                                                                return (
-                                                                                    <svg
-                                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                                        viewBox="0 0 24 24"
-                                                                                        width="16"
-                                                                                        height="16"
-                                                                                        color={
-                                                                                            isToday
-                                                                                                ? "#3b82f6"
-                                                                                                : "#9ca3af"
-                                                                                        }
-                                                                                        fill="none"
-                                                                                        className={
-                                                                                            isToday
-                                                                                                ? "cursor-pointer hover:scale-110 transition-transform"
-                                                                                                : "cursor-not-allowed opacity-50"
-                                                                                        }
-                                                                                        onClick={() => {
-                                                                                            if (
-                                                                                                isToday
-                                                                                            ) {
-                                                                                                openScheduleModal(
-                                                                                                    simulator
-                                                                                                );
-                                                                                            }
-                                                                                        }}
-                                                                                        title={
-                                                                                            isToday
-                                                                                                ? "Modifica orari"
-                                                                                                : "Puoi modificare gli orari solo per oggi"
-                                                                                        }
-                                                                                    >
-                                                                                        <path
-                                                                                            d="M22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12Z"
-                                                                                            stroke="currentColor"
-                                                                                            stroke-width="1.5"
-                                                                                            stroke-linecap="round"
-                                                                                            stroke-linejoin="round"
-                                                                                        />
-                                                                                        <path
-                                                                                            d="M12 8V16M16 12H8"
-                                                                                            stroke="currentColor"
-                                                                                            stroke-width="1.5"
-                                                                                            stroke-linecap="round"
-                                                                                            stroke-linejoin="round"
-                                                                                        />
-                                                                                    </svg>
-                                                                                );
-                                                                            })()}
-                                                                        </div>
-                                                                        <div className="simulator-tasks space-y-2">
-                                                                            {tasks.length ===
-                                                                            0 ? (
-                                                                                <div className="text-center py-2">
-                                                                                    <span className="text-xs text-gray-400 italic"></span>
-                                                                                </div>
-                                                                            ) : (
-                                                                                tasks.map(
-                                                                                    (
-                                                                                        task
-                                                                                    ) => (
-                                                                                        <div
-                                                                                            key={
-                                                                                                task.id
-                                                                                            }
-                                                                                            className="task-card-small p-2 rounded border bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
-                                                                                            style={{
-                                                                                                border: `1px solid ${getBorderColor(
-                                                                                                    task.status
-                                                                                                )}`,
-                                                                                            }}
-                                                                                            onClick={() =>
-                                                                                                openTaskDetails(
-                                                                                                    task
-                                                                                                )
-                                                                                            }
-                                                                                        >
-                                                                                            {" "}
-                                                                                            <div className="task-info h-full flex flex-col justify-between">
-                                                                                                <p className="text-gray-900 font-bold text-xs leading-tight mb-1 overflow-hidden">
-                                                                                                    {task
-                                                                                                        .title
-                                                                                                        .length >
-                                                                                                    20
-                                                                                                        ? task.title.substring(
-                                                                                                              0,
-                                                                                                              20
-                                                                                                          ) +
-                                                                                                          "..."
-                                                                                                        : task.title}
-                                                                                                </p>
-                                                                                                <div className="task-details text-xs text-gray-500 space-y-4">
-                                                                                                    <div className="text-xs">
-                                                                                                        {
-                                                                                                            task.time
-                                                                                                        }
-                                                                                                    </div>
-                                                                                                    <div className="flex items-center justify-between">
-                                                                                                        <div className="flex flex-col gap-1">
-                                                                                                            <span
-                                                                                                                className={`px-2 py-1 rounded text-xs ${
-                                                                                                                    task.status ===
-                                                                                                                    "completato"
-                                                                                                                        ? "bg-green-100 text-green-600"
-                                                                                                                        : task.status ===
-                                                                                                                          "in corso"
-                                                                                                                        ? "bg-yellow-100 text-yellow-600"
-                                                                                                                        : task.status ===
-                                                                                                                          "non completato"
-                                                                                                                        ? "bg-red-100 text-red-600"
-                                                                                                                        : "bg-gray-100 text-gray-600"
-                                                                                                                }`}
-                                                                                                                style={{
-                                                                                                                    fontSize:
-                                                                                                                        "12px",
-                                                                                                                }}
-                                                                                                            >
-                                                                                                                {
-                                                                                                                    task.status
-                                                                                                                }
-                                                                                                            </span>
-                                                                                                            <span className="text-xs text-gray-500 px-2">
-                                                                                                                {
-                                                                                                                    task.assignedTo
-                                                                                                                }
-                                                                                                            </span>
-                                                                                                        </div>
-                                                                                                        {task.notes &&
-                                                                                                            task
-                                                                                                                .notes
-                                                                                                                .length >
-                                                                                                                0 && (
-                                                                                                                <div className="flex items-center gap-1 text-blue-600">
-                                                                                                                    <svg
-                                                                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                                                                        viewBox="0 0 24 24"
-                                                                                                                        width="12"
-                                                                                                                        height="12"
-                                                                                                                        fill="currentColor"
-                                                                                                                    >
-                                                                                                                        <path d="M20 2H4C2.9 2 2 2.9 2 4V16C2 17.1 2.9 18 4 18H6L10 22L14 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H13.2L10 19.2L6.8 16H4V4H20V16Z" />
-                                                                                                                    </svg>
-                                                                                                                    <span className="text-xs">
-                                                                                                                        {
-                                                                                                                            task
-                                                                                                                                .notes
-                                                                                                                                .length
-                                                                                                                        }
-                                                                                                                    </span>
-                                                                                                                </div>
-                                                                                                            )}
-                                                                                                    </div>
-                                                                                                </div>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                    )
-                                                                                )
-                                                                            )}
-                                                                        </div>
-                                                                    </div>
-                                                                );
-                                                            }
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            );
-                                        })()}
-                                    </>
-                                );
-                            })()}
-                    </div>
-                    <div className="flex flex-row justify-between items-start gap-8">
-                        {canAddTasks() && (
-                            <>
-                                <div
-                                    className=" border p-4 rounded-xl bg-white w-full max-w-xl"
-                                    style={{
-                                        boxShadow: "4px 4px 10px #00000010",
-                                    }}
-                                >
-                                    {" "}
-                                    <div
-                                        className="title flex flex-row items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded-md transition-colors"
-                                        onClick={() =>
-                                            setIsAddTaskAccordionOpen(
-                                                !isAddTaskAccordionOpen
-                                            )
-                                        }
+                    {!showCalendar && (
+                        <>
+                            <div className="date-selector flex items-center justify-start gap-8 flex-wrap">
+                                <div className="flex items-center gap-4">
+                                    <button
+                                        onClick={handleBackToCalendar}
+                                        className="flex items-center gap-2 px-4 py-2 bg-[#3b82f620] hover:bg-[#3b82f640] rounded-md transition-colors"
                                     >
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
                                             viewBox="0 0 24 24"
-                                            width="20"
-                                            height="20"
-                                            color="oklch(44.6% 0.03 256.802)"
+                                            width="24"
+                                            height="24"
+                                            color="#3b82f6"
                                             fill="none"
                                         >
                                             <path
-                                                d="M4 12.0005L4 14.5446C4 17.7896 4 19.4122 4.88607 20.5111C5.06508 20.7331 5.26731 20.9354 5.48933 21.1144C6.58831 22.0005 8.21082 22.0005 11.4558 22.0005C12.1614 22.0005 12.5141 22.0005 12.8372 21.8865C12.9044 21.8627 12.9702 21.8355 13.0345 21.8047C13.3436 21.6569 13.593 21.4075 14.0919 20.9086L18.8284 16.172C19.4065 15.594 19.6955 15.3049 19.8478 14.9374C20 14.5699 20 14.1611 20 13.3436V10.0005C20 6.22922 20 4.34361 18.8284 3.17203C17.7693 2.11287 16.1265 2.01125 13.0345 2.0015M13 21.5005V21.0005C13 18.172 13 16.7578 13.8787 15.8791C14.7574 15.0005 16.1716 15.0005 19 15.0005H19.5"
+                                                d="M16 2V6M8 2V6"
                                                 stroke="currentColor"
                                                 stroke-width="1.5"
                                                 stroke-linecap="round"
                                                 stroke-linejoin="round"
-                                            ></path>
+                                            />
                                             <path
-                                                d="M12 5.99954H4M8 1.99954V9.99954"
+                                                d="M13 4H11C7.22876 4 5.34315 4 4.17157 5.17157C3 6.34315 3 8.22876 3 12V14C3 17.7712 3 19.6569 4.17157 20.8284C5.34315 22 7.22876 22 11 22H13C16.7712 22 18.6569 22 19.8284 20.8284C21 19.6569 21 17.7712 21 14V12C21 8.22876 21 6.34315 19.8284 5.17157C18.6569 4 16.7712 4 13 4Z"
                                                 stroke="currentColor"
                                                 stroke-width="1.5"
                                                 stroke-linecap="round"
                                                 stroke-linejoin="round"
-                                            ></path>
+                                            />
+                                            <path
+                                                d="M3 10H21"
+                                                stroke="currentColor"
+                                                stroke-width="1.5"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                            />
+                                            <path
+                                                d="M11.9955 14H12.0045M11.9955 18H12.0045M15.991 14H16M8 14H8.00897M8 18H8.00897"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                            />
                                         </svg>
-
-                                        <p className="text-gray-600">
-                                            Aggiungi task
+                                        <p className="text-[#3b82f6] text-sm">
+                                            Torna al Calendario
                                         </p>
-
-                                        {/* Accordion arrow */}
-                                        <svg
-                                            className={`ml-auto transform transition-transform duration-200 ${
-                                                isAddTaskAccordionOpen
-                                                    ? "rotate-180"
-                                                    : ""
-                                            }`}
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 24 24"
-                                            width="16"
-                                            height="16"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            strokeWidth="2"
+                                    </button>
+                                </div>
+                                <button
+                                    onClick={() => handleChangeDay(-1)}
+                                    className="arroww bg-[#3b82f620] p-2 rounded-md"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 24 24"
+                                        width="24"
+                                        height="24"
+                                        color="#3b82f6"
+                                        fill="none"
+                                    >
+                                        <path
+                                            d="M15 6C15 6 9.00001 10.4189 9 12C8.99999 13.5812 15 18 15 18"
+                                            stroke="#3b82f6"
+                                            strokeWidth="1.5"
                                             strokeLinecap="round"
                                             strokeLinejoin="round"
-                                        >
-                                            <path d="m6 9 6 6 6-6" />
-                                        </svg>
-                                    </div>
-                                    {/* Accordion content */}
-                                    <div
-                                        className={`accordion-content overflow-hidden transition-all duration-300 ease-in-out ${
-                                            isAddTaskAccordionOpen
-                                                ? "max-h-[800px] opacity-100"
-                                                : "max-h-0 opacity-0"
-                                        }`}
+                                        ></path>
+                                    </svg>
+                                </button>{" "}
+                                <input
+                                    type="date"
+                                    value={selectedDate}
+                                    onChange={(e) => {
+                                        setSelectedDate(e.target.value);
+                                        setDate(e.target.value);
+                                    }}
+                                />
+                                <button
+                                    onClick={() => handleChangeDay(1)}
+                                    className="arroww bg-[#3b82f620] p-2 rounded-md"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 24 24"
+                                        width="24"
+                                        height="24"
+                                        color="#3b82f6"
+                                        fill="none"
                                     >
-                                        <div className="separator"></div>
-                                        <form
-                                            onSubmit={handleAddTask}
-                                            className="flex flex-col gap-2"
+                                        <path
+                                            d="M9.00005 6C9.00005 6 15 10.4189 15 12C15 13.5812 9 18 9 18"
+                                            stroke="#3b82f6"
+                                            strokeWidth="1.5"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        ></path>
+                                    </svg>
+                                </button>
+                                <button
+                                    onClick={handleExportPDF}
+                                    className="aggiungi-btn flex items-center gap-2 col-span-1 sm:col-span-2 bg-blue-600 px-8 py-2 rounded"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 24 24"
+                                        width="20"
+                                        height="20"
+                                        color="#fff"
+                                        fill="none"
+                                    >
+                                        <path
+                                            d="M20 13V10.6569C20 9.83935 20 9.4306 19.8478 9.06306C19.6955 8.69552 19.4065 8.40649 18.8284 7.82843L14.0919 3.09188C13.593 2.593 13.3436 2.34355 13.0345 2.19575C12.9702 2.165 12.9044 2.13772 12.8372 2.11401C12.5141 2 12.1614 2 11.4558 2C8.21082 2 6.58831 2 5.48933 2.88607C5.26731 3.06508 5.06508 3.26731 4.88607 3.48933C4 4.58831 4 6.21082 4 9.45584V13M13 2.5V3C13 5.82843 13 7.24264 13.8787 8.12132C14.7574 9 16.1716 9 19 9H19.5"
+                                            stroke="currentColor"
+                                            strokeWidth="1.5"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        />
+                                        <path
+                                            d="M19.75 16H17.25C16.6977 16 16.25 16.4477 16.25 17V19M16.25 19V22M16.25 19H19.25M4.25 22V19.5M4.25 19.5V16H6C6.9665 16 7.75 16.7835 7.75 17.75C7.75 18.7165 6.9665 19.5 6 19.5H4.25ZM10.25 16H11.75C12.8546 16 13.75 16.8954 13.75 18V20C13.75 21.1046 12.8546 22 11.75 22H10.25V16Z"
+                                            stroke="currentColor"
+                                            strokeWidth="1.5"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        />
+                                    </svg>
+                                    <p className="text-white">Export</p>
+                                </button>
+                            </div>
+                        </>
+                    )}
+
+                    {/* Conditional rendering: Calendar or Task Table */}
+                    {showCalendar ? (
+                        <Calendar
+                            onDayClick={handleCalendarDayClick}
+                            tasksData={tasks}
+                            currentDate={selectedDate}
+                            type="tasks"
+                        />
+                    ) : (
+                        <>
+                            <TaskTable
+                                tasks={tasks}
+                                filteredTasks={filteredTasks}
+                                showFilterResults={showFilterResults}
+                                dayShiftTasks={dayShiftTasks}
+                                nightShiftTasks={nightShiftTasks}
+                                simulatorSchedules={simulatorSchedules}
+                                selectedDate={selectedDate}
+                                openTaskDetails={openTaskDetails}
+                                openScheduleModal={openScheduleModal}
+                                getBorderColor={getBorderColor}
+                                tasksListRef={tasksListRef}
+                            />
+                        </>
+                    )}
+
+                    {!showCalendar && (
+                        <div className="flex flex-row justify-between items-start gap-8">
+                            {canAddTasks() && (
+                                <>
+                                    <div
+                                        className=" border p-4 rounded-xl bg-white w-full max-w-xl"
+                                        style={{
+                                            boxShadow: "4px 4px 10px #00000010",
+                                        }}
+                                    >
+                                        {" "}
+                                        <div
+                                            className="title flex flex-row items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded-md transition-colors"
+                                            onClick={() =>
+                                                setIsAddTaskAccordionOpen(
+                                                    !isAddTaskAccordionOpen
+                                                )
+                                            }
                                         >
-                                            <label
-                                                htmlFor="title"
-                                                className="text-xs text-gray-500"
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 24 24"
+                                                width="20"
+                                                height="20"
+                                                color="oklch(44.6% 0.03 256.802)"
+                                                fill="none"
                                             >
-                                                Titolo
-                                            </label>
-                                            <input
-                                                type="text"
-                                                value={title}
-                                                onChange={(e) =>
-                                                    setTitle(e.target.value)
-                                                }
-                                                className="border px-3 py-2 rounded mb-4 text-gray-600 text-sm"
-                                                placeholder="Inserisci un titolo"
-                                                required
-                                            />
-                                            <label
-                                                htmlFor="category"
-                                                className="text-xs text-gray-500"
+                                                <path
+                                                    d="M4 12.0005L4 14.5446C4 17.7896 4 19.4122 4.88607 20.5111C5.06508 20.7331 5.26731 20.9354 5.48933 21.1144C6.58831 22.0005 8.21082 22.0005 11.4558 22.0005C12.1614 22.0005 12.5141 22.0005 12.8372 21.8865C12.9044 21.8627 12.9702 21.8355 13.0345 21.8047C13.3436 21.6569 13.593 21.4075 14.0919 20.9086L18.8284 16.172C19.4065 15.594 19.6955 15.3049 19.8478 14.9374C20 14.5699 20 14.1611 20 13.3436V10.0005C20 6.22922 20 4.34361 18.8284 3.17203C17.7693 2.11287 16.1265 2.01125 13.0345 2.0015M13 21.5005V21.0005C13 18.172 13 16.7578 13.8787 15.8791C14.7574 15.0005 16.1716 15.0005 19 15.0005H19.5"
+                                                    stroke="currentColor"
+                                                    stroke-width="1.5"
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                ></path>
+                                                <path
+                                                    d="M12 5.99954H4M8 1.99954V9.99954"
+                                                    stroke="currentColor"
+                                                    stroke-width="1.5"
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                ></path>
+                                            </svg>
+
+                                            <p className="text-gray-600">
+                                                Aggiungi task
+                                            </p>
+
+                                            {/* Accordion arrow */}
+                                            <svg
+                                                className={`ml-auto transform transition-transform duration-200 ${
+                                                    isAddTaskAccordionOpen
+                                                        ? "rotate-180"
+                                                        : ""
+                                                }`}
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 24 24"
+                                                width="16"
+                                                height="16"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
                                             >
-                                                Categoria
-                                            </label>
-                                            <select
-                                                id="category"
-                                                value={category}
-                                                onChange={(e) => {
-                                                    setCategory(e.target.value);
-                                                    setSubcategory("");
-                                                    setExtraDetail("");
-                                                }}
-                                                className="border px-3 py-2 rounded mb-4 text-gray-600 text-sm"
-                                                required
+                                                <path d="m6 9 6 6 6-6" />
+                                            </svg>
+                                        </div>
+                                        {/* Accordion content */}
+                                        <div
+                                            className={`accordion-content overflow-hidden transition-all duration-300 ease-in-out ${
+                                                isAddTaskAccordionOpen
+                                                    ? "max-h-[800px] opacity-100"
+                                                    : "max-h-0 opacity-0"
+                                            }`}
+                                        >
+                                            <div className="separator"></div>
+                                            <form
+                                                onSubmit={handleAddTask}
+                                                className="flex flex-col gap-2"
                                             >
-                                                <option value="">
-                                                    Seleziona categoria
-                                                </option>
-                                                {Object.keys(categories).map(
-                                                    (c) => (
+                                                <label
+                                                    htmlFor="title"
+                                                    className="text-xs text-gray-500"
+                                                >
+                                                    Titolo
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={title}
+                                                    onChange={(e) =>
+                                                        setTitle(e.target.value)
+                                                    }
+                                                    className="border px-3 py-2 rounded mb-4 text-gray-600 text-sm"
+                                                    placeholder="Inserisci un titolo"
+                                                    required
+                                                />
+                                                <label
+                                                    htmlFor="category"
+                                                    className="text-xs text-gray-500"
+                                                >
+                                                    Categoria
+                                                </label>
+                                                <select
+                                                    id="category"
+                                                    value={category}
+                                                    onChange={(e) => {
+                                                        setCategory(
+                                                            e.target.value
+                                                        );
+                                                        setSubcategory("");
+                                                        setExtraDetail("");
+                                                    }}
+                                                    className="border px-3 py-2 rounded mb-4 text-gray-600 text-sm"
+                                                    required
+                                                >
+                                                    <option value="">
+                                                        Seleziona categoria
+                                                    </option>
+                                                    {Object.keys(
+                                                        categories
+                                                    ).map((c) => (
                                                         <option
                                                             key={c}
                                                             value={c}
                                                         >
                                                             {c}
                                                         </option>
-                                                    )
-                                                )}
-                                            </select>
-                                            {category && (
-                                                <>
-                                                    <label
-                                                        htmlFor="subcategory"
-                                                        className="text-xs text-gray-500"
-                                                    >
-                                                        Sotto-categoria
-                                                    </label>
-                                                    <select
-                                                        id="subcategory"
-                                                        value={subcategory}
-                                                        onChange={(e) =>
-                                                            setSubcategory(
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                        className="border px-3 py-2 rounded mb-4 text-gray-600 text-sm"
-                                                    >
-                                                        <option value="">
-                                                            Seleziona
-                                                            sotto-categoria
-                                                        </option>
-                                                        {(
-                                                            categories[
-                                                                category
-                                                            ] || []
-                                                        ).map((sc) => (
-                                                            <option
-                                                                key={sc}
-                                                                value={sc}
-                                                            >
-                                                                {sc}
+                                                    ))}
+                                                </select>
+                                                {category && (
+                                                    <>
+                                                        <label
+                                                            htmlFor="subcategory"
+                                                            className="text-xs text-gray-500"
+                                                        >
+                                                            Sotto-categoria
+                                                        </label>
+                                                        <select
+                                                            id="subcategory"
+                                                            value={subcategory}
+                                                            onChange={(e) =>
+                                                                setSubcategory(
+                                                                    e.target
+                                                                        .value
+                                                                )
+                                                            }
+                                                            className="border px-3 py-2 rounded mb-4 text-gray-600 text-sm"
+                                                        >
+                                                            <option value="">
+                                                                Seleziona
+                                                                sotto-categoria
                                                             </option>
-                                                        ))}
-                                                    </select>
-                                                </>
-                                            )}
-                                            {category === "troubleshooting" && (
-                                                <>
-                                                    <label
-                                                        htmlFor="extraDetail"
-                                                        className="text-xs text-gray-500"
-                                                    >
-                                                        Dettaglio extra
-                                                    </label>
-                                                    <select
-                                                        id="extraDetail"
-                                                        value={extraDetail}
-                                                        onChange={(e) =>
-                                                            setExtraDetail(
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                        className="border px-3 py-2 rounded mb-4 text-gray-600 text-sm"
-                                                    >
-                                                        <option value="">
-                                                            Seleziona dettaglio
-                                                        </option>
-                                                        {troubleshootingDetails.map(
-                                                            (d) => (
+                                                            {(
+                                                                categories[
+                                                                    category
+                                                                ] || []
+                                                            ).map((sc) => (
                                                                 <option
-                                                                    key={d}
-                                                                    value={d}
+                                                                    key={sc}
+                                                                    value={sc}
                                                                 >
-                                                                    {d}
+                                                                    {sc}
                                                                 </option>
-                                                            )
-                                                        )}
-                                                    </select>
-                                                </>
-                                            )}
-                                            <label
-                                                htmlFor="simulator"
-                                                className="text-xs text-gray-500"
-                                            >
-                                                Simulatore
-                                            </label>
-                                            <select
-                                                id="simulator"
-                                                value={simulator}
+                                                            ))}
+                                                        </select>
+                                                    </>
+                                                )}
+                                                {category ===
+                                                    "troubleshooting" && (
+                                                    <>
+                                                        <label
+                                                            htmlFor="extraDetail"
+                                                            className="text-xs text-gray-500"
+                                                        >
+                                                            Dettaglio extra
+                                                        </label>
+                                                        <select
+                                                            id="extraDetail"
+                                                            value={extraDetail}
+                                                            onChange={(e) =>
+                                                                setExtraDetail(
+                                                                    e.target
+                                                                        .value
+                                                                )
+                                                            }
+                                                            className="border px-3 py-2 rounded mb-4 text-gray-600 text-sm"
+                                                        >
+                                                            <option value="">
+                                                                Seleziona
+                                                                dettaglio
+                                                            </option>
+                                                            {troubleshootingDetails.map(
+                                                                (d) => (
+                                                                    <option
+                                                                        key={d}
+                                                                        value={
+                                                                            d
+                                                                        }
+                                                                    >
+                                                                        {d}
+                                                                    </option>
+                                                                )
+                                                            )}
+                                                        </select>
+                                                    </>
+                                                )}
+                                                <label
+                                                    htmlFor="simulator"
+                                                    className="text-xs text-gray-500"
+                                                >
+                                                    Simulatore
+                                                </label>
+                                                <select
+                                                    id="simulator"
+                                                    value={simulator}
+                                                    onChange={(e) =>
+                                                        setSimulator(
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    className="border px-3 py-2 rounded mb-4 text-gray-600 text-sm"
+                                                >
+                                                    <option value="">
+                                                        Seleziona simulatore...
+                                                    </option>
+                                                    <option value="FTD">
+                                                        FTD
+                                                    </option>
+                                                    <option value="109FFS">
+                                                        109FFS
+                                                    </option>
+                                                    <option value="139#1">
+                                                        139#1
+                                                    </option>
+                                                    <option value="139#3">
+                                                        139#3
+                                                    </option>
+                                                    <option value="169">
+                                                        169
+                                                    </option>
+                                                    <option value="189">
+                                                        189
+                                                    </option>
+                                                    <option value="Others">
+                                                        Others
+                                                    </option>
+                                                </select>
+                                                <label
+                                                    htmlFor="assignedTo"
+                                                    className="text-xs text-gray-500"
+                                                >
+                                                    Assegna a
+                                                </label>
+                                                <select
+                                                    value={assignedTo}
+                                                    onChange={(e) =>
+                                                        setAssignedTo(
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    className="border px-3 py-2 rounded mb-4 text-gray-600 text-sm"
+                                                    required
+                                                    disabled={employeesLoading}
+                                                >
+                                                    <option value="">
+                                                        {employeesLoading
+                                                            ? "Caricamento dipendenti..."
+                                                            : availableEmployees.length ===
+                                                              0
+                                                            ? "Nessun dipendente disponibile"
+                                                            : "Seleziona dipendente"}
+                                                    </option>
+                                                    {availableEmployees.map(
+                                                        (employee) => (
+                                                            <option
+                                                                key={employee}
+                                                                value={employee}
+                                                            >
+                                                                {employee}
+                                                            </option>
+                                                        )
+                                                    )}
+                                                </select>
+                                                <label
+                                                    htmlFor="date"
+                                                    className="text-xs text-gray-500"
+                                                >
+                                                    Data
+                                                </label>
+                                                <input
+                                                    type="date"
+                                                    value={date}
+                                                    onChange={(e) =>
+                                                        setDate(e.target.value)
+                                                    }
+                                                    className="border px-3 py-2 rounded mb-4 text-gray-600 text-sm"
+                                                    required
+                                                />
+                                                <label
+                                                    htmlFor="time"
+                                                    className="text-xs text-gray-500"
+                                                >
+                                                    Orario
+                                                </label>
+                                                <input
+                                                    type="time"
+                                                    value={time}
+                                                    onChange={(e) =>
+                                                        setTime(e.target.value)
+                                                    }
+                                                    className="border px-3 py-2 rounded mb-8 text-gray-600 text-sm"
+                                                    required
+                                                />{" "}
+                                                <button
+                                                    type="submit"
+                                                    className="aggiungi-btn col-span-1 sm:col-span-2 bg-blue-600 text-white px-4 py-2 rounded"
+                                                >
+                                                    Aggiungi
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                            <div
+                                className="tasks flex flex-col w-1/2 h-auto border p-4 rounded-xl bg-white mb-8 overflow-y-auto max-h-full max-w-full"
+                                style={{
+                                    boxShadow: "4px 4px 10px #00000010",
+                                }}
+                            >
+                                {" "}
+                                <div
+                                    className="title flex flex-row items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded transition-colors"
+                                    onClick={() =>
+                                        setIsFilterAccordionOpen(
+                                            !isFilterAccordionOpen
+                                        )
+                                    }
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 24 24"
+                                        width="20"
+                                        height="20"
+                                        color="oklch(44.6% 0.03 256.802)"
+                                        fill="none"
+                                    >
+                                        <path
+                                            d="M3 7H6"
+                                            stroke="currentColor"
+                                            stroke-width="1.5"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                        />
+                                        <path
+                                            d="M3 17H9"
+                                            stroke="currentColor"
+                                            stroke-width="1.5"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                        />
+                                        <path
+                                            d="M18 17L21 17"
+                                            stroke="currentColor"
+                                            stroke-width="1.5"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                        />
+                                        <path
+                                            d="M15 7L21 7"
+                                            stroke="currentColor"
+                                            stroke-width="1.5"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                        />
+                                        <path
+                                            d="M6 7C6 6.06812 6 5.60218 6.15224 5.23463C6.35523 4.74458 6.74458 4.35523 7.23463 4.15224C7.60218 4 8.06812 4 9 4C9.93188 4 10.3978 4 10.7654 4.15224C11.2554 4.35523 11.6448 4.74458 11.8478 5.23463C12 5.60218 12 6.06812 12 7C12 7.93188 12 8.39782 11.8478 8.76537C11.6448 9.25542 11.2554 9.64477 10.7654 9.84776C10.3978 10 9.93188 10 9 10C8.06812 10 7.60218 10 7.23463 9.84776C6.74458 9.64477 6.35523 9.25542 6.15224 8.76537C6 8.39782 6 7.93188 6 7Z"
+                                            stroke="currentColor"
+                                            stroke-width="1.5"
+                                        />
+                                        <path
+                                            d="M12 17C12 16.0681 12 15.6022 12.1522 15.2346C12.3552 14.7446 12.7446 14.3552 13.2346 14.1522C13.6022 14 14.0681 14 15 14C15.9319 14 16.3978 14 16.7654 14.1522C17.2554 14.3552 17.6448 14.7446 17.8478 15.2346C18 15.6022 18 16.0681 18 17C18 17.9319 18 18.3978 17.8478 18.7654C17.6448 19.2554 17.2554 19.6448 16.7654 19.8478C16.3978 20 15.9319 20 15 20C14.0681 20 13.6022 20 13.2346 19.8478C12.7446 19.6448 12.3552 19.2554 12.1522 18.7654C12 18.3978 12 17.9319 12 17Z"
+                                            stroke="currentColor"
+                                            stroke-width="1.5"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                        />
+                                    </svg>
+
+                                    <p className="text-gray-600">Filtro task</p>
+
+                                    {/* Accordion arrow */}
+                                    <svg
+                                        className={`ml-auto transform transition-transform duration-200 ${
+                                            isFilterAccordionOpen
+                                                ? "rotate-180"
+                                                : ""
+                                        }`}
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 24 24"
+                                        width="16"
+                                        height="16"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    >
+                                        <path d="m6 9 6 6 6-6" />
+                                    </svg>
+                                </div>
+                                {/* Accordion content */}
+                                <div
+                                    className={`accordion-content overflow-hidden transition-all duration-300 ease-in-out ${
+                                        isFilterAccordionOpen
+                                            ? "max-h-[600px] opacity-100"
+                                            : "max-h-0 opacity-0"
+                                    }`}
+                                >
+                                    <div className="separator"></div>{" "}
+                                    <div className="filter-form flex flex-col gap-2 mt-0">
+                                        <label
+                                            htmlFor="searchText"
+                                            className="text-xs text-gray-500"
+                                        >
+                                            Cerca
+                                        </label>
+                                        <div className="flex flex-row gap-2">
+                                            <input
+                                                type="text"
+                                                id="searchText"
+                                                value={filters.searchText}
                                                 onChange={(e) =>
-                                                    setSimulator(e.target.value)
-                                                }
-                                                className="border px-3 py-2 rounded mb-4 text-gray-600 text-sm"
-                                            >
-                                                <option value="">
-                                                    Seleziona simulatore...
-                                                </option>
-                                                <option value="FTD">FTD</option>
-                                                <option value="109FFS">
-                                                    109FFS
-                                                </option>
-                                                <option value="139#1">
-                                                    139#1
-                                                </option>
-                                                <option value="139#3">
-                                                    139#3
-                                                </option>
-                                                <option value="169">169</option>
-                                                <option value="189">189</option>
-                                                <option value="Others">
-                                                    Others
-                                                </option>
-                                            </select>
-                                            <label
-                                                htmlFor="assignedTo"
-                                                className="text-xs text-gray-500"
-                                            >
-                                                Assegna a
-                                            </label>
-                                            <select
-                                                value={assignedTo}
-                                                onChange={(e) =>
-                                                    setAssignedTo(
+                                                    handleFilterChange(
+                                                        "searchText",
                                                         e.target.value
                                                     )
                                                 }
-                                                className="border px-3 py-2 rounded mb-4 text-gray-600 text-sm"
-                                                required
-                                                disabled={employeesLoading}
-                                            >
-                                                <option value="">
-                                                    {employeesLoading
-                                                        ? "Caricamento dipendenti..."
-                                                        : availableEmployees.length ===
-                                                          0
-                                                        ? "Nessun dipendente disponibile"
-                                                        : "Seleziona dipendente"}
-                                                </option>
-                                                {availableEmployees.map(
-                                                    (employee) => (
-                                                        <option
-                                                            key={employee}
-                                                            value={employee}
-                                                        >
-                                                            {employee}
-                                                        </option>
-                                                    )
-                                                )}
-                                            </select>
-                                            <label
-                                                htmlFor="date"
-                                                className="text-xs text-gray-500"
-                                            >
-                                                Data
-                                            </label>
-                                            <input
-                                                type="date"
-                                                value={date}
-                                                onChange={(e) =>
-                                                    setDate(e.target.value)
+                                                onKeyPress={(e) =>
+                                                    e.key === "Enter" &&
+                                                    executeFilters()
                                                 }
-                                                className="border px-3 py-2 rounded mb-4 text-gray-600 text-sm"
-                                                required
+                                                placeholder="Cerca per testo, titolo, nome..."
+                                                className="flex w-full border px-3 py-2 rounded text-gray-600 text-sm focus:outline-nones"
                                             />
-                                            <label
-                                                htmlFor="time"
-                                                className="text-xs text-gray-500"
-                                            >
-                                                Orario
-                                            </label>
-                                            <input
-                                                type="time"
-                                                value={time}
-                                                onChange={(e) =>
-                                                    setTime(e.target.value)
-                                                }
-                                                className="border px-3 py-2 rounded mb-8 text-gray-600 text-sm"
-                                                required
-                                            />{" "}
                                             <button
-                                                type="submit"
-                                                className="aggiungi-btn col-span-1 sm:col-span-2 bg-blue-600 text-white px-4 py-2 rounded"
+                                                onClick={executeFilters}
+                                                className="flex items-center bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
                                             >
-                                                Aggiungi
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    viewBox="0 0 24 24"
+                                                    width="16"
+                                                    height="16"
+                                                    color="white"
+                                                    fill="none"
+                                                >
+                                                    <path
+                                                        d="M17.5 17.5L22 22"
+                                                        stroke="currentColor"
+                                                        strokeWidth="1.5"
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                    />
+                                                    <path
+                                                        d="M20 11C20 6.02944 15.9706 2 11 2C6.02944 2 2 6.02944 2 11C2 15.9706 6.02944 20 11 20C15.9706 20 20 15.9706 20 11Z"
+                                                        stroke="currentColor"
+                                                        strokeWidth="1.5"
+                                                        strokeLinejoin="round"
+                                                    />
+                                                </svg>
+                                                <p className="p-0 m-0">Cerca</p>
                                             </button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </>
-                        )}
-                        <div
-                            className="tasks flex flex-col w-1/2 h-auto border p-4 rounded-xl bg-white mb-8 overflow-y-auto max-h-full max-w-full"
-                            style={{
-                                boxShadow: "4px 4px 10px #00000010",
-                            }}
-                        >
-                            {" "}
-                            <div
-                                className="title flex flex-row items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded transition-colors"
-                                onClick={() =>
-                                    setIsFilterAccordionOpen(
-                                        !isFilterAccordionOpen
-                                    )
-                                }
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 24 24"
-                                    width="20"
-                                    height="20"
-                                    color="oklch(44.6% 0.03 256.802)"
-                                    fill="none"
-                                >
-                                    <path
-                                        d="M3 7H6"
-                                        stroke="currentColor"
-                                        stroke-width="1.5"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                    />
-                                    <path
-                                        d="M3 17H9"
-                                        stroke="currentColor"
-                                        stroke-width="1.5"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                    />
-                                    <path
-                                        d="M18 17L21 17"
-                                        stroke="currentColor"
-                                        stroke-width="1.5"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                    />
-                                    <path
-                                        d="M15 7L21 7"
-                                        stroke="currentColor"
-                                        stroke-width="1.5"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                    />
-                                    <path
-                                        d="M6 7C6 6.06812 6 5.60218 6.15224 5.23463C6.35523 4.74458 6.74458 4.35523 7.23463 4.15224C7.60218 4 8.06812 4 9 4C9.93188 4 10.3978 4 10.7654 4.15224C11.2554 4.35523 11.6448 4.74458 11.8478 5.23463C12 5.60218 12 6.06812 12 7C12 7.93188 12 8.39782 11.8478 8.76537C11.6448 9.25542 11.2554 9.64477 10.7654 9.84776C10.3978 10 9.93188 10 9 10C8.06812 10 7.60218 10 7.23463 9.84776C6.74458 9.64477 6.35523 9.25542 6.15224 8.76537C6 8.39782 6 7.93188 6 7Z"
-                                        stroke="currentColor"
-                                        stroke-width="1.5"
-                                    />
-                                    <path
-                                        d="M12 17C12 16.0681 12 15.6022 12.1522 15.2346C12.3552 14.7446 12.7446 14.3552 13.2346 14.1522C13.6022 14 14.0681 14 15 14C15.9319 14 16.3978 14 16.7654 14.1522C17.2554 14.3552 17.6448 14.7446 17.8478 15.2346C18 15.6022 18 16.0681 18 17C18 17.9319 18 18.3978 17.8478 18.7654C17.6448 19.2554 17.2554 19.6448 16.7654 19.8478C16.3978 20 15.9319 20 15 20C14.0681 20 13.6022 20 13.2346 19.8478C12.7446 19.6448 12.3552 19.2554 12.1522 18.7654C12 18.3978 12 17.9319 12 17Z"
-                                        stroke="currentColor"
-                                        stroke-width="1.5"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                    />
-                                </svg>
-
-                                <p className="text-gray-600">Filtro task</p>
-
-                                {/* Accordion arrow */}
-                                <svg
-                                    className={`ml-auto transform transition-transform duration-200 ${
-                                        isFilterAccordionOpen
-                                            ? "rotate-180"
-                                            : ""
-                                    }`}
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 24 24"
-                                    width="16"
-                                    height="16"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                >
-                                    <path d="m6 9 6 6 6-6" />
-                                </svg>
-                            </div>
-                            {/* Accordion content */}
-                            <div
-                                className={`accordion-content overflow-hidden transition-all duration-300 ease-in-out ${
-                                    isFilterAccordionOpen
-                                        ? "max-h-[600px] opacity-100"
-                                        : "max-h-0 opacity-0"
-                                }`}
-                            >
-                                <div className="separator"></div>{" "}
-                                <div className="filter-form flex flex-col gap-2 mt-0">
-                                    <label
-                                        htmlFor="searchText"
-                                        className="text-xs text-gray-500"
-                                    >
-                                        Cerca
-                                    </label>
-                                    <div className="flex flex-row gap-2">
-                                        <input
-                                            type="text"
-                                            id="searchText"
-                                            value={filters.searchText}
+                                            {showFilterResults && (
+                                                <button
+                                                    onClick={clearFilters}
+                                                    className="px-4 py-2 border border-red-300 text-red-600 rounded text-sm hover:bg-red-50 transition-colors"
+                                                >
+                                                    Cancella
+                                                </button>
+                                            )}
+                                        </div>{" "}
+                                        <label
+                                            htmlFor="status"
+                                            className="text-xs text-gray-500"
+                                        >
+                                            Stato
+                                        </label>
+                                        <select
+                                            value={filters.status}
                                             onChange={(e) =>
                                                 handleFilterChange(
-                                                    "searchText",
+                                                    "status",
                                                     e.target.value
                                                 )
                                             }
-                                            onKeyPress={(e) =>
-                                                e.key === "Enter" &&
-                                                executeFilters()
-                                            }
-                                            placeholder="Cerca per testo, titolo, nome..."
-                                            className="flex w-full border px-3 py-2 rounded text-gray-600 text-sm focus:outline-nones"
-                                        />
-                                        <button
-                                            onClick={executeFilters}
-                                            className="flex items-center bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                                            className="border px-3 py-2 rounded w-1/2 text-gray-600 text-sm focus:outline-none"
                                         >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 24 24"
-                                                width="16"
-                                                height="16"
-                                                color="white"
-                                                fill="none"
-                                            >
-                                                <path
-                                                    d="M17.5 17.5L22 22"
-                                                    stroke="currentColor"
-                                                    strokeWidth="1.5"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                />
-                                                <path
-                                                    d="M20 11C20 6.02944 15.9706 2 11 2C6.02944 2 2 6.02944 2 11C2 15.9706 6.02944 20 11 20C15.9706 20 20 15.9706 20 11Z"
-                                                    stroke="currentColor"
-                                                    strokeWidth="1.5"
-                                                    strokeLinejoin="round"
-                                                />
-                                            </svg>
-                                            <p className="p-0 m-0">Cerca</p>
-                                        </button>
-                                        {showFilterResults && (
-                                            <button
-                                                onClick={clearFilters}
-                                                className="px-4 py-2 border border-red-300 text-red-600 rounded text-sm hover:bg-red-50 transition-colors"
-                                            >
-                                                Cancella
-                                            </button>
-                                        )}
-                                    </div>{" "}
-                                    <label
-                                        htmlFor="status"
-                                        className="text-xs text-gray-500"
-                                    >
-                                        Stato
-                                    </label>
-                                    <select
-                                        value={filters.status}
-                                        onChange={(e) =>
-                                            handleFilterChange(
-                                                "status",
-                                                e.target.value
-                                            )
-                                        }
-                                        className="border px-3 py-2 rounded w-1/2 text-gray-600 text-sm focus:outline-none"
-                                    >
-                                        <option value="">
-                                            Seleziona stato
-                                        </option>
-                                        <option value="non iniziato">
-                                            Non iniziato
-                                        </option>
-                                        <option value="in corso">
-                                            In corso
-                                        </option>
-                                        <option value="completato">
-                                            Completato
-                                        </option>
-                                        <option value="non completato">
-                                            Non completato
-                                        </option>
-                                    </select>
-                                    <div className="flex flex-col gap-2 mt-2">
-                                        <div className="flex gap-2 items-center">
-                                            <div className="flex flex-col flex-1">
-                                                <label
-                                                    htmlFor="fromDate"
-                                                    className="text-xs text-gray-500 mb-2"
-                                                >
-                                                    Da
-                                                </label>
-                                                <input
-                                                    type="date"
-                                                    id="fromDate"
-                                                    value={filters.fromDate}
-                                                    onChange={(e) =>
-                                                        handleFilterChange(
-                                                            "fromDate",
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    className="border px-3 py-2 rounded text-gray-600 text-sm focus:outline-none"
-                                                />
-                                            </div>
-                                            <div className="flex flex-col flex-1">
-                                                <label
-                                                    htmlFor="toDate"
-                                                    className="text-xs text-gray-500 mb-2"
-                                                >
-                                                    A
-                                                </label>
-                                                <input
-                                                    type="date"
-                                                    id="toDate"
-                                                    value={filters.toDate}
-                                                    onChange={(e) =>
-                                                        handleFilterChange(
-                                                            "toDate",
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    className="border px-3 py-2 rounded text-gray-600 text-sm focus:outline-none"
-                                                />
+                                            <option value="">
+                                                Seleziona stato
+                                            </option>
+                                            <option value="non iniziato">
+                                                Non iniziato
+                                            </option>
+                                            <option value="in corso">
+                                                In corso
+                                            </option>
+                                            <option value="completato">
+                                                Completato
+                                            </option>
+                                            <option value="non completato">
+                                                Non completato
+                                            </option>
+                                        </select>
+                                        <div className="flex flex-col gap-2 mt-2">
+                                            <div className="flex gap-2 items-center">
+                                                <div className="flex flex-col flex-1">
+                                                    <label
+                                                        htmlFor="fromDate"
+                                                        className="text-xs text-gray-500 mb-2"
+                                                    >
+                                                        Da
+                                                    </label>
+                                                    <input
+                                                        type="date"
+                                                        id="fromDate"
+                                                        value={filters.fromDate}
+                                                        onChange={(e) =>
+                                                            handleFilterChange(
+                                                                "fromDate",
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        className="border px-3 py-2 rounded text-gray-600 text-sm focus:outline-none"
+                                                    />
+                                                </div>
+                                                <div className="flex flex-col flex-1">
+                                                    <label
+                                                        htmlFor="toDate"
+                                                        className="text-xs text-gray-500 mb-2"
+                                                    >
+                                                        A
+                                                    </label>
+                                                    <input
+                                                        type="date"
+                                                        id="toDate"
+                                                        value={filters.toDate}
+                                                        onChange={(e) =>
+                                                            handleFilterChange(
+                                                                "toDate",
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        className="border px-3 py-2 rounded text-gray-600 text-sm focus:outline-none"
+                                                    />
+                                                </div>{" "}
                                             </div>{" "}
-                                        </div>{" "}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    )}
                 </div>{" "}
                 <Modal
                     isOpen={modal.isOpen}

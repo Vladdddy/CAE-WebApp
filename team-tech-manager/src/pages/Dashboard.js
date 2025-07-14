@@ -662,8 +662,7 @@ export default function Dashboard() {
     const getAllShiftEmployees = () => {
         const today = new Date().toISOString().split("T")[0];
         const shiftGroups = {
-            Mattino: [],
-            Pomeriggio: [],
+            Giorno: [],
             Notte: [],
         };
 
@@ -675,18 +674,20 @@ export default function Dashboard() {
                 if (userShiftData) {
                     switch (userShiftData.shift) {
                         case "O":
-                            shiftGroups.Mattino.push(user.name);
-                            break;
                         case "OP":
-                            shiftGroups.Pomeriggio.push(user.name);
+                            // O (Mattino) and OP (Pomeriggio) both go to Giorno
+                            if (!shiftGroups.Giorno.includes(user.name)) {
+                                shiftGroups.Giorno.push(user.name);
+                            }
                             break;
                         case "ON":
                             shiftGroups.Notte.push(user.name);
                             break;
                         case "D":
-                            // D (Day) shift appears in both Mattino and Pomeriggio
-                            shiftGroups.Mattino.push(user.name);
-                            shiftGroups.Pomeriggio.push(user.name);
+                            // D (Day) shift goes to Giorno
+                            if (!shiftGroups.Giorno.includes(user.name)) {
+                                shiftGroups.Giorno.push(user.name);
+                            }
                             break;
                         case "N":
                             // N (Night) shift appears in Notte

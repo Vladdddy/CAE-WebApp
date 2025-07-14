@@ -1,0 +1,76 @@
+.calendar-container {
+    max-width: 100%;
+    margin: 0 auto;
+    margin-top: 4rem;
+    overflow: hidden; /* Prevent layout overflow */
+    height: 600px; /* Increased height for taller days */
+    width: 100%;
+    max-width: 600px; /* Fixed max width */
+}
+
+.calendar-header {
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+    flex-shrink: 0; /* Prevent header from shrinking */
+    height: 60px; /* Fixed header height */
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-template-rows: repeat(6, 80px); /* Increased from 60px to 80px */
+    gap: 4px;
+    height: calc(100% - 80px); /* Subtract header height and margin */
+}
+
+.calendar-day {
+    transition: all 0.2s ease-in-out;
+    position: relative;
+    min-height: 80px; /* Increased from 60px to 80px */
+    height: 100%; /* Fill the grid cell completely */
+    padding: 0.5rem;
+    box-sizing: border-box;
+}
+
+.calendar-day:hover {
+    transform: translateY(-1px) !important;
+    position: relative !important;
+}
+
+.empty-day {
+    opacity: 0;
+    pointer-events: none;
+    min-height: 80px; /* Increased from 60px to 80px */
+    padding: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .calendar-container {
+        height: 480px; /* Increased from 400px for taller mobile days */
+    }
+
+    .calendar-grid {
+        grid-template-rows: repeat(
+            6,
+            65px
+        ); /* Increased from 50px to 65px for mobile */
+        height: calc(100% - 80px);
+    }
+
+    .calendar-day {
+        min-height: 65px; /* Increased from 50px to 65px */
+        padding: 0.25rem;
+    }
+
+    .empty-day {
+        min-height: 65px; /* Increased from 50px to 65px */
+        padding: 0.25rem;
+    }
+}
+
+/* Reset any accumulated transforms or positioning */
+.calendar-container * {
+    transform: none !important;
+    position: static !important;
+}
