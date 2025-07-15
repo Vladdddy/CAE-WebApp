@@ -2400,7 +2400,7 @@ export default function Logbook() {
                                                 htmlFor="text"
                                                 className="text-xs text-gray-500"
                                             >
-                                                Testo della task
+                                                Descrizione
                                             </label>
                                             <textarea
                                                 id="text"

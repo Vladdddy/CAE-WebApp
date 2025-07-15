@@ -38,6 +38,7 @@ const troubleshootingDetails = [
 export default function Tasks() {
     const [tasks, setTasks] = useState([]);
     const [title, setTitle] = useState("");
+    const [description, setDescription] = useState("");
     const [assignedTo, setAssignedTo] = useState("");
     const [simulator, setSimulator] = useState("");
     const [category, setCategory] = useState("");
@@ -80,7 +81,13 @@ export default function Tasks() {
         simulator: "",
         startTime: "",
         endTime: "",
-    }); // Filter states
+        selectedEmployee: "",
+    });
+
+    // State for night shift employees
+    const [nightShiftEmployees, setNightShiftEmployees] = useState([]);
+    const [nightShiftEmployeesLoading, setNightShiftEmployeesLoading] =
+        useState(false); // Filter states
     const [filters, setFilters] = useState({
         searchText: "",
         fromDate: "",
@@ -215,14 +222,17 @@ export default function Tasks() {
             );
             return;
         }
-
         const existingSchedule = simulatorSchedules[simulator] || {};
         setScheduleModal({
             isOpen: true,
             simulator: simulator,
             startTime: existingSchedule.startTime || "",
             endTime: existingSchedule.endTime || "",
+            selectedEmployee: existingSchedule.selectedEmployee || "",
         });
+
+        // Fetch night shift employees for the selected date
+        fetchNightShiftEmployees(selectedDate);
     };
 
     const closeScheduleModal = () => {
@@ -231,10 +241,13 @@ export default function Tasks() {
             simulator: "",
             startTime: "",
             endTime: "",
+            selectedEmployee: "",
         });
+        setNightShiftEmployees([]);
     };
     const saveSimulatorSchedule = () => {
-        const { simulator, startTime, endTime } = scheduleModal;
+        const { simulator, startTime, endTime, selectedEmployee } =
+            scheduleModal;
         if (startTime && endTime) {
             // Get all existing schedules from localStorage
             const allSchedules = JSON.parse(
@@ -244,7 +257,11 @@ export default function Tasks() {
             // Update schedules for the selected date
             const newSchedules = {
                 ...simulatorSchedules,
-                [simulator]: { startTime, endTime },
+                [simulator]: {
+                    startTime,
+                    endTime,
+                    selectedEmployee: selectedEmployee || "",
+                },
             };
 
             // Save to the date-specific entry
@@ -449,6 +466,7 @@ export default function Tasks() {
                 },
                 body: JSON.stringify({
                     title,
+                    description,
                     assignedTo,
                     simulator,
                     category,
@@ -463,6 +481,7 @@ export default function Tasks() {
                 const newTask = await res.json();
                 setTasks([...tasks, newTask]);
                 setTitle("");
+                setDescription("");
                 setAssignedTo("");
                 setSimulator("");
                 setCategory("");
@@ -730,7 +749,11 @@ export default function Tasks() {
                     const simulatorHeader = document.createElement("h4");
                     let headerText = simulator;
                     if (simulatorSchedules[simulator]) {
-                        headerText += ` (Ora inizio ${simulatorSchedules[simulator].startTime} - Ora fine ${simulatorSchedules[simulator].endTime})`;
+                        headerText += ` (Ora fine ${simulatorSchedules[simulator].endTime} - Ora inizio ${simulatorSchedules[simulator].startTime}`;
+                        if (simulatorSchedules[simulator].selectedEmployee) {
+                            headerText += ` - ${simulatorSchedules[simulator].selectedEmployee}`;
+                        }
+                        headerText += ")";
                     }
                     simulatorHeader.textContent = headerText;
                     simulatorHeader.style.margin = "20px 0 10px 0";
@@ -996,6 +1019,49 @@ export default function Tasks() {
         setShowTable(false);
     };
 
+    // Fetch employees with night shift for a specific date
+    const fetchNightShiftEmployees = async (selectedDate) => {
+        if (!selectedDate) {
+            setNightShiftEmployees([]);
+            return;
+        }
+
+        setNightShiftEmployeesLoading(true);
+        const token = localStorage.getItem("authToken");
+
+        try {
+            // Use a night shift time (like 20:00) to get night shift employees
+            const nightTime = "20:00";
+            const response = await fetch(
+                `${API}/api/tasks/available-employees?date=${selectedDate}&time=${nightTime}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (response.ok) {
+                const data = await response.json();
+                setNightShiftEmployees(data.availableEmployees);
+            } else {
+                console.error(
+                    "Error fetching night shift employees:",
+                    await response.text()
+                );
+                setNightShiftEmployees([]);
+            }
+        } catch (error) {
+            console.error("Error fetching night shift employees:", error);
+            setNightShiftEmployees([]);
+        } finally {
+            setNightShiftEmployeesLoading(false);
+        }
+    }; // Update night shift employees when selected date changes
+    useEffect(() => {
+        fetchNightShiftEmployees(selectedDate);
+    }, [selectedDate]);
+
     if (loading) return <div>Caricamento task...</div>;
 
     return (
@@ -1232,7 +1298,7 @@ export default function Tasks() {
                                         <div
                                             className={`accordion-content overflow-hidden transition-all duration-300 ease-in-out ${
                                                 isAddTaskAccordionOpen
-                                                    ? "max-h-[800px] opacity-100"
+                                                    ? "max-h-full opacity-100"
                                                     : "max-h-0 opacity-0"
                                             }`}
                                         >
@@ -1256,6 +1322,24 @@ export default function Tasks() {
                                                     className="border px-3 py-2 rounded mb-4 text-gray-600 text-sm"
                                                     placeholder="Inserisci un titolo"
                                                     required
+                                                />
+                                                <label
+                                                    htmlFor="description"
+                                                    className="text-xs text-gray-500"
+                                                >
+                                                    Descrizione
+                                                </label>
+                                                <textarea
+                                                    id="description"
+                                                    value={description}
+                                                    onChange={(e) =>
+                                                        setDescription(
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    placeholder="Aggiungi descrizione (opzionale)"
+                                                    className="border px-3 py-2 rounded mb-4 text-gray-600 text-sm focus:outline-none"
+                                                    rows="3"
                                                 />
                                                 <label
                                                     htmlFor="category"
@@ -1766,6 +1850,27 @@ export default function Tasks() {
                             <div className="space-y-4">
                                 <div>
                                     <label
+                                        htmlFor="endTime"
+                                        className="block text-sm font-medium text-gray-700 mb-2"
+                                    >
+                                        Orario fine
+                                    </label>
+                                    <input
+                                        type="time"
+                                        id="endTime"
+                                        value={scheduleModal.endTime}
+                                        onChange={(e) =>
+                                            setScheduleModal((prev) => ({
+                                                ...prev,
+                                                endTime: e.target.value,
+                                            }))
+                                        }
+                                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label
                                         htmlFor="startTime"
                                         className="block text-sm font-medium text-gray-700 mb-2"
                                     >
@@ -1787,23 +1892,41 @@ export default function Tasks() {
 
                                 <div>
                                     <label
-                                        htmlFor="endTime"
+                                        htmlFor="nightShiftEmployee"
                                         className="block text-sm font-medium text-gray-700 mb-2"
                                     >
-                                        Orario fine
+                                        Seleziona dipendente
                                     </label>
-                                    <input
-                                        type="time"
-                                        id="endTime"
-                                        value={scheduleModal.endTime}
+                                    <select
+                                        id="nightShiftEmployee"
+                                        value={scheduleModal.selectedEmployee}
                                         onChange={(e) =>
                                             setScheduleModal((prev) => ({
                                                 ...prev,
-                                                endTime: e.target.value,
+                                                selectedEmployee:
+                                                    e.target.value,
                                             }))
                                         }
                                         className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    />
+                                        disabled={nightShiftEmployeesLoading}
+                                    >
+                                        <option value="">
+                                            {nightShiftEmployeesLoading
+                                                ? "Caricamento dipendenti..."
+                                                : nightShiftEmployees.length ===
+                                                  0
+                                                ? "Nessun dipendente disponibile nel turno notturno"
+                                                : "Seleziona dipendente"}
+                                        </option>
+                                        {nightShiftEmployees.map((employee) => (
+                                            <option
+                                                key={employee}
+                                                value={employee}
+                                            >
+                                                {employee}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
                             </div>
 

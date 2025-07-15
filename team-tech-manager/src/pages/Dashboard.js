@@ -670,6 +670,11 @@ export default function Dashboard() {
             const todayShifts = shifts[today];
 
             users.forEach((user) => {
+                // Skip admin users since they are displayed in the Shift Leader section
+                if (user.role === "admin") {
+                    return;
+                }
+
                 const userShiftData = todayShifts[user.name];
                 if (userShiftData) {
                     switch (userShiftData.shift) {

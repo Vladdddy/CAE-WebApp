@@ -549,11 +549,11 @@
       "note": ""
     },
     "Andrea": {
-      "shift": "R",
+      "shift": "N",
       "note": "Riposo"
     },
     "Francesco": {
-      "shift": "R",
+      "shift": "D",
       "note": "Riposo"
     },
     "Nicolo": {
@@ -561,11 +561,11 @@
       "note": ""
     },
     "Sara": {
-      "shift": "R",
+      "shift": "N",
       "note": "Riposo"
     },
     "Thomas": {
-      "shift": "R",
+      "shift": "D",
       "note": "Riposo"
     }
   },

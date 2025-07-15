@@ -71,6 +71,18 @@ const TaskTable = ({
                                                         simulator
                                                     ].endTime
                                                 }
+                                                {simulatorSchedules[simulator]
+                                                    .selectedEmployee && (
+                                                    <span className="ml-1">
+                                                        (
+                                                        {
+                                                            simulatorSchedules[
+                                                                simulator
+                                                            ].selectedEmployee
+                                                        }
+                                                        )
+                                                    </span>
+                                                )}
                                             </span>
                                         )}
                                     </p>

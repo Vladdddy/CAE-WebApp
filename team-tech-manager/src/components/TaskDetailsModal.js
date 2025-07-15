@@ -16,6 +16,27 @@ export default function TaskDetailsModal({
     const [showNoteInput, setShowNoteInput] = useState(false);
     const [noteText, setNoteText] = useState("");
 
+    // Helper function to get a clean display ID for logbook entries
+    const getDisplayId = (task) => {
+        if (task.type === "logbook-entry") {
+            // Try to extract a number from the ID if it follows patterns like "entry-123" or "logbook-date-time"
+            if (task.id && typeof task.id === "string") {
+                // For IDs like "entry-123" or similar
+                const numericMatch = task.id.match(/(\d+)$/);
+                if (numericMatch) {
+                    return numericMatch[1];
+                }
+                // For time-based IDs, use time as identifier
+                if (task.time) {
+                    return task.time.replace(":", "");
+                }
+            }
+            // Fallback: use timestamp or a shortened version of the ID
+            return task.time ? task.time.replace(":", "") : "E";
+        }
+        return task.id;
+    };
+
     if (!isOpen || !task) return null;
 
     const handleOverlayClick = (e) => {
@@ -45,7 +66,9 @@ export default function TaskDetailsModal({
                 {/* Header - Fixed */}
                 <div className="flex items-center justify-between p-6 border-b flex-shrink-0">
                     <h2 className="text-xl font-semibold text-gray-900">
-                        Dettagli Task #{task.id}
+                        {task.type === "logbook-entry"
+                            ? `Dettagli Entry`
+                            : `Dettagli Task`}
                     </h2>
                     <button
                         onClick={onClose}

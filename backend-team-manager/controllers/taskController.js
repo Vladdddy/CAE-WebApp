@@ -83,6 +83,7 @@ exports.getTasks = (req, res) => {
 exports.createTask = (req, res) => {
     const {
         title,
+        description,
         assignedTo,
         simulator,
         category,
@@ -154,6 +155,7 @@ exports.createTask = (req, res) => {
     const newTask = {
         id: maxId + 1,
         title,
+        description: description || "",
         assignedTo,
         simulator: simulator || "",
         category: category || "",
