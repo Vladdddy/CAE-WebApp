@@ -1307,6 +1307,210 @@ export default function Logbook() {
         }
     };
 
+    const handleEditNote = async (taskId, noteIndex, newText) => {
+        try {
+            const currentTask = taskDetailsModal.task;
+            if (currentTask && currentTask.type === "logbook-entry") {
+                const originalEntry = currentTask.originalEntry || {
+                    id:
+                        currentTask.id && currentTask.id.startsWith("entry-")
+                            ? currentTask.id.replace("entry-", "")
+                            : null,
+                    date: currentTask.date,
+                    time: currentTask.time,
+                    author: currentTask.assignedTo,
+                    title: currentTask.title,
+                    simulator: currentTask.simulator,
+                    category: currentTask.category,
+                    text: currentTask.originalText || currentTask.description,
+                };
+
+                const logbookNoteKey = generateLogbookNoteKey(originalEntry);
+
+                await notesService.updateNote(
+                    "logbook",
+                    encodeURIComponent(logbookNoteKey),
+                    noteIndex,
+                    newText
+                );
+
+                const updatedNotes = [...(logbookNotes[logbookNoteKey] || [])];
+                updatedNotes[noteIndex] = {
+                    ...updatedNotes[noteIndex],
+                    text: newText,
+                };
+
+                const updatedLogbookNotes = {
+                    ...logbookNotes,
+                    [logbookNoteKey]: updatedNotes,
+                };
+                setLogbookNotes(updatedLogbookNotes);
+
+                const updatedTask = {
+                    ...currentTask,
+                    notes: updatedNotes,
+                };
+
+                setTaskDetailsModal({
+                    ...taskDetailsModal,
+                    task: updatedTask,
+                });
+
+                showModal(
+                    "Successo",
+                    "Nota modificata con successo!",
+                    "success"
+                );
+            } else {
+                await notesService.updateNote(
+                    "tasks",
+                    taskId,
+                    noteIndex,
+                    newText
+                );
+
+                const updatedNotes = [...(taskNotes[taskId] || [])];
+                updatedNotes[noteIndex] = {
+                    ...updatedNotes[noteIndex],
+                    text: newText,
+                };
+
+                const updatedTaskNotes = {
+                    ...taskNotes,
+                    [taskId]: updatedNotes,
+                };
+                setTaskNotes(updatedTaskNotes);
+
+                const updatedTasks = tasks.map((task) => {
+                    if (task.id === taskId) {
+                        return {
+                            ...task,
+                            notes: updatedNotes,
+                        };
+                    }
+                    return task;
+                });
+                setTasks(updatedTasks);
+
+                if (
+                    taskDetailsModal.task &&
+                    taskDetailsModal.task.id === taskId
+                ) {
+                    const updatedTask = updatedTasks.find(
+                        (t) => t.id === taskId
+                    );
+                    setTaskDetailsModal({
+                        ...taskDetailsModal,
+                        task: updatedTask,
+                    });
+                }
+
+                showModal(
+                    "Successo",
+                    "Nota modificata con successo!",
+                    "success"
+                );
+            }
+        } catch (error) {
+            console.error("Errore nel modificare la nota:", error);
+            showModal(
+                "Errore",
+                "Errore nel modificare la nota: " + error.message,
+                "error"
+            );
+        }
+    };
+
+    const handleDeleteNote = async (taskId, noteIndex) => {
+        try {
+            const currentTask = taskDetailsModal.task;
+            if (currentTask && currentTask.type === "logbook-entry") {
+                const originalEntry = currentTask.originalEntry || {
+                    id:
+                        currentTask.id && currentTask.id.startsWith("entry-")
+                            ? currentTask.id.replace("entry-", "")
+                            : null,
+                    date: currentTask.date,
+                    time: currentTask.time,
+                    author: currentTask.assignedTo,
+                    title: currentTask.title,
+                    simulator: currentTask.simulator,
+                    category: currentTask.category,
+                    text: currentTask.originalText || currentTask.description,
+                };
+
+                const logbookNoteKey = generateLogbookNoteKey(originalEntry);
+
+                await notesService.deleteNote(
+                    "logbook",
+                    encodeURIComponent(logbookNoteKey),
+                    noteIndex
+                );
+
+                const updatedNotes = [...(logbookNotes[logbookNoteKey] || [])];
+                updatedNotes.splice(noteIndex, 1);
+
+                const updatedLogbookNotes = {
+                    ...logbookNotes,
+                    [logbookNoteKey]: updatedNotes,
+                };
+                setLogbookNotes(updatedLogbookNotes);
+
+                const updatedTask = {
+                    ...currentTask,
+                    notes: updatedNotes,
+                };
+
+                setTaskDetailsModal({
+                    ...taskDetailsModal,
+                    task: updatedTask,
+                });
+            } else {
+                await notesService.deleteNote("tasks", taskId, noteIndex);
+
+                const updatedNotes = [...(taskNotes[taskId] || [])];
+                updatedNotes.splice(noteIndex, 1);
+
+                const updatedTaskNotes = {
+                    ...taskNotes,
+                    [taskId]: updatedNotes,
+                };
+                setTaskNotes(updatedTaskNotes);
+
+                const updatedTasks = tasks.map((task) => {
+                    if (task.id === taskId) {
+                        return {
+                            ...task,
+                            notes: updatedNotes,
+                        };
+                    }
+                    return task;
+                });
+                setTasks(updatedTasks);
+
+                if (
+                    taskDetailsModal.task &&
+                    taskDetailsModal.task.id === taskId
+                ) {
+                    const updatedTask = updatedTasks.find(
+                        (t) => t.id === taskId
+                    );
+                    setTaskDetailsModal({
+                        ...taskDetailsModal,
+                        task: updatedTask,
+                    });
+                }
+            }
+        } catch (error) {
+            console.error("Errore nell'eliminare la nota:", error);
+            showModal(
+                "Errore",
+                "Errore nell'eliminare la nota: " + error.message,
+                "error"
+            );
+        }
+    };
+
     const handleChangeDay = (offset) => {
         const d = new Date(date);
         d.setDate(d.getDate() + offset);
@@ -2923,6 +3127,8 @@ export default function Logbook() {
                 canEditDescription={canEditDescription}
                 onEditDescription={openDescriptionModal}
                 onSaveNote={handleSaveNote}
+                onEditNote={handleEditNote}
+                onDeleteNote={handleDeleteNote}
             />{" "}
             <DescriptionModal
                 isOpen={descriptionModal.isOpen}

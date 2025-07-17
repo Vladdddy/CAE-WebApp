@@ -171,7 +171,7 @@ exports.updateNote = (req, res) => {
         }
 
         const notesArray =
-            type === "task"
+            type === "tasks"
                 ? notesData.taskNotes[entryId]
                 : notesData.logbookNotes[entryId];
 
@@ -200,7 +200,7 @@ exports.deleteNote = (req, res) => {
         const { type, entryId, noteIndex } = req.params;
 
         const notesArray =
-            type === "task"
+            type === "tasks"
                 ? notesData.taskNotes[entryId]
                 : notesData.logbookNotes[entryId];
 
@@ -212,7 +212,7 @@ exports.deleteNote = (req, res) => {
 
         // Remove the array if it's empty
         if (notesArray.length === 0) {
-            if (type === "task") {
+            if (type === "tasks") {
                 delete notesData.taskNotes[entryId];
             } else {
                 delete notesData.logbookNotes[entryId];

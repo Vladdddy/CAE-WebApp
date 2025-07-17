@@ -194,6 +194,11 @@ export default function Dashboard() {
         loading: false,
         employeesLoading: false,
     });
+
+    // Search state for "Task da programmare" section
+    const [searchQuery, setSearchQuery] = useState("");
+    const [filteredTasksToSchedule, setFilteredTasksToSchedule] = useState([]);
+
     const closeReassignModal = () => {
         setReassignModal({
             isOpen: false,
@@ -584,6 +589,50 @@ export default function Dashboard() {
     const tasksToSchedule = Array.isArray(tasks)
         ? tasks.filter((task) => task.status === "da definire")
         : [];
+
+    // Search functionality for tasks to schedule
+    const handleSearchChange = (e) => {
+        const newValue = e.target.value;
+        setSearchQuery(newValue);
+        // Clear search results when input is empty
+        if (!newValue.trim()) {
+            setFilteredTasksToSchedule([]);
+        }
+    };
+
+    const handleSearch = () => {
+        // Search is handled automatically by useEffect when searchQuery changes
+        // This function is kept for explicit search button clicks if needed
+    };
+
+    const clearSearch = () => {
+        setSearchQuery("");
+        setFilteredTasksToSchedule([]);
+    };
+
+    // Update filtered tasks when search query changes or when pressing Enter
+    useEffect(() => {
+        if (searchQuery.trim()) {
+            const filtered = tasksToSchedule.filter((task) => {
+                const searchLower = searchQuery.toLowerCase();
+                return (
+                    task.title?.toLowerCase().includes(searchLower) ||
+                    task.assignedTo?.toLowerCase().includes(searchLower) ||
+                    task.simulator?.toLowerCase().includes(searchLower) ||
+                    task.category?.toLowerCase().includes(searchLower) ||
+                    task.subcategory?.toLowerCase().includes(searchLower)
+                );
+            });
+            setFilteredTasksToSchedule(filtered);
+        } else {
+            setFilteredTasksToSchedule([]);
+        }
+    }, [searchQuery, tasksToSchedule]);
+
+    // Function to get tasks to display (filtered or all)
+    const getTasksToScheduleDisplay = () => {
+        return searchQuery.trim() ? filteredTasksToSchedule : tasksToSchedule;
+    };
 
     // Prende le task del turno diurno
     const dayTasks = dailyTasks.filter((task) => {
@@ -1051,8 +1100,34 @@ export default function Dashboard() {
                         </div>
                     ) : (
                         <div>
+                            <div className="flex flex-row gap-2 mb-4">
+                                <input
+                                    type="text"
+                                    placeholder="Cerca per testo, titolo, nome..."
+                                    value={searchQuery}
+                                    onChange={handleSearchChange}
+                                    onKeyPress={(e) => {
+                                        if (e.key === "Enter") {
+                                            handleSearch();
+                                        }
+                                    }}
+                                    className="flex w-full border px-3 py-2 rounded text-gray-600 text-sm focus:outline-none"
+                                />
+                                {searchQuery && (
+                                    <button
+                                        onClick={clearSearch}
+                                        className="flex items-center px-3 py-2 rounded text-sm transition-colors bg-red-500 text-white hover:bg-red-600"
+                                        title="Cancella ricerca"
+                                    >
+                                        ✕
+                                    </button>
+                                )}
+                            </div>
+
                             {/* Tasks to schedule section */}
-                            {tasksToSchedule.length > 0 && (
+                            {(searchQuery.trim()
+                                ? filteredTasksToSchedule.length > 0
+                                : tasksToSchedule.length > 0) && (
                                 <div className="mb-6">
                                     <div className="flex items-center gap-2 mb-4">
                                         <svg
@@ -1079,19 +1154,30 @@ export default function Dashboard() {
                                             ></path>
                                         </svg>
                                         <h4 className="text-gray-600">
-                                            Da Definire
+                                            {searchQuery.trim()
+                                                ? "Risultati ricerca"
+                                                : "Da Definire"}
                                         </h4>
                                         <span className="span">
-                                            {tasksToSchedule.length} task
+                                            {getTasksToScheduleDisplay().length}{" "}
+                                            task
                                         </span>
                                     </div>
                                     {renderTaskList(
-                                        tasksToSchedule,
+                                        getTasksToScheduleDisplay(),
                                         false,
                                         true
                                     )}
                                 </div>
                             )}
+
+                            {/* No search results message */}
+                            {searchQuery.trim() &&
+                                filteredTasksToSchedule.length === 0 && (
+                                    <div className="text-center py-4 text-gray-400">
+                                        Nessun task trovato per "{searchQuery}"
+                                    </div>
+                                )}
 
                             <div className="separator"></div>
 
