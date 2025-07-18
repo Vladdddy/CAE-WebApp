@@ -892,6 +892,292 @@ export default function Tasks() {
             );
         }
     };
+
+    const handleExportFilteredTasks = () => {
+        try {
+            // Create a clean version of the content for PDF
+            const currentDate = new Date().toLocaleDateString("it-IT", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+            });
+
+            // Create a temporary div with clean styling for PDF
+            const pdfContent = document.createElement("div");
+            pdfContent.style.padding = "20px";
+            pdfContent.style.fontFamily = "Arial, sans-serif";
+            pdfContent.style.backgroundColor = "white";
+
+            // Add title
+            const title = document.createElement("h2");
+            title.textContent = `Risultati Ricerca Task - ${currentDate}`;
+            title.style.marginBottom = "20px";
+            title.style.color = "#333";
+            title.style.borderBottom = "2px solid #d1d5db";
+            title.style.paddingBottom = "10px";
+            pdfContent.appendChild(title);
+
+            // Add filter information
+            const filterInfo = document.createElement("div");
+            filterInfo.style.marginBottom = "20px";
+            filterInfo.style.padding = "15px";
+            filterInfo.style.backgroundColor = "#f9f9f9";
+            filterInfo.style.border = "1px solid #e5e7eb";
+            filterInfo.style.borderRadius = "8px";
+
+            let hasFilters = false;
+
+            if (filters.searchText) {
+                const searchFilter = document.createElement("p");
+                searchFilter.textContent = `• Testo: "${filters.searchText}"`;
+                searchFilter.style.margin = "4px 0";
+                searchFilter.style.color = "#666";
+                filterInfo.appendChild(searchFilter);
+                hasFilters = true;
+            }
+
+            if (filters.status) {
+                const statusFilter = document.createElement("p");
+                statusFilter.textContent = `• Stato: ${filters.status}`;
+                statusFilter.style.margin = "4px 0";
+                statusFilter.style.color = "#666";
+                filterInfo.appendChild(statusFilter);
+                hasFilters = true;
+            }
+
+            if (filters.fromDate) {
+                const fromDateFilter = document.createElement("p");
+                fromDateFilter.textContent = `• Dal: ${new Date(
+                    filters.fromDate
+                ).toLocaleDateString("it-IT")}`;
+                fromDateFilter.style.margin = "4px 0";
+                fromDateFilter.style.color = "#666";
+                filterInfo.appendChild(fromDateFilter);
+                hasFilters = true;
+            }
+
+            if (filters.toDate) {
+                const toDateFilter = document.createElement("p");
+                toDateFilter.textContent = `• Al: ${new Date(
+                    filters.toDate
+                ).toLocaleDateString("it-IT")}`;
+                toDateFilter.style.margin = "4px 0";
+                toDateFilter.style.color = "#666";
+                filterInfo.appendChild(toDateFilter);
+                hasFilters = true;
+            }
+
+            if (!hasFilters) {
+                const noFilters = document.createElement("p");
+                noFilters.textContent = "Nessun filtro applicato";
+                noFilters.style.margin = "4px 0";
+                noFilters.style.color = "#666";
+                noFilters.style.fontStyle = "italic";
+                filterInfo.appendChild(noFilters);
+            }
+
+            pdfContent.appendChild(filterInfo);
+
+            // Add task count
+            const taskCount = document.createElement("p");
+            taskCount.textContent = `Totale task: ${filteredTasks.length}`;
+            taskCount.style.margin = "0 0 20px 0";
+            taskCount.style.color = "#333";
+            taskCount.style.fontSize = "16px";
+            taskCount.style.fontWeight = "bold";
+            pdfContent.appendChild(taskCount);
+
+            if (filteredTasks.length === 0) {
+                const noTasks = document.createElement("p");
+                noTasks.textContent =
+                    "Nessun task trovato con i filtri applicati";
+                noTasks.style.color = "#d6d6d6";
+                noTasks.style.fontStyle = "italic";
+                pdfContent.appendChild(noTasks);
+            } else {
+                // Group tasks by date
+                const tasksByDate = {};
+                filteredTasks.forEach((task) => {
+                    const taskDate = task.date;
+                    if (!tasksByDate[taskDate]) {
+                        tasksByDate[taskDate] = [];
+                    }
+                    tasksByDate[taskDate].push(task);
+                });
+
+                // Sort dates
+                const sortedDates = Object.keys(tasksByDate).sort();
+
+                sortedDates.forEach((date) => {
+                    // Add date header
+                    const dateHeader = document.createElement("h3");
+                    dateHeader.textContent = new Date(date).toLocaleDateString(
+                        "it-IT",
+                        {
+                            weekday: "long",
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                        }
+                    );
+                    dateHeader.style.margin = "30px 0 15px 0";
+                    dateHeader.style.color = "#1f2937";
+                    dateHeader.style.fontSize = "18px";
+                    dateHeader.style.fontWeight = "bold";
+                    dateHeader.style.borderBottom = "2px solid #d1d5db";
+                    dateHeader.style.paddingBottom = "10px";
+                    pdfContent.appendChild(dateHeader);
+
+                    // Add tasks for this date
+                    tasksByDate[date].forEach((task, index) => {
+                        const taskDiv = document.createElement("div");
+                        taskDiv.style.marginBottom = "15px";
+                        taskDiv.style.padding = "15px";
+                        taskDiv.style.border = "1px solid #e5e7eb";
+                        taskDiv.style.borderRadius = "8px";
+                        taskDiv.style.backgroundColor = "#f9f9f9";
+
+                        const taskTitle = document.createElement("h5");
+                        taskTitle.textContent = `${task.title}`;
+                        taskTitle.style.margin = "0 0 8px 0";
+                        taskTitle.style.color = "#333";
+                        taskTitle.style.fontSize = "16px";
+                        taskDiv.appendChild(taskTitle);
+
+                        const taskDetails = document.createElement("p");
+                        taskDetails.textContent = `Simulatore: ${
+                            task.simulator || "N/A"
+                        } • Orario: ${task.time} • Assegnato a: ${
+                            task.assignedTo
+                        } • Status: ${task.status}`;
+                        taskDetails.style.margin = "0";
+                        taskDetails.style.color = "#666";
+                        taskDetails.style.fontSize = "14px";
+                        taskDiv.appendChild(taskDetails);
+
+                        // Add category and subcategory if available
+                        if (task.category || task.subcategory) {
+                            const categoryDetails = document.createElement("p");
+                            categoryDetails.textContent = `Categoria: ${
+                                task.category || "N/A"
+                            }${
+                                task.subcategory
+                                    ? ` • Sottocategoria: ${task.subcategory}`
+                                    : ""
+                            }`;
+                            categoryDetails.style.margin = "4px 0 0 0";
+                            categoryDetails.style.color = "#666";
+                            categoryDetails.style.fontSize = "14px";
+                            taskDiv.appendChild(categoryDetails);
+                        }
+
+                        // Add task description if available
+                        if (task.description) {
+                            const taskDescription = document.createElement("p");
+                            taskDescription.textContent = `Descrizione: ${task.description}`;
+                            taskDescription.style.margin = "8px 0 0 0";
+                            taskDescription.style.color = "#666";
+                            taskDescription.style.fontSize = "14px";
+                            taskDescription.style.fontStyle = "italic";
+                            taskDiv.appendChild(taskDescription);
+                        }
+
+                        // Add notes if available
+                        if (task.notes && task.notes.length > 0) {
+                            const notesHeader = document.createElement("p");
+                            notesHeader.textContent = "Note:";
+                            notesHeader.style.margin = "8px 0 4px 0";
+                            notesHeader.style.color = "#333";
+                            notesHeader.style.fontSize = "14px";
+                            notesHeader.style.fontWeight = "bold";
+                            taskDiv.appendChild(notesHeader);
+
+                            task.notes.forEach((note) => {
+                                const noteDiv = document.createElement("div");
+                                noteDiv.style.margin = "4px 0 4px 16px";
+                                noteDiv.style.padding = "8px";
+                                noteDiv.style.backgroundColor = "#f3f4f6";
+                                noteDiv.style.borderLeft = "3px solid #d1d5db";
+                                noteDiv.style.borderRadius = "4px";
+
+                                const noteText = document.createElement("p");
+                                noteText.textContent = note.text;
+                                noteText.style.margin = "0 0 4px 0";
+                                noteText.style.color = "#333";
+                                noteText.style.fontSize = "13px";
+                                noteDiv.appendChild(noteText);
+
+                                const noteAuthor = document.createElement("p");
+                                const noteDate = new Date(
+                                    note.timestamp
+                                ).toLocaleString("it-IT");
+                                noteAuthor.textContent = `${note.author} - ${noteDate}`;
+                                noteAuthor.style.margin = "0";
+                                noteAuthor.style.color = "#666";
+                                noteAuthor.style.fontSize = "11px";
+                                noteAuthor.style.fontStyle = "italic";
+                                noteDiv.appendChild(noteAuthor);
+
+                                taskDiv.appendChild(noteDiv);
+                            });
+                        }
+
+                        pdfContent.appendChild(taskDiv);
+                    });
+                });
+            }
+
+            // Temporarily add to body
+            document.body.appendChild(pdfContent);
+
+            const opt = {
+                margin: 0.5,
+                filename: `ricerca-tasks-${currentDate.replace(
+                    /\//g,
+                    "-"
+                )}.pdf`,
+                image: { type: "jpeg", quality: 0.98 },
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                },
+                jsPDF: {
+                    unit: "in",
+                    format: "a4",
+                    orientation: "portrait",
+                },
+            };
+
+            html2pdf()
+                .from(pdfContent)
+                .set(opt)
+                .save()
+                .then(() => {
+                    document.body.removeChild(pdfContent);
+                    showModal(
+                        "Successo",
+                        "PDF esportato con successo!",
+                        "success"
+                    );
+                })
+                .catch((error) => {
+                    console.error("PDF Export Error:", error);
+                    document.body.removeChild(pdfContent);
+                    showModal(
+                        "Errore",
+                        "Errore durante l'esportazione del PDF",
+                        "error"
+                    );
+                });
+        } catch (error) {
+            console.error("PDF Export Error:", error);
+            showModal(
+                "Errore",
+                "Errore durante l'esportazione del PDF",
+                "error"
+            );
+        }
+    };
     const getBorderColor = (status) => {
         switch (status) {
             case "completato":
@@ -1719,12 +2005,48 @@ export default function Tasks() {
                                                 <p className="p-0 m-0">Cerca</p>
                                             </button>
                                             {showFilterResults && (
-                                                <button
-                                                    onClick={clearFilters}
-                                                    className="px-4 py-2 border border-red-300 text-red-600 rounded text-sm hover:bg-red-50 transition-colors"
-                                                >
-                                                    Cancella
-                                                </button>
+                                                <>
+                                                    <button
+                                                        onClick={clearFilters}
+                                                        className="px-4 py-2 border border-red-300 text-red-600 rounded text-sm hover:bg-red-50 transition-colors"
+                                                    >
+                                                        Cancella
+                                                    </button>
+                                                    <button
+                                                        onClick={
+                                                            handleExportFilteredTasks
+                                                        }
+                                                        className="flex items-center bg-green-600 text-white px-4 py-2 rounded text-sm hover:bg-green-700 transition-colors gap-2"
+                                                        disabled={
+                                                            filteredTasks.length ===
+                                                            0
+                                                        }
+                                                    >
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            viewBox="0 0 24 24"
+                                                            width="16"
+                                                            height="16"
+                                                            fill="none"
+                                                        >
+                                                            <path
+                                                                d="M12 2v10m0 0l3-3m-3 3l-3-3"
+                                                                stroke="currentColor"
+                                                                strokeWidth="2"
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                            />
+                                                            <path
+                                                                d="M5 17a2 2 0 002 2h10a2 2 0 002-2v-2"
+                                                                stroke="currentColor"
+                                                                strokeWidth="2"
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                            />
+                                                        </svg>
+                                                        Export
+                                                    </button>
+                                                </>
                                             )}
                                         </div>{" "}
                                         <label
