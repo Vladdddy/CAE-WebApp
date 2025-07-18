@@ -577,6 +577,324 @@ export default function Logbook() {
             );
         }
     };
+
+    const handleExportFilteredEntries = () => {
+        try {
+            // Create a clean version of the content for PDF
+            const currentDate = new Date().toLocaleDateString("it-IT", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+            });
+
+            // Create a temporary div with clean styling for PDF
+            const pdfContent = document.createElement("div");
+            pdfContent.style.padding = "20px";
+            pdfContent.style.fontFamily = "Arial, sans-serif";
+            pdfContent.style.backgroundColor = "white";
+
+            // Add title
+            const title = document.createElement("h2");
+            title.textContent = `Risultati Ricerca Logbook - ${currentDate}`;
+            title.style.marginBottom = "20px";
+            title.style.color = "#333";
+            title.style.borderBottom = "2px solid #d1d5db";
+            title.style.paddingBottom = "10px";
+            pdfContent.appendChild(title);
+
+            // Add filter information
+            const filterInfo = document.createElement("div");
+            filterInfo.style.marginBottom = "20px";
+            filterInfo.style.padding = "15px";
+            filterInfo.style.backgroundColor = "#f9f9f9";
+            filterInfo.style.border = "1px solid #e5e7eb";
+            filterInfo.style.borderRadius = "8px";
+
+            let hasFilters = false;
+
+            if (search) {
+                const searchFilter = document.createElement("p");
+                searchFilter.textContent = `• Testo: "${search}"`;
+                searchFilter.style.margin = "4px 0";
+                searchFilter.style.color = "#666";
+                filterInfo.appendChild(searchFilter);
+                hasFilters = true;
+            }
+
+            if (filterCategory) {
+                const categoryFilter = document.createElement("p");
+                categoryFilter.textContent = `• Categoria: ${filterCategory}`;
+                categoryFilter.style.margin = "4px 0";
+                categoryFilter.style.color = "#666";
+                filterInfo.appendChild(categoryFilter);
+                hasFilters = true;
+            }
+
+            if (filterSubcategory) {
+                const subcategoryFilter = document.createElement("p");
+                subcategoryFilter.textContent = `• Sottocategoria: ${filterSubcategory}`;
+                subcategoryFilter.style.margin = "4px 0";
+                subcategoryFilter.style.color = "#666";
+                filterInfo.appendChild(subcategoryFilter);
+                hasFilters = true;
+            }
+
+            if (startDate) {
+                const startDateFilter = document.createElement("p");
+                startDateFilter.textContent = `• Dal: ${new Date(
+                    startDate
+                ).toLocaleDateString("it-IT")}`;
+                startDateFilter.style.margin = "4px 0";
+                startDateFilter.style.color = "#666";
+                filterInfo.appendChild(startDateFilter);
+                hasFilters = true;
+            }
+
+            if (endDate) {
+                const endDateFilter = document.createElement("p");
+                endDateFilter.textContent = `• Al: ${new Date(
+                    endDate
+                ).toLocaleDateString("it-IT")}`;
+                endDateFilter.style.margin = "4px 0";
+                endDateFilter.style.color = "#666";
+                filterInfo.appendChild(endDateFilter);
+                hasFilters = true;
+            }
+
+            if (!hasFilters) {
+                const noFilters = document.createElement("p");
+                noFilters.textContent = "Nessun filtro applicato";
+                noFilters.style.margin = "4px 0";
+                noFilters.style.color = "#666";
+                noFilters.style.fontStyle = "italic";
+                filterInfo.appendChild(noFilters);
+            }
+
+            pdfContent.appendChild(filterInfo);
+
+            // Add entry count
+            const entryCount = document.createElement("p");
+            entryCount.textContent = `Totale entries: ${filteredEntries.length}`;
+            entryCount.style.margin = "0 0 20px 0";
+            entryCount.style.color = "#333";
+            entryCount.style.fontSize = "16px";
+            entryCount.style.fontWeight = "bold";
+            pdfContent.appendChild(entryCount);
+
+            if (filteredEntries.length === 0) {
+                const noEntries = document.createElement("p");
+                noEntries.textContent =
+                    "Nessuna entry trovata con i filtri applicati";
+                noEntries.style.color = "#d6d6d6";
+                noEntries.style.fontStyle = "italic";
+                pdfContent.appendChild(noEntries);
+            } else {
+                // Group entries by date
+                const entriesByDate = {};
+                filteredEntries.forEach((entry) => {
+                    const entryDate = entry.date;
+                    if (!entriesByDate[entryDate]) {
+                        entriesByDate[entryDate] = [];
+                    }
+                    entriesByDate[entryDate].push(entry);
+                });
+
+                // Sort dates
+                const sortedDates = Object.keys(entriesByDate).sort();
+
+                sortedDates.forEach((date) => {
+                    // Add date header
+                    const dateHeader = document.createElement("h3");
+                    dateHeader.textContent = new Date(date).toLocaleDateString(
+                        "it-IT",
+                        {
+                            weekday: "long",
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                        }
+                    );
+                    dateHeader.style.margin = "30px 0 15px 0";
+                    dateHeader.style.color = "#1f2937";
+                    dateHeader.style.fontSize = "18px";
+                    dateHeader.style.fontWeight = "bold";
+                    dateHeader.style.borderBottom = "2px solid #d1d5db";
+                    dateHeader.style.paddingBottom = "10px";
+                    pdfContent.appendChild(dateHeader);
+
+                    // Add entries for this date
+                    entriesByDate[date].forEach((entry, index) => {
+                        const entryDiv = document.createElement("div");
+                        entryDiv.style.marginBottom = "15px";
+                        entryDiv.style.padding = "15px";
+                        entryDiv.style.border = "1px solid #e5e7eb";
+                        entryDiv.style.borderRadius = "8px";
+                        entryDiv.style.backgroundColor = "#fafafa";
+
+                        const entryTitle = document.createElement("h5");
+                        entryTitle.textContent = `${index + 1}. ${
+                            entry.name ||
+                            entry.text.substring(0, 50) +
+                                (entry.text.length > 50 ? "..." : "")
+                        }`;
+                        entryTitle.style.margin = "0 0 8px 0";
+                        entryTitle.style.color = "#333";
+                        entryTitle.style.fontSize = "16px";
+                        entryDiv.appendChild(entryTitle);
+
+                        const entryDetails = document.createElement("p");
+                        entryDetails.textContent = `Simulatore: ${
+                            entry.simulator || "N/A"
+                        } • Orario: ${entry.time} • Autore: ${
+                            entry.author
+                        } • Categoria: ${entry.category}${
+                            entry.subcategory ? "/" + entry.subcategory : ""
+                        }${
+                            entry.extraDetail ? "/" + entry.extraDetail : ""
+                        } • Durata: ${entry.duration || "N/A"}`;
+                        entryDetails.style.margin = "0";
+                        entryDetails.style.color = "#666";
+                        entryDetails.style.fontSize = "14px";
+                        entryDiv.appendChild(entryDetails);
+
+                        // Add entry text if available
+                        if (entry.text) {
+                            const entryText = document.createElement("p");
+                            entryText.textContent = `Testo: ${entry.text}`;
+                            entryText.style.margin = "8px 0 0 0";
+                            entryText.style.color = "#666";
+                            entryText.style.fontSize = "14px";
+                            entryText.style.fontStyle = "italic";
+                            entryDiv.appendChild(entryText);
+                        }
+
+                        // Add notes if available
+                        const logbookNoteKey = generateLogbookNoteKey(entry);
+                        let entryNotes = logbookNotes[logbookNoteKey] || [];
+
+                        // Try legacy keys if no notes found
+                        if (entryNotes.length === 0) {
+                            const legacyKeys = generateLegacyLogbookNoteKey(
+                                entry,
+                                entry.text
+                            );
+                            entryNotes =
+                                (legacyKeys.simpleKey
+                                    ? logbookNotes[legacyKeys.simpleKey]
+                                    : []) ||
+                                logbookNotes[legacyKeys.textBasedKey] ||
+                                [];
+
+                            if (entryNotes.length === 0 && entry.originalText) {
+                                const legacyKeys2 =
+                                    generateLegacyLogbookNoteKey(
+                                        entry,
+                                        entry.originalText
+                                    );
+                                entryNotes =
+                                    (legacyKeys2.simpleKey
+                                        ? logbookNotes[legacyKeys2.simpleKey]
+                                        : []) ||
+                                    logbookNotes[legacyKeys2.textBasedKey] ||
+                                    [];
+                            }
+                        }
+
+                        if (entryNotes && entryNotes.length > 0) {
+                            const notesHeader = document.createElement("p");
+                            notesHeader.textContent = "Note:";
+                            notesHeader.style.margin = "8px 0 4px 0";
+                            notesHeader.style.color = "#333";
+                            notesHeader.style.fontSize = "14px";
+                            notesHeader.style.fontWeight = "bold";
+                            entryDiv.appendChild(notesHeader);
+
+                            entryNotes.forEach((note) => {
+                                const noteDiv = document.createElement("div");
+                                noteDiv.style.margin = "4px 0 4px 16px";
+                                noteDiv.style.padding = "8px";
+                                noteDiv.style.backgroundColor = "#f3f4f6";
+                                noteDiv.style.borderLeft = "3px solid #d1d5db";
+                                noteDiv.style.borderRadius = "4px";
+
+                                const noteText = document.createElement("p");
+                                noteText.textContent = note.text;
+                                noteText.style.margin = "0 0 4px 0";
+                                noteText.style.color = "#333";
+                                noteText.style.fontSize = "13px";
+                                noteDiv.appendChild(noteText);
+
+                                const noteAuthor = document.createElement("p");
+                                const noteDate = new Date(
+                                    note.timestamp
+                                ).toLocaleString("it-IT");
+                                noteAuthor.textContent = `${note.author} - ${noteDate}`;
+                                noteAuthor.style.margin = "0";
+                                noteAuthor.style.color = "#666";
+                                noteAuthor.style.fontSize = "11px";
+                                noteAuthor.style.fontStyle = "italic";
+                                noteDiv.appendChild(noteAuthor);
+
+                                entryDiv.appendChild(noteDiv);
+                            });
+                        }
+
+                        pdfContent.appendChild(entryDiv);
+                    });
+                });
+            }
+
+            // Temporarily add to body
+            document.body.appendChild(pdfContent);
+
+            const opt = {
+                margin: 0.5,
+                filename: `ricerca-logbook-${currentDate.replace(
+                    /\//g,
+                    "-"
+                )}.pdf`,
+                image: { type: "jpeg", quality: 0.98 },
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                },
+                jsPDF: {
+                    unit: "in",
+                    format: "a4",
+                    orientation: "portrait",
+                },
+            };
+
+            html2pdf()
+                .from(pdfContent)
+                .set(opt)
+                .save()
+                .then(() => {
+                    document.body.removeChild(pdfContent);
+                    showModal(
+                        "Successo",
+                        "PDF esportato con successo!",
+                        "success"
+                    );
+                })
+                .catch((error) => {
+                    console.error("PDF Export Error:", error);
+                    document.body.removeChild(pdfContent);
+                    showModal(
+                        "Errore",
+                        "Errore durante l'esportazione del PDF",
+                        "error"
+                    );
+                });
+        } catch (error) {
+            console.error("PDF Export Error:", error);
+            showModal(
+                "Errore",
+                "Errore durante l'esportazione del PDF",
+                "error"
+            );
+        }
+    };
     const applyFilters = (
         entriesToFilter,
         searchTerm,
@@ -2986,14 +3304,50 @@ export default function Logbook() {
                                                     </>{" "}
                                                 </button>
                                                 {showFilterResults && (
-                                                    <button
-                                                        onClick={
-                                                            handleClearFilters
-                                                        }
-                                                        className="px-4 py-2 border border-red-300 text-red-600 rounded text-sm hover:bg-red-50 transition-colors"
-                                                    >
-                                                        Cancella
-                                                    </button>
+                                                    <>
+                                                        <button
+                                                            onClick={
+                                                                handleClearFilters
+                                                            }
+                                                            className="px-4 py-2 border border-red-300 text-red-600 rounded text-sm hover:bg-red-50 transition-colors"
+                                                        >
+                                                            Cancella
+                                                        </button>
+                                                        <button
+                                                            onClick={
+                                                                handleExportFilteredEntries
+                                                            }
+                                                            className="flex items-center bg-green-600 text-white px-4 py-2 rounded text-sm hover:bg-green-700 transition-colors gap-2"
+                                                            disabled={
+                                                                filteredEntries.length ===
+                                                                0
+                                                            }
+                                                        >
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                viewBox="0 0 24 24"
+                                                                width="16"
+                                                                height="16"
+                                                                fill="none"
+                                                            >
+                                                                <path
+                                                                    d="M12 2v10m0 0l3-3m-3 3l-3-3"
+                                                                    stroke="currentColor"
+                                                                    strokeWidth="2"
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                />
+                                                                <path
+                                                                    d="M5 17a2 2 0 002 2h10a2 2 0 002-2v-2"
+                                                                    stroke="currentColor"
+                                                                    strokeWidth="2"
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                />
+                                                            </svg>
+                                                            Export
+                                                        </button>
+                                                    </>
                                                 )}
                                             </div>
                                             <label

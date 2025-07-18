@@ -458,5 +458,18 @@
     "status": "non iniziato",
     "date": "2025-07-15",
     "time": "01:00"
+  },
+  {
+    "id": 69,
+    "title": "prova",
+    "description": "",
+    "assignedTo": "Gianluca",
+    "simulator": "",
+    "category": "",
+    "subcategory": "",
+    "extraDetail": "",
+    "status": "da definire",
+    "date": null,
+    "time": null
   }
 ]
