@@ -9,6 +9,7 @@ const {
     getAvailableEmployees,
     updateTaskDescription,
     reassignTask,
+    updateTaskStatus,
 } = require("../controllers/taskController");
 
 router.get("/", verifyToken, getTasks);
@@ -17,6 +18,7 @@ router.post("/", verifyToken, createTask);
 router.patch("/:id/toggle", verifyToken, toggleTask);
 router.patch("/:id/description", verifyToken, updateTaskDescription);
 router.patch("/:id/reassign", verifyToken, reassignTask);
+router.patch("/:id/status", verifyToken, updateTaskStatus);
 router.delete("/:id", verifyToken, deleteTask);
 
 module.exports = router;

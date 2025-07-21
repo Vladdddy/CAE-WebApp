@@ -185,8 +185,8 @@
       "note": "Riposo"
     },
     "Thomas": {
-      "shift": "R",
-      "note": "Riposo"
+      "shift": "D",
+      "note": ""
     }
   },
   "2025-07-06": {
@@ -223,8 +223,8 @@
       "note": "Riposo"
     },
     "Thomas": {
-      "shift": "R",
-      "note": "Riposo"
+      "shift": "D",
+      "note": ""
     }
   },
   "2025-07-07": {
@@ -261,8 +261,8 @@
       "note": "Riposo"
     },
     "Thomas": {
-      "shift": "R",
-      "note": "Riposo"
+      "shift": "D",
+      "note": ""
     }
   },
   "2025-07-08": {
@@ -337,8 +337,8 @@
       "note": ""
     },
     "Thomas": {
-      "shift": "N",
-      "note": ""
+      "shift": "R",
+      "note": "Riposo"
     }
   },
   "2025-07-10": {
@@ -375,8 +375,8 @@
       "note": ""
     },
     "Thomas": {
-      "shift": "N",
-      "note": ""
+      "shift": "R",
+      "note": "Riposo"
     }
   },
   "2025-07-11": {
@@ -413,8 +413,8 @@
       "note": ""
     },
     "Thomas": {
-      "shift": "N",
-      "note": ""
+      "shift": "R",
+      "note": "Riposo"
     }
   },
   "2025-07-12": {
@@ -489,8 +489,8 @@
       "note": "Riposo"
     },
     "Thomas": {
-      "shift": "R",
-      "note": "Riposo"
+      "shift": "N",
+      "note": ""
     }
   },
   "2025-07-14": {
@@ -527,8 +527,8 @@
       "note": "Riposo"
     },
     "Thomas": {
-      "shift": "R",
-      "note": "Riposo"
+      "shift": "N",
+      "note": ""
     }
   },
   "2025-07-15": {
@@ -565,8 +565,8 @@
       "note": "Riposo"
     },
     "Thomas": {
-      "shift": "D",
-      "note": "Riposo"
+      "shift": "N",
+      "note": ""
     }
   },
   "2025-07-16": {
@@ -603,7 +603,7 @@
       "note": "Riposo"
     },
     "Thomas": {
-      "shift": "D",
+      "shift": "R",
       "note": "Riposo"
     }
   },
@@ -641,8 +641,8 @@
       "note": ""
     },
     "Thomas": {
-      "shift": "D",
-      "note": ""
+      "shift": "R",
+      "note": "Riposo"
     }
   },
   "2025-07-18": {
@@ -679,8 +679,8 @@
       "note": ""
     },
     "Thomas": {
-      "shift": "D",
-      "note": ""
+      "shift": "R",
+      "note": "Riposo"
     }
   },
   "2025-07-19": {
@@ -717,8 +717,8 @@
       "note": ""
     },
     "Thomas": {
-      "shift": "D",
-      "note": ""
+      "shift": "R",
+      "note": "Riposo"
     }
   },
   "2025-07-20": {
@@ -785,16 +785,16 @@
       "note": "Riposo"
     },
     "Nicolo": {
-      "shift": "R",
+      "shift": "D",
       "note": "Riposo"
     },
     "Sara": {
-      "shift": "R",
+      "shift": "D",
       "note": "Riposo"
     },
     "Thomas": {
-      "shift": "R",
-      "note": "Riposo"
+      "shift": "D",
+      "note": ""
     }
   },
   "2025-07-22": {
@@ -831,8 +831,8 @@
       "note": "Riposo"
     },
     "Thomas": {
-      "shift": "R",
-      "note": "Riposo"
+      "shift": "D",
+      "note": ""
     }
   },
   "2025-07-23": {
@@ -869,8 +869,8 @@
       "note": "Riposo"
     },
     "Thomas": {
-      "shift": "R",
-      "note": "Riposo"
+      "shift": "D",
+      "note": ""
     }
   },
   "2025-07-24": {
@@ -945,8 +945,8 @@
       "note": ""
     },
     "Thomas": {
-      "shift": "N",
-      "note": ""
+      "shift": "R",
+      "note": "Riposo"
     }
   },
   "2025-07-26": {
@@ -983,8 +983,8 @@
       "note": ""
     },
     "Thomas": {
-      "shift": "N",
-      "note": ""
+      "shift": "R",
+      "note": "Riposo"
     }
   },
   "2025-07-27": {
@@ -1021,8 +1021,8 @@
       "note": ""
     },
     "Thomas": {
-      "shift": "N",
-      "note": ""
+      "shift": "R",
+      "note": "Riposo"
     }
   },
   "2025-07-28": {
@@ -1097,8 +1097,8 @@
       "note": "Riposo"
     },
     "Thomas": {
-      "shift": "R",
-      "note": "Riposo"
+      "shift": "N",
+      "note": ""
     }
   },
   "2025-07-30": {
@@ -1135,8 +1135,8 @@
       "note": "Riposo"
     },
     "Thomas": {
-      "shift": "R",
-      "note": "Riposo"
+      "shift": "N",
+      "note": ""
     }
   },
   "2025-06-30": {

@@ -440,3 +440,45 @@ exports.reassignTask = (req, res) => {
     saveTasksToFile();
     res.json(task);
 };
+
+// Update task status directly
+exports.updateTaskStatus = (req, res) => {
+    const id = parseInt(req.params.id);
+    const { status } = req.body;
+    const task = tasks.find((t) => t.id === id);
+
+    if (!task) {
+        return res.status(404).json({ message: "Task non trovato" });
+    }
+
+    // Check permissions for employees
+    if (req.user.role === "employee") {
+        // Employees can only update status for tasks assigned to them
+        if (task.assignedTo !== req.user.name) {
+            return res.status(403).json({
+                message:
+                    "Non hai i permessi per modificare questo task. Puoi modificare solo i task assegnati a te.",
+            });
+        }
+    }
+
+    // Validate status
+    const validStatuses = [
+        "non iniziato",
+        "in corso",
+        "completato",
+        "non completato",
+        "riassegnato",
+        "da definire",
+    ];
+
+    if (!validStatuses.includes(status)) {
+        return res.status(400).json({
+            message: "Status non valido",
+        });
+    }
+
+    task.status = status;
+    saveTasksToFile();
+    res.json(task);
+};

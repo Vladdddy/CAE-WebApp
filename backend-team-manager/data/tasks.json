@@ -228,19 +228,6 @@
     "time": "08:00"
   },
   {
-    "id": 45,
-    "title": "hjfhdfhdf",
-    "assignedTo": "Andrea",
-    "simulator": "FTD",
-    "category": "others",
-    "subcategory": "",
-    "extraDetail": "",
-    "status": "non completato",
-    "date": "2025-06-27",
-    "time": "08:00",
-    "description": "fdgzdfgfdgzd"
-  },
-  {
     "id": 46,
     "title": "dsgfdzsgzfdg",
     "assignedTo": "Francesco",
@@ -279,14 +266,14 @@
   {
     "id": 50,
     "title": "djhdyj",
-    "assignedTo": "Francesco",
+    "assignedTo": "Nicolo",
     "simulator": "139#1",
     "category": "troubleshooting",
     "subcategory": "HW",
     "extraDetail": "COMMS",
-    "status": "da definire",
-    "date": null,
-    "time": null
+    "status": "riassegnato",
+    "date": "2025-07-21",
+    "time": "09:22"
   },
   {
     "id": 52,
@@ -299,18 +286,6 @@
     "status": "riassegnato",
     "date": "2025-06-27",
     "time": "10:28"
-  },
-  {
-    "id": 54,
-    "title": "CIAO",
-    "assignedTo": "Nicolo",
-    "simulator": "139#1",
-    "category": "troubleshooting",
-    "subcategory": "HW",
-    "extraDetail": "IOS",
-    "status": "da definire",
-    "date": null,
-    "time": null
   },
   {
     "id": 55,
@@ -344,43 +319,7 @@
     "category": "troubleshooting",
     "subcategory": "HW",
     "extraDetail": "OTHERS",
-    "status": "da definire",
-    "date": null,
-    "time": null
-  },
-  {
-    "id": 59,
-    "title": "dff",
-    "assignedTo": "Mario",
-    "simulator": "",
-    "category": "",
-    "subcategory": "",
-    "extraDetail": "",
-    "status": "da definire",
-    "date": null,
-    "time": null
-  },
-  {
-    "id": 60,
-    "title": "sfvs",
-    "assignedTo": "Gianluca",
-    "simulator": "",
-    "category": "",
-    "subcategory": "",
-    "extraDetail": "",
-    "status": "da definire",
-    "date": null,
-    "time": null
-  },
-  {
-    "id": 61,
-    "title": "fdf",
-    "assignedTo": "Gianluca",
-    "simulator": "",
-    "category": "",
-    "subcategory": "",
-    "extraDetail": "",
-    "status": "da definire",
+    "status": "non iniziato",
     "date": null,
     "time": null
   },
@@ -405,19 +344,7 @@
     "category": "",
     "subcategory": "",
     "extraDetail": "",
-    "status": "da definire",
-    "date": null,
-    "time": null
-  },
-  {
-    "id": 64,
-    "title": "Prova",
-    "assignedTo": "Gianluca",
-    "simulator": "",
-    "category": "",
-    "subcategory": "",
-    "extraDetail": "",
-    "status": "da definire",
+    "status": "non iniziato",
     "date": null,
     "time": null
   },
@@ -461,7 +388,33 @@
   },
   {
     "id": 69,
-    "title": "prova",
+    "title": "Prova 21.07",
+    "description": "",
+    "assignedTo": "Gianluca",
+    "simulator": "",
+    "category": "",
+    "subcategory": "",
+    "extraDetail": "",
+    "status": "completato",
+    "date": null,
+    "time": null
+  },
+  {
+    "id": 70,
+    "title": "Prova",
+    "description": "",
+    "assignedTo": "Gianluca",
+    "simulator": "",
+    "category": "",
+    "subcategory": "",
+    "extraDetail": "",
+    "status": "completato",
+    "date": null,
+    "time": null
+  },
+  {
+    "id": 71,
+    "title": "Task",
     "description": "",
     "assignedTo": "Gianluca",
     "simulator": "",

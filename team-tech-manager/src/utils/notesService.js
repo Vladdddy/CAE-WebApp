@@ -140,7 +140,8 @@ export const notesService = {
             }
         );
         if (!response.ok) {
-            throw new Error("Failed to update note");
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || "Failed to update note");
         }
         return response.json();
     },
@@ -154,7 +155,8 @@ export const notesService = {
             }
         );
         if (!response.ok) {
-            throw new Error("Failed to delete note");
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || "Failed to delete note");
         }
         return response.json();
     },

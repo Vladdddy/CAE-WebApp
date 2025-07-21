@@ -13,9 +13,13 @@ import {
 
 // Categories and troubleshooting details for task classification
 const categories = {
-    "routine task": ["PM", "MR"],
+    "routine task": ["PM", "MR", "Backup", "QTG"],
     troubleshooting: ["HW", "SW"],
-    others: [],
+    others: [
+        "Part test",
+        "Remote connection with support",
+        "Remote connection without support",
+    ],
 };
 
 const troubleshootingDetails = [
@@ -103,6 +107,9 @@ export default function Tasks() {
     const [showCalendar, setShowCalendar] = useState(true);
     const [showTable, setShowTable] = useState(false);
 
+    // Radio button state for date range
+    const [selectedPeriod, setSelectedPeriod] = useState("1");
+
     // Notes state
     const [taskNotes, setTaskNotes] = useState({});
     const [notesLoaded, setNotesLoaded] = useState(false);
@@ -177,6 +184,10 @@ export default function Tasks() {
         return currentUser && ["admin"].includes(currentUser.role);
     };
 
+    const canModifySimulatorSchedules = () => {
+        return currentUser && ["admin"].includes(currentUser.role);
+    };
+
     const canEditDescription = (task) => {
         if (!currentUser) return false;
         // Admins, managers, supervisors can edit any task description
@@ -187,6 +198,19 @@ export default function Tasks() {
             currentUser.role === "employee" &&
             task.assignedTo === currentUser.name
         );
+    };
+
+    // Authorization functions for notes
+    const canModifyNote = (note) => {
+        if (!currentUser || !note) return false;
+        // Admins can modify any note, users can only modify their own notes
+        return currentUser.role === "admin" || note.author === currentUser.name;
+    };
+
+    const canDeleteNote = (note) => {
+        if (!currentUser || !note) return false;
+        // Admins can delete any note, users can only delete their own notes
+        return currentUser.role === "admin" || note.author === currentUser.name;
     };
     const openDescriptionModal = (task) => {
         setDescriptionModal({
@@ -663,6 +687,107 @@ export default function Tasks() {
             showModal(
                 "Errore",
                 "Errore nel salvare la nota: " + error.message,
+                "error"
+            );
+        }
+    };
+
+    const handleEditNote = async (taskId, noteIndex, newText) => {
+        try {
+            const currentUserName =
+                localStorage.getItem("userName") || "Utente Sconosciuto";
+
+            // Update note on backend
+            await notesService.updateNote("tasks", taskId, noteIndex, newText);
+
+            // Update local state
+            const updatedNotes = [...(taskNotes[taskId] || [])];
+            updatedNotes[noteIndex] = {
+                ...updatedNotes[noteIndex],
+                text: newText,
+                updatedAt: new Date().toISOString(),
+            };
+
+            const updatedTaskNotes = {
+                ...taskNotes,
+                [taskId]: updatedNotes,
+            };
+            setTaskNotes(updatedTaskNotes);
+
+            // Update the tasks state
+            const updatedTasks = tasks.map((task) => {
+                if (task.id === taskId) {
+                    return {
+                        ...task,
+                        notes: updatedNotes,
+                    };
+                }
+                return task;
+            });
+            setTasks(updatedTasks);
+
+            // Update the modal if it's open and showing the same task
+            if (taskDetailsModal.task && taskDetailsModal.task.id === taskId) {
+                const updatedTask = updatedTasks.find((t) => t.id === taskId);
+                setTaskDetailsModal({
+                    ...taskDetailsModal,
+                    task: updatedTask,
+                });
+            }
+
+            showModal("Successo", "Nota modificata con successo!", "success");
+        } catch (error) {
+            console.error("Errore nel modificare la nota:", error);
+            showModal(
+                "Errore",
+                "Errore nel modificare la nota: " + error.message,
+                "error"
+            );
+        }
+    };
+
+    const handleDeleteNote = async (taskId, noteIndex) => {
+        try {
+            // Delete note from backend
+            await notesService.deleteNote("tasks", taskId, noteIndex);
+
+            // Update local state
+            const updatedNotes = [...(taskNotes[taskId] || [])];
+            updatedNotes.splice(noteIndex, 1);
+
+            const updatedTaskNotes = {
+                ...taskNotes,
+                [taskId]: updatedNotes,
+            };
+            setTaskNotes(updatedTaskNotes);
+
+            // Update the tasks state
+            const updatedTasks = tasks.map((task) => {
+                if (task.id === taskId) {
+                    return {
+                        ...task,
+                        notes: updatedNotes,
+                    };
+                }
+                return task;
+            });
+            setTasks(updatedTasks);
+
+            // Update the modal if it's open and showing the same task
+            if (taskDetailsModal.task && taskDetailsModal.task.id === taskId) {
+                const updatedTask = updatedTasks.find((t) => t.id === taskId);
+                setTaskDetailsModal({
+                    ...taskDetailsModal,
+                    task: updatedTask,
+                });
+            }
+
+            showModal("Successo", "Nota eliminata con successo!", "success");
+        } catch (error) {
+            console.error("Errore nell'eliminare la nota:", error);
+            showModal(
+                "Errore",
+                "Errore nell'eliminare la nota: " + error.message,
                 "error"
             );
         }
@@ -1265,12 +1390,35 @@ export default function Tasks() {
         setShowFilterResults(false);
     };
 
+    // Helper function to get dates in the selected range
+    const getDateRange = (startDate, days) => {
+        const dates = [];
+        const start = new Date(startDate);
+
+        for (let i = 0; i < days; i++) {
+            const date = new Date(start);
+            date.setDate(start.getDate() - i);
+            dates.push(date.toISOString().split("T")[0]);
+        }
+
+        return dates;
+    };
+
+    // Get tasks for the selected period
+    const periodDates = getDateRange(selectedDate, parseInt(selectedPeriod));
+    const periodTasks = tasks.filter(
+        (t) => periodDates.includes(t.date) && t.status !== "da definire"
+    );
+
+    // For single day mode, use the existing logic
     const dailyTasks = tasks.filter(
         (t) => t.date === selectedDate && t.status !== "da definire"
     );
 
-    // Separate day and night shift tasks
-    const dayShiftTasks = dailyTasks.filter((task) => {
+    // Separate day and night shift tasks based on selected period
+    const dayShiftTasks = (
+        selectedPeriod === "1" ? dailyTasks : periodTasks
+    ).filter((task) => {
         const taskTime = task.time;
         if (!taskTime) return true; // Include tasks without time in day shift
 
@@ -1281,7 +1429,9 @@ export default function Tasks() {
         return timeInMinutes > 420 && timeInMinutes < 1140;
     });
 
-    const nightShiftTasks = dailyTasks.filter((task) => {
+    const nightShiftTasks = (
+        selectedPeriod === "1" ? dailyTasks : periodTasks
+    ).filter((task) => {
         const taskTime = task.time;
         if (!taskTime) return false; // Exclude tasks without time from night shift
 
@@ -1483,6 +1633,71 @@ export default function Tasks() {
                                     </svg>
                                     <p className="text-white">Export</p>
                                 </button>
+                                <div className="flex items-center gap-4 ml-auto">
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="radio"
+                                            id="settimana1"
+                                            name="settimana"
+                                            value="1"
+                                            checked={selectedPeriod === "1"}
+                                            onChange={(e) =>
+                                                setSelectedPeriod(
+                                                    e.target.value
+                                                )
+                                            }
+                                            className="w-4 h-4 text-blue-600 accent-blue-600 cursor-pointer"
+                                        />
+                                        <label
+                                            htmlFor="settimana1"
+                                            className="text-xs text-gray-700 cursor-pointer"
+                                        >
+                                            1 Giorno
+                                        </label>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="radio"
+                                            id="settimana7"
+                                            name="settimana"
+                                            value="7"
+                                            checked={selectedPeriod === "7"}
+                                            onChange={(e) =>
+                                                setSelectedPeriod(
+                                                    e.target.value
+                                                )
+                                            }
+                                            className="w-4 h-4 text-blue-600 accent-blue-600 cursor-pointer"
+                                        />
+                                        <label
+                                            htmlFor="settimana7"
+                                            className="text-xs text-gray-700 cursor-pointer"
+                                        >
+                                            7 Giorni
+                                        </label>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="radio"
+                                            id="settimana14"
+                                            name="settimana"
+                                            value="14"
+                                            checked={selectedPeriod === "14"}
+                                            onChange={(e) =>
+                                                setSelectedPeriod(
+                                                    e.target.value
+                                                )
+                                            }
+                                            className="w-4 h-4 text-blue-600 accent-blue-600 cursor-pointer"
+                                        />
+                                        <label
+                                            htmlFor="settimana14"
+                                            className="text-xs text-gray-700 cursor-pointer"
+                                        >
+                                            14 Giorni
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
                         </>
                     )}
@@ -1505,8 +1720,12 @@ export default function Tasks() {
                                 nightShiftTasks={nightShiftTasks}
                                 simulatorSchedules={simulatorSchedules}
                                 selectedDate={selectedDate}
+                                selectedPeriod={selectedPeriod}
                                 openTaskDetails={openTaskDetails}
                                 openScheduleModal={openScheduleModal}
+                                canModifySimulatorSchedules={
+                                    canModifySimulatorSchedules
+                                }
                                 getBorderColor={getBorderColor}
                                 tasksListRef={tasksListRef}
                             />
@@ -2150,6 +2369,10 @@ export default function Tasks() {
                     canEditDescription={canEditDescription}
                     onEditDescription={openDescriptionModal}
                     onSaveNote={handleSaveNote}
+                    onEditNote={handleEditNote}
+                    onDeleteNote={handleDeleteNote}
+                    canModifyNote={canModifyNote}
+                    canDeleteNote={canDeleteNote}
                 />
                 <DescriptionModal
                     isOpen={descriptionModal.isOpen}

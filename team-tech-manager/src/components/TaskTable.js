@@ -8,11 +8,172 @@ const TaskTable = ({
     nightShiftTasks = [],
     simulatorSchedules = {},
     selectedDate,
+    selectedPeriod = "1",
     openTaskDetails,
     openScheduleModal,
+    canModifySimulatorSchedules,
     getBorderColor,
     tasksListRef,
 }) => {
+    // Helper function to format date for display
+    const formatDateForDisplay = (dateStr) => {
+        const date = new Date(dateStr);
+        const today = new Date();
+        const yesterday = new Date();
+        yesterday.setDate(today.getDate() - 1);
+
+        if (dateStr === today.toISOString().split("T")[0]) {
+            return `${dateStr} (Oggi)`;
+        } else if (dateStr === yesterday.toISOString().split("T")[0]) {
+            return `${dateStr} (Ieri)`;
+        } else {
+            return dateStr;
+        }
+    };
+
+    // Helper function to render multiple days
+    const renderMultipleDays = () => {
+        // Helper function to get date range
+        const getDateRange = (startDate, days) => {
+            const dates = [];
+            const start = new Date(startDate);
+
+            for (let i = 0; i < days; i++) {
+                const date = new Date(start);
+                date.setDate(start.getDate() - i);
+                dates.push(date.toISOString().split("T")[0]);
+            }
+
+            return dates.sort((a, b) => new Date(b) - new Date(a)); // Sort in descending order (newest first)
+        };
+
+        // Get all dates in the selected period
+        const allDates = getDateRange(selectedDate, parseInt(selectedPeriod));
+
+        // Initialize tasksByDate with all dates in the range
+        const tasksByDate = {};
+        allDates.forEach((date) => {
+            tasksByDate[date] = { day: [], night: [] };
+        });
+
+        // Combine day and night shift tasks and group by date
+        [...dayShiftTasks, ...nightShiftTasks].forEach((task) => {
+            // Only process tasks that are in our date range
+            if (tasksByDate[task.date]) {
+                const taskTime = task.time;
+                if (!taskTime) {
+                    tasksByDate[task.date].day.push(task);
+                    return;
+                }
+
+                const [hours, minutes] = taskTime.split(":").map(Number);
+                const timeInMinutes = hours * 60 + minutes;
+
+                if (timeInMinutes > 420 && timeInMinutes < 1140) {
+                    tasksByDate[task.date].day.push(task);
+                } else if (timeInMinutes >= 1140 || timeInMinutes <= 420) {
+                    tasksByDate[task.date].night.push(task);
+                }
+            }
+        });
+
+        // Use allDates instead of Object.keys to ensure we show all dates
+        const sortedDates = allDates;
+
+        return sortedDates.map((date) => {
+            const dayTasks = tasksByDate[date].day;
+            const nightTasks = tasksByDate[date].night;
+
+            return (
+                <div
+                    key={date}
+                    className="date-section border rounded-lg p-4 bg-gray-50 mb-8"
+                >
+                    {/* Date Header */}
+                    <h3 className="text-sm font-medium text-gray-600 mb-8">
+                        {new Date(date).toLocaleDateString("it-IT", {
+                            weekday: "long",
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                        })}
+                    </h3>
+
+                    {/* Day Shift for this date */}
+                    <div className="flex flex-row items-center gap-16 mb-2">
+                        <div className="flex items-center gap-2">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                width="20"
+                                height="20"
+                                color="oklch(44.6% 0.03 256.802)"
+                                fill="none"
+                            >
+                                <path
+                                    d="M17 12C17 14.7614 14.7614 17 12 17C9.23858 17 7 14.7614 7 12C7 9.23858 9.23858 7 12 7C14.7614 7 17 9.23858 17 12Z"
+                                    stroke="oklch(44.6% 0.03 256.802)"
+                                    strokeWidth="1.5"
+                                ></path>
+                                <path
+                                    d="M12 2V3.5M12 20.5V22M19.0708 19.0713L18.0101 18.0106M5.98926 5.98926L4.9286 4.9286M22 12H20.5M3.5 12H2M19.0713 4.92871L18.0106 5.98937M5.98975 18.0107L4.92909 19.0714"
+                                    stroke="oklch(44.6% 0.03 256.802)"
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                ></path>
+                            </svg>
+                            <h4 className="text-gray-600">Giorno</h4>
+                            <span className="span">{dayTasks.length} task</span>
+                        </div>
+                    </div>
+                    {dayTasks.length > 0 ? (
+                        renderSimulatorSection(dayTasks, false)
+                    ) : (
+                        <div className="text-center py-4 text-gray-400 text-xs">
+                            Nessun task per il turno giorno
+                        </div>
+                    )}
+
+                    <div className="separator mb-4"></div>
+
+                    {/* Night Shift for this date */}
+                    <div className="flex flex-row items-center gap-16 mb-2">
+                        <div className="flex items-center gap-2">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                width="20"
+                                height="20"
+                                color="oklch(44.6% 0.03 256.802)"
+                                fill="none"
+                            >
+                                <path
+                                    d="M21.5 14.0784C20.3003 14.7189 18.9301 15.0821 17.4751 15.0821C12.7491 15.0821 8.91792 11.2509 8.91792 6.52485C8.91792 5.06986 9.28105 3.69968 9.92163 2.5C5.66765 3.49698 2.5 7.31513 2.5 11.8731C2.5 17.1899 6.8101 21.5 12.1269 21.5C16.6849 21.5 20.503 18.3324 21.5 14.0784Z"
+                                    stroke="oklch(44.6% 0.03 256.802)"
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
+                            </svg>
+                            <h4 className="text-gray-600">Notte</h4>
+                            <span className="span">
+                                {nightTasks.length} task
+                            </span>
+                        </div>
+                    </div>
+                    {nightTasks.length > 0 ? (
+                        renderSimulatorSection(nightTasks, true)
+                    ) : (
+                        <div className="text-center py-4 text-gray-400 text-xs">
+                            Nessun task per il turno notte
+                        </div>
+                    )}
+                </div>
+            );
+        });
+    };
+
     const simulators = [
         "FTD",
         "109FFS",
@@ -91,6 +252,14 @@ const TaskTable = ({
                                             .toISOString()
                                             .split("T")[0];
                                         const isToday = selectedDate === today;
+
+                                        // Only show the plus SVG if user can modify simulator schedules (admin only)
+                                        if (
+                                            !canModifySimulatorSchedules ||
+                                            !canModifySimulatorSchedules()
+                                        ) {
+                                            return null;
+                                        }
 
                                         return (
                                             <svg
@@ -298,33 +467,7 @@ const TaskTable = ({
                 <>
                     <div className="separator w-full border-b border-gray-200"></div>
                     <div className="flex flex-row items-center gap-16 mb-2">
-                        <div className="flex items-center gap-2">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                width="20"
-                                height="20"
-                                color="oklch(44.6% 0.03 256.802)"
-                                fill="none"
-                            >
-                                <path
-                                    d="M17 12C17 14.7614 14.7614 17 12 17C9.23858 17 7 14.7614 7 12C7 9.23858 9.23858 7 12 7C14.7614 7 17 9.23858 17 12Z"
-                                    stroke="oklch(44.6% 0.03 256.802)"
-                                    strokeWidth="1.5"
-                                ></path>
-                                <path
-                                    d="M12 2V3.5M12 20.5V22M19.0708 19.0713L18.0101 18.0106M5.98926 5.98926L4.9286 4.9286M22 12H20.5M3.5 12H2M19.0713 4.92871L18.0106 5.98937M5.98975 18.0107L4.92909 19.0714"
-                                    stroke="oklch(44.6% 0.03 256.802)"
-                                    strokeWidth="1.5"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                ></path>
-                            </svg>
-                            <h4 className="text-gray-600">Giorno</h4>
-                            <span className="span">
-                                {dayShiftTasks.length} task
-                            </span>
-                        </div>
+                        <div className="flex items-center gap-2"></div>
                         <div className="flex flex-row justify-between items-center w-[80%]">
                             {/* Simulator headers will be displayed below with their tasks */}
                         </div>
@@ -364,9 +507,45 @@ const TaskTable = ({
                         ))
                     )}
                 </>
+            ) : selectedPeriod !== "1" ? (
+                // Multiple days view
+                renderMultipleDays()
             ) : (
+                // Single day view (original logic)
                 <>
                     {/* Day Shift Section */}
+                    <div className="flex flex-row items-center gap-16 mb-2">
+                        <div className="flex items-center gap-2">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                width="20"
+                                height="20"
+                                color="oklch(44.6% 0.03 256.802)"
+                                fill="none"
+                            >
+                                <path
+                                    d="M17 12C17 14.7614 14.7614 17 12 17C9.23858 17 7 14.7614 7 12C7 9.23858 9.23858 7 12 7C14.7614 7 17 9.23858 17 12Z"
+                                    stroke="oklch(44.6% 0.03 256.802)"
+                                    strokeWidth="1.5"
+                                ></path>
+                                <path
+                                    d="M12 2V3.5M12 20.5V22M19.0708 19.0713L18.0101 18.0106M5.98926 5.98926L4.9286 4.9286M22 12H20.5M3.5 12H2M19.0713 4.92871L18.0106 5.98937M5.98975 18.0107L4.92909 19.0714"
+                                    stroke="oklch(44.6% 0.03 256.802)"
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                ></path>
+                            </svg>
+                            <h4 className="text-gray-600">Giorno</h4>
+                            <span className="span">
+                                {dayShiftTasks.length} task
+                            </span>
+                        </div>
+                        <div className="flex flex-row justify-between items-center w-[80%]">
+                            {/* Simulator headers will be displayed below with their tasks */}
+                        </div>
+                    </div>
                     {renderSimulatorSection(dayShiftTasks, false)}
 
                     {/* Night Section */}

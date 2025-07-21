@@ -743,7 +743,6 @@ export default function Shifts() {
                     if (dayOfWeek === 0 || dayOfWeek === 6) {
                         // Weekend
                         shiftToAssign = pattern.weekendShift;
-                        noteToAdd = "Riposo";
                     } else {
                         // Weekday: calculate which calendar week we're in
                         // Get the Monday of the current date's week
@@ -784,18 +783,19 @@ export default function Shifts() {
                     // Employee pattern: continuous cycle - all users get the same pattern
                     let userPatternIndex = dayCounter % pattern.pattern.length;
                     shiftToAssign = pattern.pattern[userPatternIndex];
-
-                    // Add note for rest days
-                    if (shiftToAssign === "R") {
-                        noteToAdd = "Riposo";
-                    }
                 }
 
-                updatedData[dateKey][userName] = {
+                const updatedEntry = {
                     ...updatedData[dateKey][userName],
                     shift: shiftToAssign,
-                    note: noteToAdd,
                 };
+
+                // Only add note if there's content to add
+                if (noteToAdd) {
+                    updatedEntry.note = noteToAdd;
+                }
+
+                updatedData[dateKey][userName] = updatedEntry;
 
                 currentDate.setDate(currentDate.getDate() + 1);
                 dayCounter++; // Increment day counter for cycle patterns
@@ -1234,7 +1234,13 @@ export default function Shifts() {
                                         key={d.toISOString()}
                                         className="px-3 py-4 text-center text-xs font-medium text-gray-500 border-r border-gray-200 min-w-[100px]"
                                     >
-                                        <div className="flex flex-col items-center gap-1">
+                                        <div className="flex flex-row items-center gap-2 justify-center">
+                                            <span className="text-2xs text-blue-600 bg-blue-100 rounded-md px-2 py-1">
+                                                {d.toLocaleDateString("it-IT", {
+                                                    weekday: "short",
+                                                })}
+                                            </span>
+
                                             <span className="font-semibold text-xs">
                                                 {d.getDate()}/{d.getMonth() + 1}
                                             </span>
@@ -1489,6 +1495,10 @@ export default function Shifts() {
                                                     isToday ? "bg-blue-50" : ""
                                                 }`}
                                             >
+                                                {/* Blue dot indicator for notes */}
+                                                {entry.note && (
+                                                    <div className="absolute top-1 right-1 w-2 h-2 bg-blue-300 rounded-full"></div>
+                                                )}
                                                 <div className="space-y-2">
                                                     {isAdmin ? (
                                                         <select
@@ -1820,6 +1830,10 @@ export default function Shifts() {
                                                     isToday ? "bg-blue-50" : ""
                                                 }`}
                                             >
+                                                {/* Blue dot indicator for notes */}
+                                                {entry.note && (
+                                                    <div className="absolute top-1 right-1 w-2 h-2 bg-blue-300 rounded-full"></div>
+                                                )}
                                                 <div className="space-y-2">
                                                     {isAdmin ? (
                                                         <select

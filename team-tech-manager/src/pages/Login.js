@@ -67,7 +67,7 @@ export default function Login() {
 
     return (
         <div className="flex items-center justify-center mt-16 py-4 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-1/4 space-y-4">
+            <div className="max-w-xs w-1/4 space-y-4">
                 <div className="text-center">
                     <img
                         className="mx-auto h-16 w-auto mb-4"
@@ -95,7 +95,7 @@ export default function Login() {
                                 autoComplete="username"
                                 required
                                 className="w-full text-[14px] px-3 py-2 border border-gray-300 rounded shadow-sm placeholder-gray-400 focus:outline-none focus:ring-gray-500 focus:border-gray-500 transition-colors"
-                                placeholder="Inserisci il tuo username"
+                                placeholder="Inserisci username"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                             />
@@ -115,7 +115,7 @@ export default function Login() {
                                     autoComplete="current-password"
                                     required
                                     className="w-full text-[14px] px-3 py-2 border border-gray-300 rounded shadow-sm placeholder-gray-400 focus:outline-none focus:border-gray-500 transition-colors pr-10"
-                                    placeholder="Inserisci la tua password"
+                                    placeholder="Inserisci password"
                                     value={password}
                                     onChange={(e) =>
                                         setPassword(e.target.value)

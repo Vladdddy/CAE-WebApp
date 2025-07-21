@@ -246,16 +246,6 @@ export default function Sidebar({ isCollapsed, onToggle }) {
                                     strokeLinejoin="round"
                                 ></path>
                             </svg>
-                            {todayTaskCount > 0 && !isCollapsed && (
-                                <span className="absolute -top-1 -right-1 bg-blue-400 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center min-w-[16px]">
-                                    {todayTaskCount}
-                                </span>
-                            )}
-                            {todayTaskCount > 0 && isCollapsed && (
-                                <span className="absolute -top-1 -right-1 bg-blue-400 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                                    {todayTaskCount}
-                                </span>
-                            )}
                         </div>
                         {!isCollapsed && (
                             <div className="flex items-center justify-between w-full">

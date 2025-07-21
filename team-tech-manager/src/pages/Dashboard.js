@@ -270,6 +270,131 @@ export default function Dashboard() {
         }
     };
 
+    // Handle task deletion
+    const handleDeleteTask = async () => {
+        setReassignModal((prev) => ({ ...prev, loading: true }));
+
+        try {
+            const response = await fetch(
+                `${API}/api/tasks/${reassignModal.task.id}`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (response.ok) {
+                // Remove the task from the tasks state
+                setTasks((prevTasks) =>
+                    prevTasks.filter(
+                        (task) => task.id !== reassignModal.task.id
+                    )
+                );
+                closeReassignModal();
+                setModal({
+                    isOpen: true,
+                    title: "Successo",
+                    message: "Task eliminato con successo!",
+                    type: "success",
+                    onConfirm: null,
+                    confirmText: "OK",
+                });
+            } else {
+                const errorData = await response.json();
+                setModal({
+                    isOpen: true,
+                    title: "Errore",
+                    message:
+                        errorData.message ||
+                        "Errore durante l'eliminazione del task",
+                    type: "error",
+                    onConfirm: null,
+                    confirmText: "OK",
+                });
+            }
+        } catch (error) {
+            console.error("Error deleting task:", error);
+            setModal({
+                isOpen: true,
+                title: "Errore",
+                message:
+                    "Errore di connessione durante l'eliminazione del task",
+                type: "error",
+                onConfirm: null,
+                confirmText: "OK",
+            });
+        } finally {
+            setReassignModal((prev) => ({ ...prev, loading: false }));
+        }
+    };
+
+    // Handle task completion
+    const handleCompleteTask = async () => {
+        setReassignModal((prev) => ({ ...prev, loading: true }));
+
+        try {
+            const response = await fetch(
+                `${API}/api/tasks/${reassignModal.task.id}/status`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        status: "completato",
+                    }),
+                }
+            );
+
+            if (response.ok) {
+                const updatedTask = await response.json();
+                // Update the task in the tasks state
+                setTasks((prevTasks) =>
+                    prevTasks.map((task) =>
+                        task.id === updatedTask.id ? updatedTask : task
+                    )
+                );
+                closeReassignModal();
+                setModal({
+                    isOpen: true,
+                    title: "Successo",
+                    message: "Task completato con successo!",
+                    type: "success",
+                    onConfirm: null,
+                    confirmText: "OK",
+                });
+            } else {
+                const errorData = await response.json();
+                setModal({
+                    isOpen: true,
+                    title: "Errore",
+                    message:
+                        errorData.message ||
+                        "Errore durante il completamento del task",
+                    type: "error",
+                    onConfirm: null,
+                    confirmText: "OK",
+                });
+            }
+        } catch (error) {
+            console.error("Error completing task:", error);
+            setModal({
+                isOpen: true,
+                title: "Errore",
+                message:
+                    "Errore di connessione durante il completamento del task",
+                type: "error",
+                onConfirm: null,
+                confirmText: "OK",
+            });
+        } finally {
+            setReassignModal((prev) => ({ ...prev, loading: false }));
+        }
+    };
+
     // Handle reassignment form submission
     const handleReassignTask = async () => {
         if (
@@ -805,7 +930,7 @@ export default function Dashboard() {
             <div className="space-y-4">
                 {simulators.map((simulator) => (
                     <div key={simulator} className="simulator-section">
-                        <h5 className="text-sm font-semibold text-gray-700 mb-4">
+                        <h5 className="text-xs text-blue-600 mb-4">
                             {simulator}
                         </h5>
                         <div className="space-y-2">
@@ -901,7 +1026,7 @@ export default function Dashboard() {
             <div className="top-dashboard flex justify-between items-center px-4 text-gray-800">
                 <div>
                     <h1 className="text-2xl font-bold">
-                        Ciao {currentUser?.name}!
+                        Ciao {currentUser?.name}
                     </h1>
                 </div>
                 <div className="flex justify-center">
@@ -1503,7 +1628,25 @@ export default function Dashboard() {
                                     </p>
                                 )}
                             </div>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={handleDeleteTask}
+                                    disabled={reassignModal.loading}
+                                    className="px-4 py-2 text-red-600 border bg-red-50 border-red-300 rounded-md hover:bg-red-100 disabled:opacity-50"
+                                >
+                                    Elimina
+                                </button>
+                                <button
+                                    onClick={handleCompleteTask}
+                                    disabled={reassignModal.loading}
+                                    className="px-4 py-2 text-green-600 border bg-green-50 border-green-300 rounded-md hover:bg-green-100 disabled:opacity-50"
+                                >
+                                    Completato
+                                </button>
+                            </div>
                         </div>
+
+                        <div className="separator"></div>
 
                         <div className="flex justify-end space-x-3 mt-6">
                             <button

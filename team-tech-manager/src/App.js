@@ -5,7 +5,7 @@ import {
     useLocation,
     Navigate,
 } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "./components/Sidebar";
 import Dashboard from "./pages/Dashboard";
 import Tasks from "./pages/Tasks";
@@ -22,10 +22,18 @@ function ProtectedRoute({ children }) {
 function AppContent() {
     const location = useLocation();
     const isLoginPage = location.pathname === "/login";
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+    // Initialize sidebar collapsed state from localStorage
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+        const savedState = localStorage.getItem("sidebarCollapsed");
+        return savedState ? JSON.parse(savedState) : false;
+    });
 
     const toggleSidebar = () => {
-        setIsSidebarCollapsed(!isSidebarCollapsed);
+        const newState = !isSidebarCollapsed;
+        setIsSidebarCollapsed(newState);
+        // Save the new state to localStorage
+        localStorage.setItem("sidebarCollapsed", JSON.stringify(newState));
     };
 
     return (

@@ -179,6 +179,34 @@ exports.updateNote = (req, res) => {
             return res.status(404).json({ error: "Note not found" });
         }
 
+        const note = notesArray[noteIndex];
+        const currentUser = req.user;
+
+        // Debug logging
+        console.log("Update note authorization check:", {
+            currentUser: {
+                name: currentUser?.name,
+                role: currentUser?.role,
+            },
+            noteAuthor: note?.author,
+            isAdmin: currentUser?.role === "admin",
+            isOwner: note?.author === currentUser?.name,
+            type,
+            entryId,
+            noteIndex,
+        });
+
+        // Check if user is authorized to update this note
+        // Only admins or the note author can update the note
+        if (currentUser.role !== "admin" && note.author !== currentUser.name) {
+            console.log("Authorization DENIED for note update");
+            return res.status(403).json({
+                error: "You can only modify your own notes or you must be an admin",
+            });
+        }
+
+        console.log("Authorization GRANTED for note update");
+
         notesArray[noteIndex].text = text;
         notesArray[noteIndex].updatedAt = new Date().toISOString();
 
@@ -207,6 +235,34 @@ exports.deleteNote = (req, res) => {
         if (!notesArray || !notesArray[noteIndex]) {
             return res.status(404).json({ error: "Note not found" });
         }
+
+        const note = notesArray[noteIndex];
+        const currentUser = req.user;
+
+        // Debug logging
+        console.log("Delete note authorization check:", {
+            currentUser: {
+                name: currentUser?.name,
+                role: currentUser?.role,
+            },
+            noteAuthor: note?.author,
+            isAdmin: currentUser?.role === "admin",
+            isOwner: note?.author === currentUser?.name,
+            type,
+            entryId,
+            noteIndex,
+        });
+
+        // Check if user is authorized to delete this note
+        // Only admins or the note author can delete the note
+        if (currentUser.role !== "admin" && note.author !== currentUser.name) {
+            console.log("Authorization DENIED for note deletion");
+            return res.status(403).json({
+                error: "You can only delete your own notes or you must be an admin",
+            });
+        }
+
+        console.log("Authorization GRANTED for note deletion");
 
         notesArray.splice(noteIndex, 1);
 

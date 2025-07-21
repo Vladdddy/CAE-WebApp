@@ -99,6 +99,41 @@ export default function Logbook() {
     const currentUserName =
         localStorage.getItem("userName") || "Utente Sconosciuto";
 
+    // Get current user with role information
+    const getCurrentUser = () => {
+        const token = localStorage.getItem("authToken");
+        if (!token) return null;
+
+        try {
+            const payload = JSON.parse(atob(token.split(".")[1]));
+            return {
+                name: payload.name,
+                role: payload.role,
+                email: payload.email,
+                department: payload.department,
+                id: payload.id,
+            };
+        } catch (error) {
+            console.error("Error parsing token:", error);
+            return null;
+        }
+    };
+
+    const currentUser = getCurrentUser();
+
+    // Authorization functions for notes
+    const canModifyNote = (note) => {
+        if (!currentUser || !note) return false;
+        // Admins can modify any note, users can only modify their own notes
+        return currentUser.role === "admin" || note.author === currentUser.name;
+    };
+
+    const canDeleteNote = (note) => {
+        if (!currentUser || !note) return false;
+        // Admins can delete any note, users can only delete their own notes
+        return currentUser.role === "admin" || note.author === currentUser.name;
+    };
+
     const showModal = (title, message, type = "info", onConfirm = null) => {
         setModal({
             isOpen: true,
@@ -3483,7 +3518,9 @@ export default function Logbook() {
                 onSaveNote={handleSaveNote}
                 onEditNote={handleEditNote}
                 onDeleteNote={handleDeleteNote}
-            />{" "}
+                canModifyNote={canModifyNote}
+                canDeleteNote={canDeleteNote}
+            />
             <DescriptionModal
                 isOpen={descriptionModal.isOpen}
                 onClose={closeDescriptionModal}
