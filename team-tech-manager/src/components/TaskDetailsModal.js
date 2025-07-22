@@ -171,7 +171,19 @@ export default function TaskDetailsModal({
                                 <p className="text-gray-600 text-md">
                                     {task.time || "Nessun orario"}
                                 </p>
-                            </div>{" "}
+                            </div>
+                            {/* Duration - Only show for logbook entries */}
+                            {task.type === "logbook-entry" && (
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                                        Durata
+                                    </label>
+                                    <p className="text-gray-600 text-md">
+                                        {task.duration + "h" ||
+                                            "Durata non specificata"}
+                                    </p>
+                                </div>
+                            )}{" "}
                         </div>{" "}
                         {/* Category */}
                         <div>

@@ -6,6 +6,7 @@ body {
 .shifts-container {
     scrollbar-width: thin;
     scrollbar-color: #cbd5e1 transparent;
+    position: relative;
 }
 
 .shifts-container::-webkit-scrollbar {
@@ -29,6 +30,65 @@ body {
 
 .shifts-container:not(:hover)::-webkit-scrollbar-thumb {
     background: transparent;
+}
+
+/* Sticky first column styles */
+.sticky-name-header,
+.sticky-name-cell {
+    position: sticky;
+    left: 0;
+    z-index: 10;
+    background-color: inherit;
+    box-shadow: 2px 0 5px -2px rgba(0, 0, 0, 0.1);
+    min-width: 180px;
+    white-space: nowrap;
+}
+
+.sticky-name-header {
+    z-index: 20;
+    background-color: #f9fafb !important;
+}
+
+.sticky-name-cell {
+    background-color: white;
+}
+
+/* Ensure alternating row colors are preserved for sticky column */
+.shift-row:nth-child(even) .sticky-name-cell {
+    background-color: #f9fafb !important;
+}
+
+.shift-row:nth-child(odd) .sticky-name-cell {
+    background-color: white !important;
+}
+
+/* Override for rows with specific background classes */
+.shift-row.bg-white .sticky-name-cell {
+    background-color: white !important;
+}
+
+.shift-row.bg-gray-50 .sticky-name-cell {
+    background-color: #f9fafb !important;
+}
+
+/* Special background for count row */
+.count-row .sticky-name-cell {
+    background-color: #f3f4f6 !important;
+}
+
+/* Enhance shadow on scroll */
+.shifts-container:hover .sticky-name-header,
+.shifts-container:hover .sticky-name-cell {
+    box-shadow: 3px 0 8px -2px rgba(0, 0, 0, 0.15);
+}
+
+/* Maintain drag and drop visual states for sticky cells */
+.shift-row.bg-blue-100 .sticky-name-cell {
+    background-color: #dbeafe !important;
+}
+
+.shift-row.opacity-50 .sticky-name-cell {
+    opacity: 0.5;
 }
 
 /* Shift selector styling */

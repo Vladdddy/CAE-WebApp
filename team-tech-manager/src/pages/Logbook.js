@@ -502,18 +502,9 @@ export default function Logbook() {
 
                                 task.notes.forEach((note, noteIndex) => {
                                     const noteP = document.createElement("p");
-                                    const noteTimestamp = new Date(
-                                        note.timestamp
-                                    ).toLocaleDateString("it-IT", {
-                                        year: "numeric",
-                                        month: "2-digit",
-                                        day: "2-digit",
-                                        hour: "2-digit",
-                                        minute: "2-digit",
-                                    });
-                                    noteP.textContent = `${
-                                        noteIndex + 1
-                                    }. [${noteTimestamp}] ${note.text}`;
+                                    noteP.textContent = `${noteIndex + 1}. ${
+                                        note.text
+                                    }`;
                                     noteP.style.margin = "4px 0 0 16px";
                                     noteP.style.color = "#555";
                                     noteP.style.fontSize = "13px";
@@ -541,18 +532,9 @@ export default function Logbook() {
 
                                 task.notes.forEach((note, noteIndex) => {
                                     const noteP = document.createElement("p");
-                                    const noteTimestamp = new Date(
-                                        note.timestamp
-                                    ).toLocaleDateString("it-IT", {
-                                        year: "numeric",
-                                        month: "2-digit",
-                                        day: "2-digit",
-                                        hour: "2-digit",
-                                        minute: "2-digit",
-                                    });
-                                    noteP.textContent = `${
-                                        noteIndex + 1
-                                    }. [${noteTimestamp}] ${note.text}`;
+                                    noteP.textContent = `${noteIndex + 1}. ${
+                                        note.text
+                                    }`;
                                     noteP.style.margin = "4px 0 0 16px";
                                     noteP.style.color = "#555";
                                     noteP.style.fontSize = "13px";
@@ -866,21 +848,10 @@ export default function Logbook() {
 
                                 const noteText = document.createElement("p");
                                 noteText.textContent = note.text;
-                                noteText.style.margin = "0 0 4px 0";
+                                noteText.style.margin = "0";
                                 noteText.style.color = "#333";
                                 noteText.style.fontSize = "13px";
                                 noteDiv.appendChild(noteText);
-
-                                const noteAuthor = document.createElement("p");
-                                const noteDate = new Date(
-                                    note.timestamp
-                                ).toLocaleString("it-IT");
-                                noteAuthor.textContent = `${note.author} - ${noteDate}`;
-                                noteAuthor.style.margin = "0";
-                                noteAuthor.style.color = "#666";
-                                noteAuthor.style.fontSize = "11px";
-                                noteAuthor.style.fontStyle = "italic";
-                                noteDiv.appendChild(noteAuthor);
 
                                 entryDiv.appendChild(noteDiv);
                             });

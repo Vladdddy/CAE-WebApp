@@ -77,6 +77,11 @@ export default function Shifts() {
         selectedUsers: [],
         patternType: "admin",
         startDate: "",
+        endDate: "",
+        ferieStartDate: "",
+        ferieEndDate: "",
+        malattiaStartDate: "",
+        malattiaEndDate: "",
     });
     const [draggedUser, setDraggedUser] = useState(null);
     const [successModal, setSuccessModal] = useState({
@@ -148,6 +153,18 @@ export default function Shifts() {
                 "R",
             ],
             type: "cycle",
+        },
+        ferie: {
+            name: "Periodo di Ferie",
+            description: "",
+            shift: "F",
+            type: "simple",
+        },
+        malattia: {
+            name: "Periodo di Malattia",
+            description: "",
+            shift: "M",
+            type: "simple",
         },
     };
 
@@ -329,28 +346,53 @@ export default function Shifts() {
     const saveChanges = async () => {
         const token = localStorage.getItem("authToken");
         try {
-            const response = await fetch(
-                `${API}/api/shifts/${year}/${month + 1}`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify(data),
+            // Group data by year/month
+            const dataByMonth = {};
+
+            Object.keys(data).forEach((dateKey) => {
+                const [dateYear, dateMonth] = dateKey.split("-");
+                const monthKey = `${dateYear}-${dateMonth}`;
+
+                if (!dataByMonth[monthKey]) {
+                    dataByMonth[monthKey] = {};
+                }
+                dataByMonth[monthKey][dateKey] = data[dateKey];
+            });
+
+            // Save data for each month
+            const savePromises = Object.keys(dataByMonth).map(
+                async (monthKey) => {
+                    const [yearPart, monthPart] = monthKey.split("-");
+                    const response = await fetch(
+                        `${API}/api/shifts/${yearPart}/${monthPart}`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                Authorization: `Bearer ${token}`,
+                            },
+                            body: JSON.stringify(dataByMonth[monthKey]),
+                        }
+                    );
+
+                    if (!response.ok) {
+                        throw new Error(
+                            `Errore durante il salvataggio per ${monthKey}`
+                        );
+                    }
+                    return response;
                 }
             );
 
-            if (response.ok) {
-                setOriginalData(data); // Update original data with saved data
-                setHasUnsavedChanges(false); // Reset unsaved changes flag
-                setSuccessModal({
-                    isOpen: true,
-                    message: "Modifiche salvate con successo!",
-                });
-            } else {
-                throw new Error("Errore durante il salvataggio");
-            }
+            // Wait for all saves to complete
+            await Promise.all(savePromises);
+
+            setOriginalData(data); // Update original data with saved data
+            setHasUnsavedChanges(false); // Reset unsaved changes flag
+            setSuccessModal({
+                isOpen: true,
+                message: "Modifiche salvate con successo!",
+            });
         } catch (error) {
             console.error("Error saving changes:", error);
             alert("Errore durante il salvataggio delle modifiche");
@@ -745,6 +787,12 @@ export default function Shifts() {
             isOpen: true,
             selectedUsers: [],
             patternType: "admin",
+            startDate: "",
+            endDate: "",
+            ferieStartDate: "",
+            ferieEndDate: "",
+            malattiaStartDate: "",
+            malattiaEndDate: "",
         });
     };
 
@@ -753,6 +801,12 @@ export default function Shifts() {
             isOpen: false,
             selectedUsers: [],
             patternType: "admin",
+            startDate: "",
+            endDate: "",
+            ferieStartDate: "",
+            ferieEndDate: "",
+            malattiaStartDate: "",
+            malattiaEndDate: "",
         });
     };
 
@@ -765,28 +819,73 @@ export default function Shifts() {
             return;
         }
 
-        if (!patternModal.startDate) {
+        const pattern = shiftPatterns[patternModal.patternType];
+        let startDate, endDate;
+
+        // Handle different pattern types
+        if (patternModal.patternType === "ferie") {
+            if (!patternModal.ferieStartDate || !patternModal.ferieEndDate) {
+                setSuccessModal({
+                    isOpen: true,
+                    message: "Seleziona le date di inizio e fine per le ferie",
+                });
+                return;
+            }
+            startDate = new Date(patternModal.ferieStartDate);
+            endDate = new Date(patternModal.ferieEndDate);
+        } else if (patternModal.patternType === "malattia") {
+            if (
+                !patternModal.malattiaStartDate ||
+                !patternModal.malattiaEndDate
+            ) {
+                setSuccessModal({
+                    isOpen: true,
+                    message:
+                        "Seleziona le date di inizio e fine per la malattia",
+                });
+                return;
+            }
+            startDate = new Date(patternModal.malattiaStartDate);
+            endDate = new Date(patternModal.malattiaEndDate);
+        } else {
+            // Regular patterns use the general start/end dates
+            if (!patternModal.startDate) {
+                setSuccessModal({
+                    isOpen: true,
+                    message: "Seleziona una data di inizio",
+                });
+                return;
+            }
+
+            if (!patternModal.endDate) {
+                setSuccessModal({
+                    isOpen: true,
+                    message: "Seleziona una data di fine",
+                });
+                return;
+            }
+            startDate = new Date(patternModal.startDate);
+            endDate = new Date(patternModal.endDate);
+        }
+
+        if (endDate < startDate) {
             setSuccessModal({
                 isOpen: true,
-                message: "Seleziona una data di inizio",
+                message:
+                    "La data di fine non può essere precedente alla data di inizio",
             });
             return;
         }
-
-        const pattern = shiftPatterns[patternModal.patternType];
-        const monthStart = new Date(year, month, 1);
-        const monthEnd = new Date(year, month + 1, 0);
-        const startDate = new Date(patternModal.startDate);
 
         // Create updated data structure
         const updatedData = { ...data };
 
         patternModal.selectedUsers.forEach((userName, userIndex) => {
-            // Start from the selected date instead of the beginning of the month
+            // Start from the selected date
             let currentDate = new Date(startDate);
             let dayCounter = 0; // Counter for cycle-based patterns
 
-            while (currentDate <= monthEnd) {
+            while (currentDate <= endDate) {
                 const dateKey = getDateKey(currentDate);
                 const dayOfWeek = currentDate.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
 
@@ -848,6 +947,23 @@ export default function Shifts() {
                     // Employee pattern: continuous cycle - all users get the same pattern
                     let userPatternIndex = dayCounter % pattern.pattern.length;
                     shiftToAssign = pattern.pattern[userPatternIndex];
+                } else if (pattern.type === "simple") {
+                    // Simple patterns: ferie, malattia - same shift for all days
+                    shiftToAssign = pattern.shift;
+                }
+
+                // Check if current date has existing shift data
+                const existingShift = updatedData[dateKey][userName]?.shift;
+
+                // For Ferie and Malattia patterns, preserve "R" (Riposo) shifts
+                if (
+                    pattern.type === "simple" &&
+                    (patternModal.patternType === "ferie" ||
+                        patternModal.patternType === "malattia")
+                ) {
+                    if (existingShift === "R") {
+                        shiftToAssign = "R"; // Keep the Riposo shift
+                    }
                 }
 
                 const updatedEntry = {
@@ -871,9 +987,35 @@ export default function Shifts() {
         setData(updatedData);
         setHasUnsavedChanges(true); // Mark as having unsaved changes
 
+        // Create informative success message
+        const startMonth = startDate.toLocaleDateString("it-IT", {
+            month: "long",
+            year: "numeric",
+        });
+        const endMonth = endDate.toLocaleDateString("it-IT", {
+            month: "long",
+            year: "numeric",
+        });
+        const isMultiMonth =
+            startDate.getMonth() !== endDate.getMonth() ||
+            startDate.getFullYear() !== endDate.getFullYear();
+
+        let message = "";
+        if (patternModal.patternType === "ferie") {
+            message = "Ferie applicate! ";
+        } else if (patternModal.patternType === "malattia") {
+            message = "Malattia applicata! ";
+        } else {
+            message = "Pattern applicato! ";
+        }
+        if (isMultiMonth) {
+            message += `Il pattern si estende da ${startMonth} a ${endMonth}. `;
+        }
+        message += "Ricorda di salvare le modifiche.";
+
         setSuccessModal({
             isOpen: true,
-            message: "Pattern applicato! Ricorda di salvare le modifiche.",
+            message: message,
         });
         closePatternModal();
     };
@@ -1291,7 +1433,7 @@ export default function Shifts() {
                     <table className="w-full">
                         <thead className="bg-gray-50 border-b border-gray-200">
                             <tr>
-                                <th className="px-6 py-4 text-center text-xs text-gray-500 border-r border-gray-200">
+                                <th className="sticky-name-header px-6 py-4 text-center text-xs text-gray-500 border-r border-gray-200">
                                     Turni
                                 </th>
                                 {days.map((d) => (
@@ -1317,8 +1459,8 @@ export default function Shifts() {
                         <tbody className="divide-y divide-gray-200">
                             {/* Shift Counter Row */}
                             {admins.length > 0 && (
-                                <tr className="bg-gray-100 border-gray-300">
-                                    <td className="px-3 py-4 text-center text-xs font-medium text-gray-500 border-r border-gray-200">
+                                <tr className="count-row bg-gray-100 border-gray-300">
+                                    <td className="sticky-name-cell px-3 py-4 text-center text-xs font-medium text-gray-500 border-r border-gray-200">
                                         <div className="text-center">
                                             Conteggio Turni
                                         </div>
@@ -1423,7 +1565,7 @@ export default function Shifts() {
                                     onDrop={(e) => handleDrop(e, name)}
                                     onDragEnd={handleDragEnd}
                                 >
-                                    <td className="gap-2 px-4 py-2 text-gray-700 border-r border-gray-200">
+                                    <td className="sticky-name-cell gap-2 px-4 py-2 text-gray-700 border-r border-gray-200">
                                         <div className="flex flex-row justify-between items-center gap-4">
                                             <div className="flex items-center gap-2">
                                                 {!isUserAdmin(name) ? (
@@ -1758,7 +1900,7 @@ export default function Shifts() {
                                     onDrop={(e) => handleDrop(e, name)}
                                     onDragEnd={handleDragEnd}
                                 >
-                                    <td className="gap-2 px-4 py-2 text-gray-700 border-r border-gray-200">
+                                    <td className="sticky-name-cell gap-2 px-4 py-2 text-gray-700 border-r border-gray-200">
                                         <div className="flex flex-row justify-between items-center gap-4">
                                             <div className="flex items-center gap-2">
                                                 {!isUserAdmin(name) ? (
@@ -2292,6 +2434,7 @@ export default function Shifts() {
                             <h3 className="text-xl font-semibold text-gray-900">
                                 Applica Pattern Turni
                             </h3>
+
                             <button
                                 onClick={closePatternModal}
                                 className="text-gray-400 hover:text-gray-600"
@@ -2311,6 +2454,8 @@ export default function Shifts() {
                                 </svg>
                             </button>
                         </div>
+
+                        <div className="separator"></div>
 
                         {/* Pattern Type Selection */}
                         <div className="mb-6">
@@ -2529,41 +2674,403 @@ export default function Shifts() {
                                         </div>
                                     </label>
                                 </div>
+
+                                <div className="relative">
+                                    <input
+                                        type="radio"
+                                        id="ferie-pattern"
+                                        name="patternType"
+                                        value="ferie"
+                                        checked={
+                                            patternModal.patternType === "ferie"
+                                        }
+                                        onChange={(e) =>
+                                            setPatternModal((prev) => ({
+                                                ...prev,
+                                                patternType: e.target.value,
+                                            }))
+                                        }
+                                        className="sr-only"
+                                    />
+                                    <label
+                                        htmlFor="ferie-pattern"
+                                        className={`block p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                                            patternModal.patternType === "ferie"
+                                                ? "border-yellow-500 bg-yellow-50"
+                                                : "border-gray-200 hover:border-gray-300"
+                                        }`}
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <h4 className="font-medium text-gray-900">
+                                                    {shiftPatterns.ferie.name}
+                                                </h4>
+                                                <p className="text-sm text-gray-600 mt-1">
+                                                    {
+                                                        shiftPatterns.ferie
+                                                            .description
+                                                    }
+                                                </p>
+                                                <div className="flex gap-2 mt-2">
+                                                    <span
+                                                        className={`px-2 py-1 text-xs rounded ${getShiftColor(
+                                                            shiftPatterns.ferie
+                                                                .shift
+                                                        )}`}
+                                                    >
+                                                        {
+                                                            shiftPatterns.ferie
+                                                                .shift
+                                                        }
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div
+                                                className={`w-4 h-4 rounded-full border-2 ${
+                                                    patternModal.patternType ===
+                                                    "ferie"
+                                                        ? "border-yellow-500 bg-yellow-500"
+                                                        : "border-gray-300"
+                                                }`}
+                                            >
+                                                {patternModal.patternType ===
+                                                    "ferie" && (
+                                                    <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <div className="relative">
+                                    <input
+                                        type="radio"
+                                        id="malattia-pattern"
+                                        name="patternType"
+                                        value="malattia"
+                                        checked={
+                                            patternModal.patternType ===
+                                            "malattia"
+                                        }
+                                        onChange={(e) =>
+                                            setPatternModal((prev) => ({
+                                                ...prev,
+                                                patternType: e.target.value,
+                                            }))
+                                        }
+                                        className="sr-only"
+                                    />
+                                    <label
+                                        htmlFor="malattia-pattern"
+                                        className={`block p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                                            patternModal.patternType ===
+                                            "malattia"
+                                                ? "border-red-500 bg-red-50"
+                                                : "border-gray-200 hover:border-gray-300"
+                                        }`}
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <h4 className="font-medium text-gray-900">
+                                                    {
+                                                        shiftPatterns.malattia
+                                                            .name
+                                                    }
+                                                </h4>
+                                                <p className="text-sm text-gray-600 mt-1">
+                                                    {
+                                                        shiftPatterns.malattia
+                                                            .description
+                                                    }
+                                                </p>
+                                                <div className="flex gap-2 mt-2">
+                                                    <span
+                                                        className={`px-2 py-1 text-xs rounded ${getShiftColor(
+                                                            shiftPatterns
+                                                                .malattia.shift
+                                                        )}`}
+                                                    >
+                                                        {
+                                                            shiftPatterns
+                                                                .malattia.shift
+                                                        }
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div
+                                                className={`w-4 h-4 rounded-full border-2 ${
+                                                    patternModal.patternType ===
+                                                    "malattia"
+                                                        ? "border-red-500 bg-red-500"
+                                                        : "border-gray-300"
+                                                }`}
+                                            >
+                                                {patternModal.patternType ===
+                                                    "malattia" && (
+                                                    <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
                             </div>
                         </div>
 
-                        {/* Start Date Selection */}
-                        <div className="mb-6">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Dal giorno
-                            </label>
-                            <input
-                                type="date"
-                                value={patternModal.startDate}
-                                onChange={(e) =>
-                                    setPatternModal((prev) => ({
-                                        ...prev,
-                                        startDate: e.target.value,
-                                    }))
-                                }
-                                min={`${year}-${String(month + 1).padStart(
-                                    2,
-                                    "0"
-                                )}-01`}
-                                max={`${year}-${String(month + 1).padStart(
-                                    2,
-                                    "0"
-                                )}-${String(
-                                    new Date(year, month + 1, 0).getDate()
-                                ).padStart(2, "0")}`}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
-                            />
-                            <p className="text-xs text-gray-500 mt-1">
-                                Seleziona il giorno da cui iniziare ad applicare
-                                il pattern
-                            </p>
-                        </div>
+                        <div className="separator"></div>
 
+                        {/* Start Date Selection - Only for regular patterns */}
+                        {patternModal.patternType !== "ferie" &&
+                            patternModal.patternType !== "malattia" && (
+                                <div className="mb-6">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Dal giorno
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={patternModal.startDate}
+                                        onChange={(e) => {
+                                            const selectedDate = new Date(
+                                                e.target.value
+                                            );
+                                            const endOfSelectedMonth = new Date(
+                                                selectedDate.getFullYear(),
+                                                selectedDate.getMonth() + 1,
+                                                0
+                                            );
+                                            const endDateStr = `${endOfSelectedMonth.getFullYear()}-${String(
+                                                endOfSelectedMonth.getMonth() +
+                                                    1
+                                            ).padStart(2, "0")}-${String(
+                                                endOfSelectedMonth.getDate()
+                                            ).padStart(2, "0")}`;
+
+                                            setPatternModal((prev) => ({
+                                                ...prev,
+                                                startDate: e.target.value,
+                                                // Auto-set end date to end of selected month if not already set
+                                                endDate:
+                                                    prev.endDate || endDateStr,
+                                            }));
+                                        }}
+                                        min={`${year}-${String(
+                                            month + 1
+                                        ).padStart(2, "0")}-01`}
+                                        max={`${year + 1}-12-31`}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
+                                    />
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        Seleziona il giorno da cui iniziare ad
+                                        applicare il pattern (può essere in mesi
+                                        futuri)
+                                    </p>
+                                </div>
+                            )}
+
+                        {/* End Date Selection - Only for regular patterns */}
+                        {patternModal.patternType !== "ferie" &&
+                            patternModal.patternType !== "malattia" && (
+                                <div className="mb-6">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Al giorno
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={patternModal.endDate}
+                                        onChange={(e) =>
+                                            setPatternModal((prev) => ({
+                                                ...prev,
+                                                endDate: e.target.value,
+                                            }))
+                                        }
+                                        min={
+                                            patternModal.startDate ||
+                                            `${year}-${String(
+                                                month + 1
+                                            ).padStart(2, "0")}-01`
+                                        }
+                                        max={`${year + 1}-12-31`}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
+                                    />
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        Seleziona il giorno fino al quale
+                                        applicare il pattern
+                                    </p>
+                                    {patternModal.startDate &&
+                                        patternModal.endDate &&
+                                        (() => {
+                                            const startDate = new Date(
+                                                patternModal.startDate
+                                            );
+                                            const endDate = new Date(
+                                                patternModal.endDate
+                                            );
+                                            const isMultiMonth =
+                                                startDate.getMonth() !==
+                                                    endDate.getMonth() ||
+                                                startDate.getFullYear() !==
+                                                    endDate.getFullYear();
+
+                                            if (isMultiMonth) {
+                                                return (
+                                                    <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                                                        <div className="flex items-start gap-2">
+                                                            <svg
+                                                                className="w-4 h-4 text-blue-600 mt-0.5"
+                                                                fill="none"
+                                                                stroke="currentColor"
+                                                                viewBox="0 0 24 24"
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    strokeWidth={
+                                                                        2
+                                                                    }
+                                                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                                />
+                                                            </svg>
+                                                            <div>
+                                                                <p className="text-xs text-blue-800 font-medium">
+                                                                    Pattern
+                                                                    multi-mese
+                                                                </p>
+                                                                <p className="text-xs text-blue-700">
+                                                                    Il pattern
+                                                                    si estenderà
+                                                                    attraverso
+                                                                    più mesi. I
+                                                                    dati
+                                                                    verranno
+                                                                    salvati
+                                                                    automaticamente
+                                                                    in ciascun
+                                                                    mese
+                                                                    interessato.
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            }
+                                            return null;
+                                        })()}
+                                </div>
+                            )}
+
+                        {/* Ferie Date Selection */}
+                        {patternModal.patternType === "ferie" && (
+                            <div className="mb-6">
+                                <h4 className="text-sm font-medium text-gray-700 mb-3">
+                                    Seleziona la durata delle Ferie
+                                </h4>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Da
+                                        </label>
+                                        <input
+                                            type="date"
+                                            value={patternModal.ferieStartDate}
+                                            onChange={(e) =>
+                                                setPatternModal((prev) => ({
+                                                    ...prev,
+                                                    ferieStartDate:
+                                                        e.target.value,
+                                                }))
+                                            }
+                                            min={`${year}-${String(
+                                                month + 1
+                                            ).padStart(2, "0")}-01`}
+                                            max={`${year + 1}-12-31`}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            A
+                                        </label>
+                                        <input
+                                            type="date"
+                                            value={patternModal.ferieEndDate}
+                                            onChange={(e) =>
+                                                setPatternModal((prev) => ({
+                                                    ...prev,
+                                                    ferieEndDate:
+                                                        e.target.value,
+                                                }))
+                                            }
+                                            min={
+                                                patternModal.ferieStartDate ||
+                                                `${year}-${String(
+                                                    month + 1
+                                                ).padStart(2, "0")}-01`
+                                            }
+                                            max={`${year + 1}-12-31`}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Malattia Date Selection */}
+                        {patternModal.patternType === "malattia" && (
+                            <div className="mb-6">
+                                <h4 className="text-sm font-medium text-gray-700 mb-3">
+                                    Seleziona la durata della Malattia
+                                </h4>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Da
+                                        </label>
+                                        <input
+                                            type="date"
+                                            value={
+                                                patternModal.malattiaStartDate
+                                            }
+                                            onChange={(e) =>
+                                                setPatternModal((prev) => ({
+                                                    ...prev,
+                                                    malattiaStartDate:
+                                                        e.target.value,
+                                                }))
+                                            }
+                                            min={`${year}-${String(
+                                                month + 1
+                                            ).padStart(2, "0")}-01`}
+                                            max={`${year + 1}-12-31`}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            A
+                                        </label>
+                                        <input
+                                            type="date"
+                                            value={patternModal.malattiaEndDate}
+                                            onChange={(e) =>
+                                                setPatternModal((prev) => ({
+                                                    ...prev,
+                                                    malattiaEndDate:
+                                                        e.target.value,
+                                                }))
+                                            }
+                                            min={
+                                                patternModal.malattiaStartDate ||
+                                                `${year}-${String(
+                                                    month + 1
+                                                ).padStart(2, "0")}-01`
+                                            }
+                                            max={`${year + 1}-12-31`}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        <div className="separator"></div>
                         {/* User Selection */}
                         <div className="mb-6">
                             <label className="block text-sm font-medium text-gray-700 mb-3">
@@ -2737,11 +3244,31 @@ export default function Shifts() {
                                 onClick={applyShiftPattern}
                                 disabled={
                                     patternModal.selectedUsers.length === 0 ||
-                                    !patternModal.startDate
+                                    (patternModal.patternType === "ferie" &&
+                                        (!patternModal.ferieStartDate ||
+                                            !patternModal.ferieEndDate)) ||
+                                    (patternModal.patternType === "malattia" &&
+                                        (!patternModal.malattiaStartDate ||
+                                            !patternModal.malattiaEndDate)) ||
+                                    (patternModal.patternType !== "ferie" &&
+                                        patternModal.patternType !==
+                                            "malattia" &&
+                                        (!patternModal.startDate ||
+                                            !patternModal.endDate))
                                 }
                                 className={`px-6 py-2 rounded-md transition-colors ${
                                     patternModal.selectedUsers.length === 0 ||
-                                    !patternModal.startDate
+                                    (patternModal.patternType === "ferie" &&
+                                        (!patternModal.ferieStartDate ||
+                                            !patternModal.ferieEndDate)) ||
+                                    (patternModal.patternType === "malattia" &&
+                                        (!patternModal.malattiaStartDate ||
+                                            !patternModal.malattiaEndDate)) ||
+                                    (patternModal.patternType !== "ferie" &&
+                                        patternModal.patternType !==
+                                            "malattia" &&
+                                        (!patternModal.startDate ||
+                                            !patternModal.endDate))
                                         ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                                         : "bg-green-600 text-white hover:bg-green-700"
                                 }`}
