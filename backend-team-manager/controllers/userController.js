@@ -12,6 +12,7 @@ exports.getUsers = (req, res) => {
 
         const users = JSON.parse(fs.readFileSync(usersFilePath));
         // Filter for active users who should appear in shifts (employees, admins, managers)
+        // Superuser is excluded from shifts as they are supervisor-only
         const shiftUsers = users.filter(
             (user) =>
                 user.active &&

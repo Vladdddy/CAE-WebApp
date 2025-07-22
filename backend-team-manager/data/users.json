@@ -79,5 +79,14 @@
         "role": "employee",
         "department": "Operations",
         "active": true
+    },
+    {
+        "id": 13,
+        "email": "capo",
+        "password": "capo123",
+        "name": "Capo",
+        "role": "superuser",
+        "department": "Operations",
+        "active": true
     }
 ]

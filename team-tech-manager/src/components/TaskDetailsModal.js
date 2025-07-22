@@ -157,9 +157,11 @@ export default function TaskDetailsModal({
                                     Data
                                 </label>
                                 <p className="text-gray-600 text-md">
-                                    {new Date(task.date).toLocaleDateString(
-                                        "it-IT"
-                                    )}
+                                    {task.date
+                                        ? new Date(
+                                              task.date
+                                          ).toLocaleDateString("it-IT")
+                                        : "Nessuna data"}
                                 </p>
                             </div>
                             <div>
@@ -167,32 +169,28 @@ export default function TaskDetailsModal({
                                     Orario
                                 </label>
                                 <p className="text-gray-600 text-md">
-                                    {task.time}
+                                    {task.time || "Nessun orario"}
                                 </p>
                             </div>{" "}
                         </div>{" "}
                         {/* Category */}
-                        {task.category && (
-                            <div>
-                                <label className="block text-xs font-medium text-gray-600 mb-1">
-                                    Categoria
-                                </label>
-                                <p className="text-gray-600 text-sm">
-                                    {task.category}
-                                </p>
-                            </div>
-                        )}
+                        <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">
+                                Categoria
+                            </label>
+                            <p className="text-gray-600 text-sm">
+                                {task.category || "Nessuna categoria"}
+                            </p>
+                        </div>
                         {/* Subcategory */}
-                        {task.subcategory && (
-                            <div>
-                                <label className="block text-xs font-medium text-gray-600 mb-1">
-                                    Sotto-categoria
-                                </label>
-                                <p className="text-gray-600 text-sm">
-                                    {task.subcategory}
-                                </p>
-                            </div>
-                        )}
+                        <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">
+                                Sotto-categoria
+                            </label>
+                            <p className="text-gray-600 text-sm">
+                                {task.subcategory || "Nessuna sotto-categoria"}
+                            </p>
+                        </div>
                         {/* Extra Detail */}
                         {task.extraDetail && (
                             <div>

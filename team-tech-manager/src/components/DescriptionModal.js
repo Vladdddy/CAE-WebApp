@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export default function DescriptionModal({
     isOpen,
@@ -7,20 +7,67 @@ export default function DescriptionModal({
     currentDescription = "",
     currentSimulator = "",
     currentEmployee = "",
+    currentDate = "",
+    currentTime = "",
     availableEmployees = [],
     employeesLoading = false,
     isEditing = false,
+    onDateTimeChange,
+    isEmployee = false,
 }) {
     const [description, setDescription] = useState(currentDescription);
     const [simulator, setSimulator] = useState(currentSimulator);
     const [employee, setEmployee] = useState(currentEmployee);
+    const [date, setDate] = useState(currentDate);
+    const [time, setTime] = useState(currentTime);
+    const initialLoadRef = useRef(true);
 
     // Update state when props change
     useEffect(() => {
         setDescription(currentDescription);
         setSimulator(currentSimulator);
         setEmployee(currentEmployee);
-    }, [currentDescription, currentSimulator, currentEmployee]);
+        setDate(currentDate);
+        setTime(currentTime);
+
+        // Reset the initial load flag when modal opens
+        if (isOpen) {
+            initialLoadRef.current = true;
+        }
+    }, [
+        currentDescription,
+        currentSimulator,
+        currentEmployee,
+        currentDate,
+        currentTime,
+        isOpen,
+    ]);
+
+    // Notify parent when date or time changes to fetch new available employees
+    useEffect(() => {
+        // Skip the first call on initial load to avoid unnecessary API calls
+        if (initialLoadRef.current) {
+            console.log("Skipping initial date/time change callback");
+            initialLoadRef.current = false;
+            return;
+        }
+
+        console.log("Date/time changed in modal:", date, time);
+        if (onDateTimeChange) {
+            onDateTimeChange(date, time);
+        }
+    }, [date, time, onDateTimeChange]);
+
+    // Reset employee selection if current employee is not available for the new date/time
+    useEffect(() => {
+        if (
+            employee &&
+            availableEmployees.length > 0 &&
+            !availableEmployees.includes(employee)
+        ) {
+            setEmployee("");
+        }
+    }, [availableEmployees, employee]);
 
     if (!isOpen) return null;
 
@@ -30,7 +77,7 @@ export default function DescriptionModal({
         }
     };
     const handleSave = () => {
-        onSave({ description, simulator, employee });
+        onSave({ description, simulator, employee, date, time });
         onClose();
     };
 
@@ -71,9 +118,15 @@ export default function DescriptionModal({
                         </label>
                         <select
                             value={employee}
-                            onChange={(e) => setEmployee(e.target.value)}
-                            className="border px-3 py-2 rounded mb-4 text-gray-600 text-sm w-full"
-                            disabled={employeesLoading}
+                            onChange={(e) =>
+                                !isEmployee && setEmployee(e.target.value)
+                            }
+                            className={`border px-3 py-2 rounded mb-4 text-sm w-full ${
+                                employeesLoading || isEmployee
+                                    ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+                                    : "text-gray-600"
+                            }`}
+                            disabled={employeesLoading || isEmployee}
                         >
                             <option value="">
                                 {employeesLoading
@@ -88,6 +141,42 @@ export default function DescriptionModal({
                                 </option>
                             ))}
                         </select>
+                    </div>
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Data
+                        </label>
+                        <input
+                            type="date"
+                            value={date || ""}
+                            onChange={(e) =>
+                                !isEmployee && setDate(e.target.value)
+                            }
+                            className={`border px-3 py-2 rounded mb-4 text-sm w-full ${
+                                isEmployee
+                                    ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+                                    : "text-gray-600"
+                            }`}
+                            disabled={isEmployee}
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Orario
+                        </label>
+                        <input
+                            type="time"
+                            value={time || ""}
+                            onChange={(e) =>
+                                !isEmployee && setTime(e.target.value)
+                            }
+                            className={`border px-3 py-2 rounded mb-4 text-sm w-full ${
+                                isEmployee
+                                    ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+                                    : "text-gray-600"
+                            }`}
+                            disabled={isEmployee}
+                        />
                     </div>
                     <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700 mb-2">

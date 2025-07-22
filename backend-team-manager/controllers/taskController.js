@@ -204,11 +204,11 @@ exports.deleteTask = (req, res) => {
 
     if (!task) return res.status(404).json({ message: "Task non trovato" });
 
-    // Check permissions - only admins, managers, supervisors can delete tasks
+    // Check permissions - only admins, managers, supervisors, and superusers can delete tasks
     if (req.user.role === "employee") {
         return res.status(403).json({
             message:
-                "Non hai i permessi per eliminare i task. Solo amministratori, manager e supervisori possono eliminare i task.",
+                "Non hai i permessi per eliminare i task. Solo amministratori, manager, supervisori e superuser possono eliminare i task.",
         });
     }
 
@@ -231,7 +231,7 @@ exports.updateTaskDescription = (req, res) => {
     });
 
     const id = parseInt(req.params.id);
-    const { description, simulator, employee } = req.body;
+    const { description, simulator, employee, date, time } = req.body;
     const task = tasks.find((t) => t.id === id);
 
     if (!task) {
@@ -273,16 +273,29 @@ exports.updateTaskDescription = (req, res) => {
     console.log(
         "Updating task with description:",
         description,
-        "and simulator:",
+        "simulator:",
         simulator,
-        "and employee:",
-        employee
+        "employee:",
+        employee,
+        "date:",
+        date,
+        "time:",
+        time
     );
+
+    // Update the task fields
     task.description = description || "";
     task.simulator = simulator || "";
     if (employee !== undefined) {
         task.assignedTo = employee;
     }
+    if (date !== undefined) {
+        task.date = date || null;
+    }
+    if (time !== undefined) {
+        task.time = time || null;
+    }
+
     saveTasksToFile();
     console.log("Task updated successfully:", task);
     res.json(task);

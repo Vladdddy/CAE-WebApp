@@ -342,7 +342,8 @@ const TaskTable = ({
                                                     </p>
                                                     <div className="task-details text-xs text-gray-500 space-y-4">
                                                         <div className="text-xs">
-                                                            {task.time}
+                                                            {task.time ||
+                                                                "Nessun orario"}
                                                         </div>
                                                         <div className="flex items-center justify-between">
                                                             <div className="flex flex-col gap-1">
@@ -499,7 +500,8 @@ const TaskTable = ({
                                         {task.title}
                                     </p>
                                     <div className="text-xs text-gray-500 capitalize">
-                                        {task.date} • {task.time} •{" "}
+                                        {task.date || "Nessuna data"} •{" "}
+                                        {task.time || "Nessun orario"} •{" "}
                                         {task.assignedTo} • {task.status}
                                     </div>
                                 </div>

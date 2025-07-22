@@ -10,11 +10,11 @@
   {
     "id": 2,
     "title": "Test di una scheda grafica",
-    "assignedTo": "Luca",
+    "assignedTo": "Nicolo",
     "status": "completato",
-    "date": "2025-06-25",
-    "time": "08:00",
-    "description": "Prova2",
+    "date": "2025-07-25",
+    "time": "17:00",
+    "description": "vlad",
     "simulator": "FTD"
   },
   {
@@ -154,7 +154,7 @@
   {
     "id": 34,
     "title": "task2",
-    "assignedTo": "Sara",
+    "assignedTo": "",
     "status": "riassegnato",
     "date": "2025-07-11",
     "time": "13:00",
@@ -339,26 +339,28 @@
   {
     "id": 63,
     "title": "Prova 10.07",
-    "assignedTo": "Andrea",
-    "simulator": "",
+    "assignedTo": "Thomas",
+    "simulator": "FTD",
     "category": "",
     "subcategory": "",
     "extraDetail": "",
     "status": "non iniziato",
     "date": null,
-    "time": null
+    "time": null,
+    "description": "Prova"
   },
   {
     "id": 65,
     "title": "thrsg",
-    "assignedTo": "Sara",
+    "assignedTo": "",
     "simulator": "109FFS",
     "category": "others",
     "subcategory": "",
     "extraDetail": "",
     "status": "non iniziato",
     "date": "2025-07-18",
-    "time": "08:00"
+    "time": "08:00",
+    "description": ""
   },
   {
     "id": 66,
@@ -390,14 +392,14 @@
     "id": 69,
     "title": "Prova 21.07",
     "description": "",
-    "assignedTo": "Gianluca",
+    "assignedTo": "Thomas",
     "simulator": "",
     "category": "",
     "subcategory": "",
     "extraDetail": "",
     "status": "completato",
-    "date": null,
-    "time": null
+    "date": "2025-07-22",
+    "time": "14:09"
   },
   {
     "id": 70,
@@ -421,8 +423,47 @@
     "category": "",
     "subcategory": "",
     "extraDetail": "",
+    "status": "completato",
+    "date": null,
+    "time": null
+  },
+  {
+    "id": 72,
+    "title": "ciaoo",
+    "description": "",
+    "assignedTo": "Thomas",
+    "simulator": "139#1",
+    "category": "",
+    "subcategory": "",
+    "extraDetail": "",
+    "status": "completato",
+    "date": null,
+    "time": null
+  },
+  {
+    "id": 73,
+    "title": "euifyeI8ELOFU",
+    "description": "",
+    "assignedTo": "Gianluca",
+    "simulator": "",
+    "category": "",
+    "subcategory": "",
+    "extraDetail": "",
     "status": "da definire",
     "date": null,
     "time": null
+  },
+  {
+    "id": 74,
+    "title": "task di oggi.",
+    "description": "Prova",
+    "assignedTo": "Thomas",
+    "simulator": "109FFS",
+    "category": "",
+    "subcategory": "",
+    "extraDetail": "",
+    "status": "completato",
+    "date": "2025-07-22",
+    "time": "14:20"
   }
 ]

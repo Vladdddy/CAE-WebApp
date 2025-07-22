@@ -87,6 +87,11 @@ export default function Shifts() {
     const [employeeOrderKey, setEmployeeOrderKey] = useState(0);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
     const [originalData, setOriginalData] = useState({});
+    const [exportModal, setExportModal] = useState({
+        isOpen: false,
+        selectedUsers: [],
+        selectAll: false,
+    });
     const tableRef = useRef();
 
     // Shift patterns
@@ -161,12 +166,14 @@ export default function Shifts() {
     };
 
     const currentUser = getCurrentUser();
-    const isAdmin = currentUser && currentUser.role === "admin";
+    const isAdmin =
+        currentUser &&
+        (currentUser.role === "admin" || currentUser.role === "superuser");
 
-    // Function to check if a user has admin role
+    // Function to check if a user has admin or superuser role
     const isUserAdmin = (userName) => {
         const user = users.find((u) => u.name === userName);
-        return user && user.role === "admin";
+        return user && (user.role === "admin" || user.role === "superuser");
     };
 
     // Get names of active users (including admin users who should appear in shifts)
@@ -378,7 +385,65 @@ export default function Shifts() {
         setYear(newYear);
     };
 
-    const handleExportPDF = () => {
+    const openExportModal = () => {
+        // Initialize with no users selected
+        setExportModal({
+            isOpen: true,
+            selectedUsers: [],
+            selectAll: false,
+        });
+    };
+
+    const closeExportModal = () => {
+        setExportModal({
+            isOpen: false,
+            selectedUsers: [],
+            selectAll: false,
+        });
+    };
+
+    const toggleSelectAll = () => {
+        const allUsers = [...admins, ...employees];
+        if (exportModal.selectAll) {
+            // Deselect all
+            setExportModal({
+                ...exportModal,
+                selectedUsers: [],
+                selectAll: false,
+            });
+        } else {
+            // Select all
+            setExportModal({
+                ...exportModal,
+                selectedUsers: allUsers,
+                selectAll: true,
+            });
+        }
+    };
+
+    const toggleExportUserSelection = (userName) => {
+        const allUsers = [...admins, ...employees];
+        let newSelectedUsers;
+
+        if (exportModal.selectedUsers.includes(userName)) {
+            // Remove user
+            newSelectedUsers = exportModal.selectedUsers.filter(
+                (u) => u !== userName
+            );
+        } else {
+            // Add user
+            newSelectedUsers = [...exportModal.selectedUsers, userName];
+        }
+
+        setExportModal({
+            ...exportModal,
+            selectedUsers: newSelectedUsers,
+            selectAll: newSelectedUsers.length === allUsers.length,
+        });
+    };
+
+    const handleExportPDF = (selectedUsers = null) => {
+        const usersToExport = selectedUsers || [...admins, ...employees];
         const element = tableRef.current;
 
         // Store original state
@@ -415,7 +480,7 @@ export default function Shifts() {
             pdfContainer.appendChild(title);
 
             // Create sections for each user
-            names.forEach((name, nameIndex) => {
+            usersToExport.forEach((name, nameIndex) => {
                 const userSection = document.createElement("div");
                 userSection.style.cssText = `
                     margin-bottom: 40px;
@@ -1027,7 +1092,7 @@ export default function Shifts() {
                             </svg>{" "}
                         </button>
                         <button
-                            onClick={handleExportPDF}
+                            onClick={openExportModal}
                             className="aggiungi-btn flex items-center gap-2 col-span-1 sm:col-span-2 bg-blue-600 px-8 py-2 rounded"
                         >
                             <svg
@@ -2550,7 +2615,9 @@ export default function Shifts() {
                                             </div>
                                             <div className="flex items-center gap-1">
                                                 {user &&
-                                                    user.role === "admin" && (
+                                                    (user.role === "admin" ||
+                                                        user.role ===
+                                                            "superuser") && (
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"
                                                             viewBox="0 0 24 24"
@@ -2680,6 +2747,132 @@ export default function Shifts() {
                                 }`}
                             >
                                 Applica Pattern
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Export Modal */}
+            {exportModal.isOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full mx-4 max-h-[80vh] overflow-y-auto">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                            Dipendenti Export
+                        </h3>
+
+                        <div className="separator"></div>
+
+                        {/* Select All Checkbox */}
+                        <div className="mb-4 pb-3">
+                            <label className="flex items-center cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={exportModal.selectAll}
+                                    onChange={toggleSelectAll}
+                                    className="mr-3 h-4 w-4 text-blue-600 accent-blue-600 border-gray-300 rounded"
+                                />
+                                <span className="font-medium text-gray-900">
+                                    Seleziona tutti
+                                </span>
+                            </label>
+                        </div>
+
+                        {/* User List */}
+                        <div className="space-y-2 mb-6 max-h-60 overflow-y-auto">
+                            {/* Admins */}
+
+                            {admins.length > 0 && (
+                                <>
+                                    <h4 className="text-sm font-medium text-gray-600 mb-2">
+                                        Shift Leader
+                                    </h4>
+                                    {admins.map((userName) => (
+                                        <label
+                                            key={userName}
+                                            className="flex items-center cursor-pointer p-2 hover:bg-gray-50 rounded"
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                checked={exportModal.selectedUsers.includes(
+                                                    userName
+                                                )}
+                                                onChange={() =>
+                                                    toggleExportUserSelection(
+                                                        userName
+                                                    )
+                                                }
+                                                className="mr-3 h-4 w-4 text-blue-600 border-gray-300 accent-blue-600 rounded"
+                                            />
+                                            <span className="text-gray-900 flex items-center">
+                                                {userName}
+                                            </span>
+                                        </label>
+                                    ))}
+                                </>
+                            )}
+
+                            <div className="separator"></div>
+
+                            {/* Employees */}
+                            {employees.length > 0 && (
+                                <>
+                                    <h4 className="text-sm font-medium text-gray-600 mb-2 mt-4">
+                                        Dipendenti
+                                    </h4>
+                                    {employees.map((userName) => (
+                                        <label
+                                            key={userName}
+                                            className="flex items-center cursor-pointer p-2 hover:bg-gray-50 rounded"
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                checked={exportModal.selectedUsers.includes(
+                                                    userName
+                                                )}
+                                                onChange={() =>
+                                                    toggleExportUserSelection(
+                                                        userName
+                                                    )
+                                                }
+                                                className="mr-3 h-4 w-4 text-blue-600 accent-blue-600 border-gray-300 rounded"
+                                            />
+                                            <span className="text-gray-900">
+                                                {userName}
+                                            </span>
+                                        </label>
+                                    ))}
+                                </>
+                            )}
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={closeExportModal}
+                                className="px-6 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                            >
+                                Annulla
+                            </button>
+                            <button
+                                onClick={() => {
+                                    if (exportModal.selectedUsers.length > 0) {
+                                        handleExportPDF(
+                                            exportModal.selectedUsers
+                                        );
+                                        closeExportModal();
+                                    }
+                                }}
+                                disabled={
+                                    exportModal.selectedUsers.length === 0
+                                }
+                                className={`px-6 py-2 rounded-md transition-colors ${
+                                    exportModal.selectedUsers.length === 0
+                                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                        : "bg-blue-600 text-white hover:bg-blue-700"
+                                }`}
+                            >
+                                Scarica
                             </button>
                         </div>
                     </div>

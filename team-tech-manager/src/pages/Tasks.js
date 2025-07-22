@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useMemo } from "react";
+import { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import Modal from "../components/Modal";
 import TaskDetailsModal from "../components/TaskDetailsModal";
 import DescriptionModal from "../components/DescriptionModal";
@@ -73,6 +73,8 @@ export default function Tasks() {
         currentDescription: "",
         currentSimulator: "",
         currentEmployee: "",
+        currentDate: "",
+        currentTime: "",
     }); // Simulator schedule states - now date-specific
     const [simulatorSchedules, setSimulatorSchedules] = useState(() => {
         const saved = localStorage.getItem("simulatorSchedules");
@@ -164,14 +166,20 @@ export default function Tasks() {
     const canDeleteTasks = () => {
         return (
             currentUser &&
-            ["admin", "manager", "supervisor"].includes(currentUser.role)
+            ["admin", "manager", "supervisor", "superuser"].includes(
+                currentUser.role
+            )
         );
     };
 
     const canToggleTask = (task) => {
         if (!currentUser) return false;
-        // Admins, managers, supervisors can toggle any task
-        if (["admin", "manager", "supervisor"].includes(currentUser.role))
+        // Admins, managers, supervisors, superusers can toggle any task
+        if (
+            ["admin", "manager", "supervisor", "superuser"].includes(
+                currentUser.role
+            )
+        )
             return true;
         // Employees can only toggle their own tasks
         return (
@@ -181,17 +189,21 @@ export default function Tasks() {
     };
 
     const canAddTasks = () => {
-        return currentUser && ["admin"].includes(currentUser.role);
+        return currentUser && ["admin", "superuser"].includes(currentUser.role);
     };
 
     const canModifySimulatorSchedules = () => {
-        return currentUser && ["admin"].includes(currentUser.role);
+        return currentUser && ["admin", "superuser"].includes(currentUser.role);
     };
 
     const canEditDescription = (task) => {
         if (!currentUser) return false;
-        // Admins, managers, supervisors can edit any task description
-        if (["admin", "manager", "supervisor"].includes(currentUser.role))
+        // Admins, managers, supervisors, superusers can edit any task description
+        if (
+            ["admin", "manager", "supervisor", "superuser"].includes(
+                currentUser.role
+            )
+        )
             return true;
         // Employees can only edit descriptions for tasks assigned to them
         return (
@@ -203,14 +215,22 @@ export default function Tasks() {
     // Authorization functions for notes
     const canModifyNote = (note) => {
         if (!currentUser || !note) return false;
-        // Admins can modify any note, users can only modify their own notes
-        return currentUser.role === "admin" || note.author === currentUser.name;
+        // Admins and superusers can modify any note, users can only modify their own notes
+        return (
+            currentUser.role === "admin" ||
+            currentUser.role === "superuser" ||
+            note.author === currentUser.name
+        );
     };
 
     const canDeleteNote = (note) => {
         if (!currentUser || !note) return false;
-        // Admins can delete any note, users can only delete their own notes
-        return currentUser.role === "admin" || note.author === currentUser.name;
+        // Admins and superusers can delete any note, users can only delete their own notes
+        return (
+            currentUser.role === "admin" ||
+            currentUser.role === "superuser" ||
+            note.author === currentUser.name
+        );
     };
     const openDescriptionModal = (task) => {
         setDescriptionModal({
@@ -219,11 +239,17 @@ export default function Tasks() {
             currentDescription: task.description || "",
             currentSimulator: task.simulator || "",
             currentEmployee: task.assignedTo || "",
+            currentDate: task.date || "",
+            currentTime: task.time || "",
         });
 
         // Fetch available employees for this specific task's date and time
         if (task.date && task.time) {
             fetchAvailableEmployees(task.date, task.time);
+        } else {
+            // If no date/time, clear available employees and reset loading state
+            setAvailableEmployees([]);
+            setEmployeesLoading(false);
         }
     };
     const closeDescriptionModal = () => {
@@ -233,8 +259,80 @@ export default function Tasks() {
             currentDescription: "",
             currentSimulator: "",
             currentEmployee: "",
+            currentDate: "",
+            currentTime: "",
         });
-    }; // Schedule modal functions
+        // Reset available employees and loading state when closing modal
+        setAvailableEmployees([]);
+        setEmployeesLoading(false);
+    };
+
+    // Fetch available employees when date or time changes
+    const fetchAvailableEmployees = useCallback(
+        async (selectedDate, selectedTime) => {
+            console.log(
+                "fetchAvailableEmployees called with:",
+                selectedDate,
+                selectedTime
+            );
+
+            if (!selectedDate || !selectedTime) {
+                setAvailableEmployees([]);
+                console.log("No date/time provided, clearing employees");
+                return;
+            }
+
+            setEmployeesLoading(true);
+            console.log("Setting employeesLoading to true");
+            const token = localStorage.getItem("authToken");
+
+            try {
+                const response = await fetch(
+                    `${API}/api/tasks/available-employees?date=${selectedDate}&time=${selectedTime}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log("Fetched employees:", data.availableEmployees);
+                    setAvailableEmployees(data.availableEmployees);
+                } else {
+                    console.error(
+                        "Error fetching available employees:",
+                        await response.text()
+                    );
+                    setAvailableEmployees([]);
+                }
+            } catch (error) {
+                console.error("Error fetching available employees:", error);
+                setAvailableEmployees([]);
+            } finally {
+                console.log("Setting employeesLoading to false");
+                setEmployeesLoading(false);
+            }
+        },
+        [API]
+    );
+
+    // Handle date/time changes in description modal to fetch new available employees
+    const handleDescriptionModalDateTimeChange = useCallback(
+        (newDate, newTime) => {
+            if (newDate && newTime) {
+                fetchAvailableEmployees(newDate, newTime);
+            } else {
+                // If date or time is cleared, reset employees list and loading state
+                setAvailableEmployees([]);
+                setEmployeesLoading(false);
+            }
+        },
+        [fetchAvailableEmployees]
+    );
+
+    // Schedule modal functions
     const openScheduleModal = (simulator) => {
         // Check if the selected date is today
         const today = new Date().toISOString().split("T")[0];
@@ -437,43 +535,7 @@ export default function Tasks() {
         }
     }, [tasks, filters, showFilterResults]);
 
-    // Fetch available employees when date or time changes
-    const fetchAvailableEmployees = async (selectedDate, selectedTime) => {
-        if (!selectedDate || !selectedTime) {
-            setAvailableEmployees([]);
-            return;
-        }
-
-        setEmployeesLoading(true);
-        const token = localStorage.getItem("authToken");
-
-        try {
-            const response = await fetch(
-                `${API}/api/tasks/available-employees?date=${selectedDate}&time=${selectedTime}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
-
-            if (response.ok) {
-                const data = await response.json();
-                setAvailableEmployees(data.availableEmployees);
-            } else {
-                console.error(
-                    "Error fetching available employees:",
-                    await response.text()
-                );
-                setAvailableEmployees([]);
-            }
-        } catch (error) {
-            console.error("Error fetching available employees:", error);
-            setAvailableEmployees([]);
-        } finally {
-            setEmployeesLoading(false);
-        }
-    }; // Update available employees when date or time changes
+    // Update available employees when date or time changes
     useEffect(() => {
         fetchAvailableEmployees(date, time);
         setAssignedTo(""); // Reset assigned employee when date/time changes
@@ -905,7 +967,11 @@ export default function Tasks() {
                         taskTitle.style.fontSize = "16px";
                         taskDiv.appendChild(taskTitle);
                         const taskDetails = document.createElement("p");
-                        taskDetails.textContent = `Orario: ${task.time} • Assegnato a: ${task.assignedTo} • Status: ${task.status}`;
+                        taskDetails.textContent = `Orario: ${
+                            task.time || "Nessun orario"
+                        } • Assegnato a: ${task.assignedTo} • Status: ${
+                            task.status
+                        }`;
                         taskDetails.style.margin = "0";
                         taskDetails.style.color = "#666";
                         taskDetails.style.fontSize = "14px";
@@ -1123,28 +1189,35 @@ export default function Tasks() {
                 // Group tasks by date
                 const tasksByDate = {};
                 filteredTasks.forEach((task) => {
-                    const taskDate = task.date;
+                    const taskDate = task.date || "Nessuna data";
                     if (!tasksByDate[taskDate]) {
                         tasksByDate[taskDate] = [];
                     }
                     tasksByDate[taskDate].push(task);
                 });
 
-                // Sort dates
-                const sortedDates = Object.keys(tasksByDate).sort();
+                // Sort dates - put "Nessuna data" at the end
+                const sortedDates = Object.keys(tasksByDate).sort((a, b) => {
+                    if (a === "Nessuna data") return 1;
+                    if (b === "Nessuna data") return -1;
+                    return a.localeCompare(b);
+                });
 
                 sortedDates.forEach((date) => {
                     // Add date header
                     const dateHeader = document.createElement("h3");
-                    dateHeader.textContent = new Date(date).toLocaleDateString(
-                        "it-IT",
-                        {
+                    if (date === "Nessuna data") {
+                        dateHeader.textContent = "Nessuna data";
+                    } else {
+                        dateHeader.textContent = new Date(
+                            date
+                        ).toLocaleDateString("it-IT", {
                             weekday: "long",
                             year: "numeric",
                             month: "long",
                             day: "numeric",
-                        }
-                    );
+                        });
+                    }
                     dateHeader.style.margin = "30px 0 15px 0";
                     dateHeader.style.color = "#1f2937";
                     dateHeader.style.fontSize = "18px";
@@ -1172,9 +1245,11 @@ export default function Tasks() {
                         const taskDetails = document.createElement("p");
                         taskDetails.textContent = `Simulatore: ${
                             task.simulator || "N/A"
-                        } • Orario: ${task.time} • Assegnato a: ${
-                            task.assignedTo
-                        } • Status: ${task.status}`;
+                        } • Orario: ${
+                            task.time || "Nessun orario"
+                        } • Assegnato a: ${task.assignedTo} • Status: ${
+                            task.status
+                        }`;
                         taskDetails.style.margin = "0";
                         taskDetails.style.color = "#666";
                         taskDetails.style.fontSize = "14px";
@@ -2381,8 +2456,12 @@ export default function Tasks() {
                     currentDescription={descriptionModal.currentDescription}
                     currentSimulator={descriptionModal.currentSimulator}
                     currentEmployee={descriptionModal.currentEmployee || ""}
+                    currentDate={descriptionModal.currentDate}
+                    currentTime={descriptionModal.currentTime}
                     availableEmployees={availableEmployees}
                     employeesLoading={employeesLoading}
+                    onDateTimeChange={handleDescriptionModalDateTimeChange}
+                    isEmployee={currentUser?.role === "employee"}
                 />
                 {/* Schedule Modal */}
                 {scheduleModal.isOpen && (

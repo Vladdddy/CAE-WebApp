@@ -124,14 +124,22 @@ export default function Logbook() {
     // Authorization functions for notes
     const canModifyNote = (note) => {
         if (!currentUser || !note) return false;
-        // Admins can modify any note, users can only modify their own notes
-        return currentUser.role === "admin" || note.author === currentUser.name;
+        // Admins and superusers can modify any note, users can only modify their own notes
+        return (
+            currentUser.role === "admin" ||
+            currentUser.role === "superuser" ||
+            note.author === currentUser.name
+        );
     };
 
     const canDeleteNote = (note) => {
         if (!currentUser || !note) return false;
-        // Admins can delete any note, users can only delete their own notes
-        return currentUser.role === "admin" || note.author === currentUser.name;
+        // Admins and superusers can delete any note, users can only delete their own notes
+        return (
+            currentUser.role === "admin" ||
+            currentUser.role === "superuser" ||
+            note.author === currentUser.name
+        );
     };
 
     const showModal = (title, message, type = "info", onConfirm = null) => {
@@ -516,7 +524,11 @@ export default function Logbook() {
                                 });
                             }
                         } else {
-                            taskDetails.textContent = `Orario: ${task.time} • Assegnato a: ${task.assignedTo} • Status: ${task.status}`;
+                            taskDetails.textContent = `Orario: ${
+                                task.time || "Nessun orario"
+                            } • Assegnato a: ${task.assignedTo} • Status: ${
+                                task.status
+                            }`;
 
                             if (task.notes && task.notes.length > 0) {
                                 const notesHeader = document.createElement("p");
@@ -947,18 +959,19 @@ export default function Logbook() {
             console.log("Searching for:", searchLower);
 
             filtered = filtered.filter((entry) => {
-                const textMatch = entry.text
-                    .toLowerCase()
-                    .includes(searchLower);
+                // For logbook entries
+                const textMatch =
+                    entry.text &&
+                    entry.text.toLowerCase().includes(searchLower);
                 const titleMatch =
                     entry.title &&
                     entry.title.toLowerCase().includes(searchLower);
-                const authorMatch = entry.author
-                    .toLowerCase()
-                    .includes(searchLower);
-                const categoryMatch = entry.category
-                    .toLowerCase()
-                    .includes(searchLower);
+                const authorMatch =
+                    entry.author &&
+                    entry.author.toLowerCase().includes(searchLower);
+                const categoryMatch =
+                    entry.category &&
+                    entry.category.toLowerCase().includes(searchLower);
                 const subcategoryMatch =
                     entry.subcategory &&
                     entry.subcategory.toLowerCase().includes(searchLower);
@@ -966,13 +979,31 @@ export default function Logbook() {
                     entry.extraDetail &&
                     entry.extraDetail.toLowerCase().includes(searchLower);
 
+                // For tasks (additional fields to search)
+                const descriptionMatch =
+                    entry.description &&
+                    entry.description.toLowerCase().includes(searchLower);
+                const simulatorMatch =
+                    entry.simulator &&
+                    entry.simulator.toLowerCase().includes(searchLower);
+                const assignedToMatch =
+                    entry.assignedTo &&
+                    entry.assignedTo.toLowerCase().includes(searchLower);
+                const statusMatch =
+                    entry.status &&
+                    entry.status.toLowerCase().includes(searchLower);
+
                 const matches =
                     textMatch ||
                     titleMatch ||
                     authorMatch ||
                     categoryMatch ||
                     subcategoryMatch ||
-                    extraDetailMatch;
+                    extraDetailMatch ||
+                    descriptionMatch ||
+                    simulatorMatch ||
+                    assignedToMatch ||
+                    statusMatch;
 
                 if (matches) {
                     console.log("MATCH found in entry:", entry);
@@ -993,6 +1024,24 @@ export default function Logbook() {
                         authorMatch,
                         "- searching in:",
                         entry.author
+                    );
+                    console.log(
+                        "Description match:",
+                        descriptionMatch,
+                        "- searching in:",
+                        entry.description
+                    );
+                    console.log(
+                        "Simulator match:",
+                        simulatorMatch,
+                        "- searching in:",
+                        entry.simulator
+                    );
+                    console.log(
+                        "AssignedTo match:",
+                        assignedToMatch,
+                        "- searching in:",
+                        entry.assignedTo
                     );
                 }
 
@@ -1035,8 +1084,29 @@ export default function Logbook() {
         if (startDate && endDate) {
             const allEntries = await loadEntriesFromRange();
             console.log("Loaded entries from range:", allEntries);
+
+            // Add tasks to the search results
+            const filteredTasks = tasks.filter((task) => {
+                if (!task.date) return false;
+                const taskDate = new Date(task.date)
+                    .toISOString()
+                    .split("T")[0];
+                return taskDate >= startDate && taskDate <= endDate;
+            });
+
+            // Mark tasks with a type to distinguish them from logbook entries
+            const tasksAsEntries = filteredTasks.map((task) => ({
+                ...task,
+                type: "task",
+                text: task.description || task.title, // Map description to text for search compatibility
+                author: task.assignedTo || "Unknown", // Map assignedTo to author for search compatibility
+            }));
+
+            const combinedData = [...allEntries, ...tasksAsEntries];
+            console.log("Combined entries and tasks:", combinedData);
+
             filtered = applyFilters(
-                allEntries,
+                combinedData,
                 search,
                 filterCategory,
                 filterSubcategory
@@ -1092,10 +1162,29 @@ export default function Logbook() {
                 }
             });
 
-            console.log("All loaded entries:", allEntries);
-            console.log("Sample entry structure:", allEntries[0]);
+            // Add tasks within the search date range
+            const filteredTasks = tasks.filter((task) => {
+                if (!task.date) return false;
+                const taskDate = new Date(task.date)
+                    .toISOString()
+                    .split("T")[0];
+                return taskDate >= searchStartDate && taskDate <= searchEndDate;
+            });
+
+            // Mark tasks with a type to distinguish them from logbook entries
+            const tasksAsEntries = filteredTasks.map((task) => ({
+                ...task,
+                type: "task",
+                text: task.description || task.title, // Map description to text for search compatibility
+                author: task.assignedTo || "Unknown", // Map assignedTo to author for search compatibility
+            }));
+
+            const combinedData = [...allEntries, ...tasksAsEntries];
+            console.log("All loaded entries and tasks:", combinedData);
+            console.log("Sample entry structure:", combinedData[0]);
+
             filtered = applyFilters(
-                allEntries,
+                combinedData,
                 search,
                 filterCategory,
                 filterSubcategory
@@ -2327,14 +2416,32 @@ export default function Logbook() {
                                                             <div className="text-xs text-gray-500 capitalize">
                                                                 {entry.date} •{" "}
                                                                 {entry.time} •{" "}
-                                                                {entry.duration}{" "}
-                                                                • {entry.author}{" "}
+                                                                {entry.duration ||
+                                                                    "Nessuna durata"}{" "}
                                                                 •{" "}
-                                                                {entry.category}
-                                                                {entry.subcategory &&
-                                                                    ` / ${entry.subcategory}`}
-                                                                {entry.extraDetail &&
-                                                                    ` / ${entry.extraDetail}`}
+                                                                {entry.author ||
+                                                                    entry.assignedTo}{" "}
+                                                                {entry.assignedTo &&
+                                                                    entry.status && (
+                                                                        <>
+                                                                            •{" "}
+                                                                            {
+                                                                                entry.status
+                                                                            }{" "}
+                                                                        </>
+                                                                    )}
+                                                                •{" "}
+                                                                {entry.category ||
+                                                                    "Nessuna categoria"}
+                                                                {(entry.subcategory ||
+                                                                    entry.extraDetail) &&
+                                                                    ` / ${
+                                                                        entry.subcategory ||
+                                                                        entry.extraDetail
+                                                                    }`}
+                                                                {!entry.subcategory &&
+                                                                    !entry.extraDetail &&
+                                                                    " / Nessuna sotto-categoria"}
                                                             </div>
                                                         </div>
                                                         <div className="flex gap-4">
@@ -2342,50 +2449,84 @@ export default function Logbook() {
                                                             <button
                                                                 onClick={() => {
                                                                     const taskEntry =
-                                                                        {
-                                                                            id: `logbook-${entry.date}-${entry.time}`,
-                                                                            title:
-                                                                                entry.title ||
-                                                                                entry.text.substring(
-                                                                                    0,
-                                                                                    50
-                                                                                ) +
-                                                                                    (entry
-                                                                                        .text
-                                                                                        .length >
-                                                                                    50
-                                                                                        ? "..."
-                                                                                        : ""),
-                                                                            description:
-                                                                                entry.text,
-                                                                            fullText:
-                                                                                entry.text,
-                                                                            assignedTo:
-                                                                                entry.author,
-                                                                            date: entry.date,
-                                                                            time: entry.time,
-                                                                            status: entry.category,
-                                                                            category:
-                                                                                entry.category,
-                                                                            subcategory:
-                                                                                entry.subcategory,
-                                                                            extraDetail:
-                                                                                entry.extraDetail,
-                                                                            simulator:
-                                                                                entry.simulator ||
-                                                                                "Others",
-                                                                            type: "logbook-entry",
-                                                                            originalEntry:
-                                                                                entry,
-                                                                        };
-                                                                    const logbookNoteKey =
-                                                                        generateLogbookNoteKey(
-                                                                            entry
-                                                                        );
-                                                                    taskEntry.notes =
-                                                                        logbookNotes[
-                                                                            logbookNoteKey
-                                                                        ] || [];
+                                                                        entry.type ===
+                                                                        "task"
+                                                                            ? {
+                                                                                  // For actual tasks, preserve the original structure
+                                                                                  id: entry.id,
+                                                                                  title: entry.title,
+                                                                                  description:
+                                                                                      entry.description,
+                                                                                  assignedTo:
+                                                                                      entry.assignedTo,
+                                                                                  date: entry.date,
+                                                                                  time: entry.time,
+                                                                                  status: entry.status, // Preserve original task status
+                                                                                  category:
+                                                                                      entry.category,
+                                                                                  subcategory:
+                                                                                      entry.subcategory,
+                                                                                  extraDetail:
+                                                                                      entry.extraDetail,
+                                                                                  simulator:
+                                                                                      entry.simulator,
+                                                                                  type: "task",
+                                                                                  notes:
+                                                                                      entry.notes ||
+                                                                                      [],
+                                                                              }
+                                                                            : {
+                                                                                  // For logbook entries, use the existing logic
+                                                                                  id: `logbook-${entry.date}-${entry.time}`,
+                                                                                  title:
+                                                                                      entry.title ||
+                                                                                      entry.text.substring(
+                                                                                          0,
+                                                                                          50
+                                                                                      ) +
+                                                                                          (entry
+                                                                                              .text
+                                                                                              .length >
+                                                                                          50
+                                                                                              ? "..."
+                                                                                              : ""),
+                                                                                  description:
+                                                                                      entry.text,
+                                                                                  fullText:
+                                                                                      entry.text,
+                                                                                  assignedTo:
+                                                                                      entry.author,
+                                                                                  date: entry.date,
+                                                                                  time: entry.time,
+                                                                                  status: entry.category,
+                                                                                  category:
+                                                                                      entry.category,
+                                                                                  subcategory:
+                                                                                      entry.subcategory,
+                                                                                  extraDetail:
+                                                                                      entry.extraDetail,
+                                                                                  simulator:
+                                                                                      entry.simulator ||
+                                                                                      "Others",
+                                                                                  type: "logbook-entry",
+                                                                                  originalEntry:
+                                                                                      entry,
+                                                                              };
+
+                                                                    if (
+                                                                        entry.type !==
+                                                                        "task"
+                                                                    ) {
+                                                                        const logbookNoteKey =
+                                                                            generateLogbookNoteKey(
+                                                                                entry
+                                                                            );
+                                                                        taskEntry.notes =
+                                                                            logbookNotes[
+                                                                                logbookNoteKey
+                                                                            ] ||
+                                                                            [];
+                                                                    }
 
                                                                     openTaskDetails(
                                                                         taskEntry

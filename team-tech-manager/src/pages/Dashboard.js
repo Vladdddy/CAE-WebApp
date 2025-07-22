@@ -941,7 +941,8 @@ export default function Dashboard() {
                                         isIncompleteSection &&
                                         (task.status === "non completato" ||
                                             task.status === "da definire") &&
-                                        currentUser?.role === "admin"
+                                        (currentUser?.role === "admin" ||
+                                            currentUser?.role === "superuser")
                                             ? "cursor-pointer hover:bg-gray-200 transition-colors"
                                             : ""
                                     }`}
@@ -956,7 +957,9 @@ export default function Dashboard() {
                                             (task.status === "non completato" ||
                                                 task.status ===
                                                     "da definire") &&
-                                            currentUser?.role === "admin"
+                                            (currentUser?.role === "admin" ||
+                                                currentUser?.role ===
+                                                    "superuser")
                                         ) {
                                             openReassignModal(task);
                                         }
@@ -979,14 +982,16 @@ export default function Dashboard() {
                                                         •{" "}
                                                     </span>
                                                 )}
-                                            {task.time || ""} {task.assignedTo}{" "}
-                                            • {task.status}
+                                            {task.time || "Nessun orario"}{" "}
+                                            {task.assignedTo} • {task.status}
                                         </div>
                                     </div>
                                     {isIncompleteSection &&
                                         (task.status === "non completato" ||
                                             task.status === "da definire") &&
-                                        currentUser?.role === "admin" && (
+                                        (currentUser?.role === "admin" ||
+                                            currentUser?.role ===
+                                                "superuser") && (
                                             <div className="text-xs text-blue-600 font-medium flex-shrink-0 ml-2">
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
@@ -1182,7 +1187,8 @@ export default function Dashboard() {
                                 />
                             </svg>{" "}
                             <p className="text-gray-600">Task da programmare</p>
-                            {currentUser?.role === "admin" && (
+                            {(currentUser?.role === "admin" ||
+                                currentUser?.role === "superuser") && (
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 24 24"

@@ -9,8 +9,12 @@ const path = require("path");
 // Simulate the note authorization logic from notesController.js
 function canUserModifyNote(currentUser, noteAuthor) {
     // Check if user is authorized to modify this note
-    // Only admins or the note author can modify the note
-    return currentUser.role === "admin" || noteAuthor === currentUser.name;
+    // Only admins, superusers or the note author can modify the note
+    return (
+        currentUser.role === "admin" ||
+        currentUser.role === "superuser" ||
+        noteAuthor === currentUser.name
+    );
 }
 
 // Test scenarios
@@ -18,6 +22,12 @@ const testCases = [
     {
         name: "Admin can modify any note",
         currentUser: { name: "Mario", role: "admin" },
+        noteAuthor: "Sara",
+        expectedResult: true,
+    },
+    {
+        name: "Superuser can modify any note",
+        currentUser: { name: "Super User", role: "superuser" },
         noteAuthor: "Sara",
         expectedResult: true,
     },
