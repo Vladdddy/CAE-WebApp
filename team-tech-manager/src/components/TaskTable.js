@@ -502,7 +502,10 @@ const TaskTable = ({
                                     <div className="text-xs text-gray-500 capitalize">
                                         {task.date || "Nessuna data"} •{" "}
                                         {task.time || "Nessun orario"} •{" "}
-                                        {task.assignedTo} • {task.status}
+                                        {task.assignedTo === "Non assegnare"
+                                            ? "Non assegnato"
+                                            : task.assignedTo}{" "}
+                                        • {task.status}
                                     </div>
                                 </div>
                             </div>

@@ -125,7 +125,9 @@ export default function TaskDetailsModal({
                                     />
                                 </svg>
                                 <p className="text-[#3b82f6]">
-                                    {task.assignedTo}
+                                    {task.assignedTo === "Non assegnare"
+                                        ? "Non assegnato"
+                                        : task.assignedTo}
                                 </p>
                             </div>
                         </div>

@@ -94,23 +94,31 @@ exports.createTask = (req, res) => {
         status,
     } = req.body;
 
-    // Skip active employee check for "da definire" tasks
-    if (status !== "da definire") {
-        // Check if the assigned employee exists in users.json and is active
+    // Skip active employee check for "da definire" tasks and "Non assegnare"
+    if (status !== "da definire" && assignedTo !== "Non assegnare") {
+        // Check if the assigned employee(s) exist in users.json and are active
         const activeEmployees = getActiveEmployees();
-        const assignedEmployee = activeEmployees.find(
-            (emp) => emp.name === assignedTo
-        );
 
-        if (!assignedEmployee) {
-            return res.status(400).json({
-                message: `${assignedTo} non è un dipendente attivo nel sistema.`,
-            });
+        // Handle multiple employees (comma-separated)
+        const assignedEmployeeNames = assignedTo.includes(",")
+            ? assignedTo.split(",").map((name) => name.trim())
+            : [assignedTo];
+
+        for (const employeeName of assignedEmployeeNames) {
+            const assignedEmployee = activeEmployees.find(
+                (emp) => emp.name === employeeName
+            );
+
+            if (!assignedEmployee) {
+                return res.status(400).json({
+                    message: `${employeeName} non è un dipendente attivo nel sistema.`,
+                });
+            }
         }
     }
 
-    // Skip shift validation for "da definire" tasks since they don't have real date/time
-    if (status !== "da definire") {
+    // Skip shift validation for "da definire" tasks and "Non assegnare" since they don't have real date/time or assignee
+    if (status !== "da definire" && assignedTo !== "Non assegnare") {
         // Get the required shift for the task
         const requiredShift = getShiftFromTime(time);
 
@@ -125,32 +133,41 @@ exports.createTask = (req, res) => {
             const dayData = shiftData[date];
 
             if (dayData) {
-                // Check if the assigned employee is working the required shift on this date
-                const employeeData = dayData[assignedTo];
-                if (employeeData && employeeData.shift) {
-                    const userShift = employeeData.shift;
+                // Handle multiple employees (comma-separated)
+                const assignedEmployeeNames = assignedTo.includes(",")
+                    ? assignedTo.split(",").map((name) => name.trim())
+                    : [assignedTo];
 
-                    // Check if user's shift matches the required time period
-                    const isShiftMatch =
-                        userShift === requiredShift ||
-                        (userShift === "D" &&
-                            (requiredShift === "O" ||
-                                requiredShift === "OP")) ||
-                        (userShift === "N" && requiredShift === "ON");
+                for (const employeeName of assignedEmployeeNames) {
+                    // Check if the assigned employee is working the required shift on this date
+                    const employeeData = dayData[employeeName];
+                    if (employeeData && employeeData.shift) {
+                        const userShift = employeeData.shift;
 
-                    if (!isShiftMatch) {
+                        // Check if user's shift matches the required time period
+                        const isShiftMatch =
+                            userShift === requiredShift ||
+                            (userShift === "D" &&
+                                (requiredShift === "O" ||
+                                    requiredShift === "OP")) ||
+                            (userShift === "N" && requiredShift === "ON");
+
+                        if (!isShiftMatch) {
+                            return res.status(400).json({
+                                message: `${employeeName} non è in servizio nel turno richiesto (${requiredShift}) per la data ${date}. Controlla i turni prima di assegnare il task.`,
+                            });
+                        }
+                    } else {
                         return res.status(400).json({
-                            message: `${assignedTo} non è in servizio nel turno richiesto (${requiredShift}) per la data ${date}. Controlla i turni prima di assegnare il task.`,
+                            message: `${employeeName} non è in servizio nel turno richiesto (${requiredShift}) per la data ${date}. Controlla i turni prima di assegnare il task.`,
                         });
                     }
-                } else {
-                    return res.status(400).json({
-                        message: `${assignedTo} non è in servizio nel turno richiesto (${requiredShift}) per la data ${date}. Controlla i turni prima di assegnare il task.`,
-                    });
                 }
             }
         }
-    } // Generate a unique ID that won't be reused even if tasks are deleted
+    }
+
+    // Generate a unique ID that won't be reused even if tasks are deleted
     const maxId = tasks.length > 0 ? Math.max(...tasks.map((t) => t.id)) : 0;
     const newTask = {
         id: maxId + 1,
@@ -178,7 +195,12 @@ exports.toggleTask = (req, res) => {
     // Check permissions for employees
     if (req.user.role === "employee") {
         // Employees can only toggle tasks assigned to them
-        if (task.assignedTo !== req.user.name) {
+        // Handle multiple assignees (comma-separated)
+        const assignedEmployeeNames = task.assignedTo.includes(",")
+            ? task.assignedTo.split(",").map((name) => name.trim())
+            : [task.assignedTo];
+
+        if (!assignedEmployeeNames.includes(req.user.name)) {
             return res.status(403).json({
                 message:
                     "Non hai i permessi per modificare questo task. Puoi modificare solo i task assegnati a te.",
@@ -242,7 +264,12 @@ exports.updateTaskDescription = (req, res) => {
     // Check permissions for employees
     if (req.user.role === "employee") {
         // Employees can only update descriptions for tasks assigned to them
-        if (task.assignedTo !== req.user.name) {
+        // Handle multiple assignees (comma-separated)
+        const assignedEmployeeNames = task.assignedTo.includes(",")
+            ? task.assignedTo.split(",").map((name) => name.trim())
+            : [task.assignedTo];
+
+        if (!assignedEmployeeNames.includes(req.user.name)) {
             console.log(
                 "Permission denied: task assigned to",
                 task.assignedTo,
@@ -393,53 +420,59 @@ exports.reassignTask = (req, res) => {
         });
     }
 
-    // Check if the assigned employee exists in users.json and is active
-    const activeEmployees = getActiveEmployees();
-    const assignedEmployee = activeEmployees.find(
-        (emp) => emp.name === assignedTo
-    );
+    // Check if the assigned employee exists in users.json and is active (skip for "Non assegnare")
+    if (assignedTo !== "Non assegnare") {
+        const activeEmployees = getActiveEmployees();
+        const assignedEmployee = activeEmployees.find(
+            (emp) => emp.name === assignedTo
+        );
 
-    if (!assignedEmployee) {
-        return res.status(400).json({
-            message: `${assignedTo} non è un dipendente attivo nel sistema.`,
-        });
+        if (!assignedEmployee) {
+            return res.status(400).json({
+                message: `${assignedTo} non è un dipendente attivo nel sistema.`,
+            });
+        }
     }
 
-    // Get the required shift for the task
-    const requiredShift = getShiftFromTime(time);
+    // Skip shift validation for "Non assegnare" tasks since they don't have an assignee
+    if (assignedTo !== "Non assegnare") {
+        // Get the required shift for the task
+        const requiredShift = getShiftFromTime(time);
 
-    // Get shift data for the specific date
-    const taskDate = new Date(date);
-    const year = taskDate.getFullYear();
-    const month = taskDate.getMonth() + 1;
-    const shiftFilePath = getShiftDataPath(year, month);
+        // Get shift data for the specific date
+        const taskDate = new Date(date);
+        const year = taskDate.getFullYear();
+        const month = taskDate.getMonth() + 1;
+        const shiftFilePath = getShiftDataPath(year, month);
 
-    if (fs.existsSync(shiftFilePath)) {
-        const shiftData = JSON.parse(fs.readFileSync(shiftFilePath));
-        const dayData = shiftData[date];
+        if (fs.existsSync(shiftFilePath)) {
+            const shiftData = JSON.parse(fs.readFileSync(shiftFilePath));
+            const dayData = shiftData[date];
 
-        if (dayData) {
-            // Check if the assigned employee is working the required shift on this date
-            const employeeData = dayData[assignedTo];
-            if (employeeData && employeeData.shift) {
-                const userShift = employeeData.shift;
+            if (dayData) {
+                // Check if the assigned employee is working the required shift on this date
+                const employeeData = dayData[assignedTo];
+                if (employeeData && employeeData.shift) {
+                    const userShift = employeeData.shift;
 
-                // Check if user's shift matches the required time period
-                const isShiftMatch =
-                    userShift === requiredShift ||
-                    (userShift === "D" &&
-                        (requiredShift === "O" || requiredShift === "OP")) ||
-                    (userShift === "N" && requiredShift === "ON");
+                    // Check if user's shift matches the required time period
+                    const isShiftMatch =
+                        userShift === requiredShift ||
+                        (userShift === "D" &&
+                            (requiredShift === "O" ||
+                                requiredShift === "OP")) ||
+                        (userShift === "N" && requiredShift === "ON");
 
-                if (!isShiftMatch) {
+                    if (!isShiftMatch) {
+                        return res.status(400).json({
+                            message: `${assignedTo} non è in servizio nel turno richiesto (${requiredShift}) per la data ${date}. Controlla i turni prima di riassegnare il task.`,
+                        });
+                    }
+                } else {
                     return res.status(400).json({
                         message: `${assignedTo} non è in servizio nel turno richiesto (${requiredShift}) per la data ${date}. Controlla i turni prima di riassegnare il task.`,
                     });
                 }
-            } else {
-                return res.status(400).json({
-                    message: `${assignedTo} non è in servizio nel turno richiesto (${requiredShift}) per la data ${date}. Controlla i turni prima di riassegnare il task.`,
-                });
             }
         }
     }

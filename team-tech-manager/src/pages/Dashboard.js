@@ -6,9 +6,13 @@ import { useNavigate } from "react-router-dom";
 
 // Categories and troubleshooting details for task classification
 const categories = {
-    "routine task": ["PM", "MR"],
+    "routine task": ["PM", "MR", "Backup", "QTG"],
     troubleshooting: ["HW", "SW"],
-    others: [],
+    others: [
+        "Part test",
+        "Remote connection with support",
+        "Remote connection without support",
+    ],
 };
 
 const troubleshootingDetails = [
@@ -239,7 +243,7 @@ export default function Dashboard() {
             task: task,
             date: task.date,
             time: task.time,
-            assignedTo: task.assignedTo,
+            assignedTo: task.status === "da definire" ? "" : task.assignedTo, // Empty for "da definire" tasks
             availableEmployees: [],
             loading: false,
         });
@@ -335,6 +339,63 @@ export default function Dashboard() {
         setReassignModal((prev) => ({ ...prev, loading: true }));
 
         try {
+            // Check if this is a "da definire" task with new assignment data
+            const isDefiningTask = reassignModal.task.status === "da definire";
+            const hasRequiredDate = reassignModal.date;
+
+            // Validate that "da definire" tasks have at least a date before completion
+            if (isDefiningTask && !hasRequiredDate) {
+                setModal({
+                    isOpen: true,
+                    title: "Errore",
+                    message:
+                        "Per completare un task 'da definire', è necessario specificare almeno una nuova data.",
+                    type: "error",
+                    onConfirm: null,
+                    confirmText: "OK",
+                });
+                setReassignModal((prev) => ({ ...prev, loading: false }));
+                return;
+            }
+
+            if (isDefiningTask && hasRequiredDate) {
+                // First, update the task with the new assignment data
+                // Provide default values for required fields if not specified
+                const updateData = {
+                    date: reassignModal.date,
+                    time: reassignModal.time || "08:00", // Default time if not provided
+                    assignedTo: reassignModal.assignedTo || "Non assegnare", // Default assignee if not provided
+                };
+
+                const reassignResponse = await fetch(
+                    `${API}/api/tasks/${reassignModal.task.id}/reassign`,
+                    {
+                        method: "PATCH",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`,
+                        },
+                        body: JSON.stringify(updateData),
+                    }
+                );
+
+                if (!reassignResponse.ok) {
+                    const errorData = await reassignResponse.json();
+                    setModal({
+                        isOpen: true,
+                        title: "Errore",
+                        message:
+                            errorData.message ||
+                            "Errore durante l'assegnazione del task",
+                        type: "error",
+                        onConfirm: null,
+                        confirmText: "OK",
+                    });
+                    return;
+                }
+            }
+
+            // Then update the status to "completato"
             const response = await fetch(
                 `${API}/api/tasks/${reassignModal.task.id}/status`,
                 {
@@ -983,7 +1044,10 @@ export default function Dashboard() {
                                                     </span>
                                                 )}
                                             {task.time || "Nessun orario"}{" "}
-                                            {task.assignedTo} • {task.status}
+                                            {task.assignedTo === "Non assegnare"
+                                                ? "Non assegnato"
+                                                : task.assignedTo}{" "}
+                                            • {task.status}
                                         </div>
                                     </div>
                                     {isIncompleteSection &&
@@ -1566,7 +1630,7 @@ export default function Dashboard() {
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Nuova Data
+                                    Nuova Data*
                                 </label>
                                 <input
                                     type="date"
@@ -1577,6 +1641,7 @@ export default function Dashboard() {
                                             e.target.value
                                         )
                                     }
+                                    required
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
                             </div>
@@ -1644,7 +1709,12 @@ export default function Dashboard() {
                                 </button>
                                 <button
                                     onClick={handleCompleteTask}
-                                    disabled={reassignModal.loading}
+                                    disabled={
+                                        reassignModal.loading ||
+                                        (reassignModal.task.status ===
+                                            "da definire" &&
+                                            !reassignModal.date)
+                                    }
                                     className="px-4 py-2 text-green-600 border bg-green-50 border-green-300 rounded-md hover:bg-green-100 disabled:opacity-50"
                                 >
                                     Completato

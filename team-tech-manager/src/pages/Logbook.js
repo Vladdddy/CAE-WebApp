@@ -16,9 +16,13 @@ import {
 
 const API = process.env.REACT_APP_API_URL;
 const categories = {
-    "routine task": ["PM", "MR"],
+    "routine task": ["PM", "MR", "Backup", "QTG"],
     troubleshooting: ["HW", "SW"],
-    others: [],
+    others: [
+        "Part test",
+        "Remote connection with support",
+        "Remote connection without support",
+    ],
 };
 
 const troubleshootingDetails = [
@@ -517,9 +521,11 @@ export default function Logbook() {
                         } else {
                             taskDetails.textContent = `Orario: ${
                                 task.time || "Nessun orario"
-                            } • Assegnato a: ${task.assignedTo} • Status: ${
-                                task.status
-                            }`;
+                            } • Assegnato a: ${
+                                task.assignedTo === "Non assegnare"
+                                    ? "Non assegnato"
+                                    : task.assignedTo
+                            } • Status: ${task.status}`;
 
                             if (task.notes && task.notes.length > 0) {
                                 const notesHeader = document.createElement("p");
@@ -2087,7 +2093,9 @@ export default function Logbook() {
                                     : task.status}
                             </span>
                             <span className="text-xs text-gray-500 px-2">
-                                {task.assignedTo}
+                                {task.assignedTo === "Non assegnare"
+                                    ? "Non assegnato"
+                                    : task.assignedTo}
                             </span>
                         </div>
                         {task.notes && task.notes.length > 0 && (

@@ -44,6 +44,8 @@ export default function Tasks() {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [assignedTo, setAssignedTo] = useState("");
+    const [assignmentType, setAssignmentType] = useState("single"); // "single" or "multiple"
+    const [selectedEmployees, setSelectedEmployees] = useState([]);
     const [simulator, setSimulator] = useState("");
     const [category, setCategory] = useState("");
     const [subcategory, setSubcategory] = useState("");
@@ -182,10 +184,14 @@ export default function Tasks() {
         )
             return true;
         // Employees can only toggle their own tasks
-        return (
-            currentUser.role === "employee" &&
-            task.assignedTo === currentUser.name
-        );
+        if (currentUser.role === "employee") {
+            // Handle multiple assignees (comma-separated)
+            const assignedEmployeeNames = task.assignedTo.includes(",")
+                ? task.assignedTo.split(",").map((name) => name.trim())
+                : [task.assignedTo];
+            return assignedEmployeeNames.includes(currentUser.name);
+        }
+        return false;
     };
 
     const canAddTasks = () => {
@@ -206,10 +212,14 @@ export default function Tasks() {
         )
             return true;
         // Employees can only edit descriptions for tasks assigned to them
-        return (
-            currentUser.role === "employee" &&
-            task.assignedTo === currentUser.name
-        );
+        if (currentUser.role === "employee") {
+            // Handle multiple assignees (comma-separated)
+            const assignedEmployeeNames = task.assignedTo.includes(",")
+                ? task.assignedTo.split(",").map((name) => name.trim())
+                : [task.assignedTo];
+            return assignedEmployeeNames.includes(currentUser.name);
+        }
+        return false;
     };
 
     // Authorization functions for notes
@@ -539,10 +549,21 @@ export default function Tasks() {
     useEffect(() => {
         fetchAvailableEmployees(date, time);
         setAssignedTo(""); // Reset assigned employee when date/time changes
+        setSelectedEmployees([]); // Reset selected employees for multiple assignments
     }, [date, time]);
     const handleAddTask = async (e) => {
         e.preventDefault();
         const token = localStorage.getItem("authToken");
+
+        // Prepare the assignedTo value based on assignment type
+        let finalAssignedTo = "";
+        if (assignmentType === "single") {
+            finalAssignedTo = assignedTo;
+        } else {
+            // For multiple assignments, join selected employees with comma
+            finalAssignedTo = selectedEmployees.join(", ");
+        }
+
         try {
             const res = await fetch(`${API}/api/tasks`, {
                 method: "POST",
@@ -553,7 +574,7 @@ export default function Tasks() {
                 body: JSON.stringify({
                     title,
                     description,
-                    assignedTo,
+                    assignedTo: finalAssignedTo,
                     simulator,
                     category,
                     subcategory,
@@ -569,6 +590,8 @@ export default function Tasks() {
                 setTitle("");
                 setDescription("");
                 setAssignedTo("");
+                setSelectedEmployees([]);
+                setAssignmentType("single");
                 setSimulator("");
                 setCategory("");
                 setSubcategory("");
@@ -969,9 +992,11 @@ export default function Tasks() {
                         const taskDetails = document.createElement("p");
                         taskDetails.textContent = `Orario: ${
                             task.time || "Nessun orario"
-                        } • Assegnato a: ${task.assignedTo} • Status: ${
-                            task.status
-                        }`;
+                        } • Assegnato a: ${
+                            task.assignedTo === "Non assegnare"
+                                ? "Non assegnato"
+                                : task.assignedTo
+                        } • Status: ${task.status}`;
                         taskDetails.style.margin = "0";
                         taskDetails.style.color = "#666";
                         taskDetails.style.fontSize = "14px";
@@ -1247,9 +1272,11 @@ export default function Tasks() {
                             task.simulator || "N/A"
                         } • Orario: ${
                             task.time || "Nessun orario"
-                        } • Assegnato a: ${task.assignedTo} • Status: ${
-                            task.status
-                        }`;
+                        } • Assegnato a: ${
+                            task.assignedTo === "Non assegnare"
+                                ? "Non assegnato"
+                                : task.assignedTo
+                        } • Status: ${task.status}`;
                         taskDetails.style.margin = "0";
                         taskDetails.style.color = "#666";
                         taskDetails.style.fontSize = "14px";
@@ -2073,42 +2100,6 @@ export default function Tasks() {
                                                     </option>
                                                 </select>
                                                 <label
-                                                    htmlFor="assignedTo"
-                                                    className="text-xs text-gray-500"
-                                                >
-                                                    Assegna a
-                                                </label>
-                                                <select
-                                                    value={assignedTo}
-                                                    onChange={(e) =>
-                                                        setAssignedTo(
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    className="border px-3 py-2 rounded mb-4 text-gray-600 text-sm"
-                                                    required
-                                                    disabled={employeesLoading}
-                                                >
-                                                    <option value="">
-                                                        {employeesLoading
-                                                            ? "Caricamento dipendenti..."
-                                                            : availableEmployees.length ===
-                                                              0
-                                                            ? "Nessun dipendente disponibile"
-                                                            : "Seleziona dipendente"}
-                                                    </option>
-                                                    {availableEmployees.map(
-                                                        (employee) => (
-                                                            <option
-                                                                key={employee}
-                                                                value={employee}
-                                                            >
-                                                                {employee}
-                                                            </option>
-                                                        )
-                                                    )}
-                                                </select>
-                                                <label
                                                     htmlFor="date"
                                                     className="text-xs text-gray-500"
                                                 >
@@ -2135,9 +2126,203 @@ export default function Tasks() {
                                                     onChange={(e) =>
                                                         setTime(e.target.value)
                                                     }
-                                                    className="border px-3 py-2 rounded mb-8 text-gray-600 text-sm"
+                                                    className="border px-3 py-2 rounded mb-4 text-gray-600 text-sm"
                                                     required
-                                                />{" "}
+                                                />
+                                                {assignmentType === "single" ? (
+                                                    <>
+                                                        <label
+                                                            htmlFor="assignedTo"
+                                                            className="text-xs text-gray-500"
+                                                        >
+                                                            Assegna a
+                                                        </label>
+                                                        <select
+                                                            value={assignedTo}
+                                                            onChange={(e) =>
+                                                                setAssignedTo(
+                                                                    e.target
+                                                                        .value
+                                                                )
+                                                            }
+                                                            className="border px-3 py-2 rounded mb-1 text-gray-600 text-sm"
+                                                            disabled={
+                                                                employeesLoading
+                                                            }
+                                                        >
+                                                            <option value="">
+                                                                {employeesLoading
+                                                                    ? "Caricamento dipendenti..."
+                                                                    : availableEmployees.length ===
+                                                                      0
+                                                                    ? "Nessun dipendente disponibile"
+                                                                    : "Seleziona dipendente"}
+                                                            </option>
+                                                            <option value="Non assegnare">
+                                                                Non assegnare
+                                                            </option>
+                                                            {availableEmployees.map(
+                                                                (employee) => (
+                                                                    <option
+                                                                        key={
+                                                                            employee
+                                                                        }
+                                                                        value={
+                                                                            employee
+                                                                        }
+                                                                    >
+                                                                        {
+                                                                            employee
+                                                                        }
+                                                                    </option>
+                                                                )
+                                                            )}
+                                                        </select>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <label
+                                                            htmlFor="multipleAssignees"
+                                                            className="text-xs text-gray-500"
+                                                        >
+                                                            Seleziona dipendenti
+                                                        </label>
+                                                        <div className="border rounded max-h-32 overflow-y-auto p-2 mb-1">
+                                                            {employeesLoading ? (
+                                                                <div className="text-gray-500 text-sm p-2">
+                                                                    Caricamento
+                                                                    dipendenti...
+                                                                </div>
+                                                            ) : availableEmployees.length ===
+                                                              0 ? (
+                                                                <div className="text-gray-500 text-sm p-2">
+                                                                    Nessun
+                                                                    dipendente
+                                                                    disponibile
+                                                                </div>
+                                                            ) : (
+                                                                availableEmployees.map(
+                                                                    (
+                                                                        employee
+                                                                    ) => (
+                                                                        <div
+                                                                            key={
+                                                                                employee
+                                                                            }
+                                                                            className="flex items-center gap-2 p-1"
+                                                                        >
+                                                                            <input
+                                                                                type="checkbox"
+                                                                                id={`employee-${employee}`}
+                                                                                checked={selectedEmployees.includes(
+                                                                                    employee
+                                                                                )}
+                                                                                onChange={(
+                                                                                    e
+                                                                                ) => {
+                                                                                    if (
+                                                                                        e
+                                                                                            .target
+                                                                                            .checked
+                                                                                    ) {
+                                                                                        setSelectedEmployees(
+                                                                                            (
+                                                                                                prev
+                                                                                            ) => [
+                                                                                                ...prev,
+                                                                                                employee,
+                                                                                            ]
+                                                                                        );
+                                                                                    } else {
+                                                                                        setSelectedEmployees(
+                                                                                            (
+                                                                                                prev
+                                                                                            ) =>
+                                                                                                prev.filter(
+                                                                                                    (
+                                                                                                        emp
+                                                                                                    ) =>
+                                                                                                        emp !==
+                                                                                                        employee
+                                                                                                )
+                                                                                        );
+                                                                                    }
+                                                                                }}
+                                                                                className="w-4 h-4 text-blue-600 accent-blue-600 cursor-pointer"
+                                                                            />
+                                                                            <label
+                                                                                htmlFor={`employee-${employee}`}
+                                                                                className="text-sm text-gray-700 cursor-pointer"
+                                                                            >
+                                                                                {
+                                                                                    employee
+                                                                                }
+                                                                            </label>
+                                                                        </div>
+                                                                    )
+                                                                )
+                                                            )}
+                                                        </div>
+                                                    </>
+                                                )}
+                                                <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                                                    <div className="flex items-center gap-2">
+                                                        <input
+                                                            type="radio"
+                                                            id="singleAssignee"
+                                                            name="assignmentType"
+                                                            value="single"
+                                                            checked={
+                                                                assignmentType ===
+                                                                "single"
+                                                            }
+                                                            onChange={(e) => {
+                                                                setAssignmentType(
+                                                                    e.target
+                                                                        .value
+                                                                );
+                                                                setSelectedEmployees(
+                                                                    []
+                                                                );
+                                                            }}
+                                                            className="w-4 h-4 text-blue-600 accent-blue-600 cursor-pointer"
+                                                        />
+                                                        <label
+                                                            htmlFor="singleAssignee"
+                                                            className="text-xs text-gray-700 cursor-pointer"
+                                                        >
+                                                            1 Assegnatario
+                                                        </label>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <input
+                                                            type="radio"
+                                                            id="multipleAssignees"
+                                                            name="assignmentType"
+                                                            value="multiple"
+                                                            checked={
+                                                                assignmentType ===
+                                                                "multiple"
+                                                            }
+                                                            onChange={(e) => {
+                                                                setAssignmentType(
+                                                                    e.target
+                                                                        .value
+                                                                );
+                                                                setAssignedTo(
+                                                                    ""
+                                                                );
+                                                            }}
+                                                            className="w-4 h-4 text-blue-600 accent-blue-600 cursor-pointer"
+                                                        />
+                                                        <label
+                                                            htmlFor="multipleAssignees"
+                                                            className="text-xs text-gray-700 cursor-pointer"
+                                                        >
+                                                            Più assegnatari
+                                                        </label>
+                                                    </div>
+                                                </div>{" "}
                                                 <button
                                                     type="submit"
                                                     className="aggiungi-btn col-span-1 sm:col-span-2 bg-blue-600 text-white px-4 py-2 rounded"
