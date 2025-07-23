@@ -7,6 +7,11 @@ body {
     scrollbar-width: thin;
     scrollbar-color: #cbd5e1 transparent;
     position: relative;
+    transform: scaleY(-1);
+}
+
+.shifts-container table {
+    transform: scaleY(-1);
 }
 
 .shifts-container::-webkit-scrollbar {

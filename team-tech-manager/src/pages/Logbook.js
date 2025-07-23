@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import "../styles/tasks.css";
 import TaskDetailsModal from "../components/TaskDetailsModal";
 import Modal from "../components/Modal";
@@ -100,6 +100,11 @@ export default function Logbook() {
         entry: null,
         entryIndex: null,
     });
+
+    // Available employees state for description modal
+    const [availableEmployees, setAvailableEmployees] = useState([]);
+    const [employeesLoading, setEmployeesLoading] = useState(false);
+
     const currentUserName =
         localStorage.getItem("userName") || "Utente Sconosciuto";
 
@@ -124,6 +129,72 @@ export default function Logbook() {
     };
 
     const currentUser = getCurrentUser();
+
+    // Fetch available employees when date or time changes
+    const fetchAvailableEmployees = useCallback(
+        async (selectedDate, selectedTime) => {
+            console.log(
+                "fetchAvailableEmployees called with:",
+                selectedDate,
+                selectedTime
+            );
+
+            if (!selectedDate || !selectedTime) {
+                setAvailableEmployees([]);
+                console.log("No date/time provided, clearing employees");
+                return;
+            }
+
+            setEmployeesLoading(true);
+            console.log("Setting employeesLoading to true");
+            const token = localStorage.getItem("authToken");
+
+            try {
+                const response = await fetch(
+                    `${API}/api/tasks/available-employees?date=${selectedDate}&time=${selectedTime}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log("Fetched employees:", data.availableEmployees);
+                    setAvailableEmployees(data.availableEmployees);
+                } else {
+                    console.error(
+                        "Error fetching available employees:",
+                        await response.text()
+                    );
+                    setAvailableEmployees([]);
+                }
+            } catch (error) {
+                console.error("Error fetching available employees:", error);
+                setAvailableEmployees([]);
+            } finally {
+                console.log("Setting employeesLoading to false");
+                setEmployeesLoading(false);
+            }
+        },
+        [API]
+    );
+
+    // Handle date/time change in description modal
+    const handleDescriptionModalDateTimeChange = useCallback(
+        async (newDate, newTime) => {
+            console.log(
+                "Date/time changed in description modal:",
+                newDate,
+                newTime
+            );
+            if (newDate && newTime) {
+                await fetchAvailableEmployees(newDate, newTime);
+            }
+        },
+        [fetchAvailableEmployees]
+    );
 
     // Authorization functions for notes
     const canModifyNote = (note) => {
@@ -1380,6 +1451,20 @@ export default function Logbook() {
             entry: task,
             entryIndex: entryIndex,
         });
+
+        // Fetch available employees for the task's date and time
+        if (task.date && task.time) {
+            console.log(
+                "Fetching available employees for:",
+                task.date,
+                task.time
+            );
+            fetchAvailableEmployees(task.date, task.time);
+        } else {
+            // If no date/time, clear available employees and reset loading state
+            setAvailableEmployees([]);
+            setEmployeesLoading(false);
+        }
     };
 
     const closeDescriptionModal = () => {
@@ -1388,9 +1473,12 @@ export default function Logbook() {
             entry: null,
             entryIndex: null,
         });
+        // Reset available employees and loading state when closing modal
+        setAvailableEmployees([]);
+        setEmployeesLoading(false);
     };
     const handleSaveDescriptionForLogbook = async (updatedData) => {
-        const { description, simulator } = updatedData;
+        const { description, simulator, employee, date, time } = updatedData;
         const { entryIndex } = descriptionModal;
 
         console.log("Saving description with entryIndex:", entryIndex);
@@ -1418,6 +1506,9 @@ export default function Logbook() {
                         ...originalEntry,
                         text: description,
                         simulator: simulator || "Others",
+                        author: employee || originalEntry.author,
+                        date: date || originalEntry.date,
+                        time: time || originalEntry.time,
                         title:
                             originalEntry.title ||
                             originalEntry.text.substring(0, 50) +
@@ -1465,6 +1556,9 @@ export default function Logbook() {
                 ...originalEntry,
                 text: description,
                 simulator: simulator || "Others",
+                author: employee || originalEntry.author,
+                date: date || originalEntry.date,
+                time: time || originalEntry.time,
                 title:
                     originalEntry.title ||
                     originalEntry.text.substring(0, 50) +
@@ -3647,10 +3741,18 @@ export default function Logbook() {
                 onSave={handleSaveDescriptionForLogbook}
                 currentDescription={descriptionModal.entry?.fullText || ""}
                 currentSimulator={descriptionModal.entry?.simulator || ""}
-                currentEmployee={descriptionModal.entry?.employee || ""}
-                availableEmployees={[]}
-                employeesLoading={false}
+                currentEmployee={
+                    descriptionModal.entry?.assignedTo ||
+                    descriptionModal.entry?.author ||
+                    ""
+                }
+                currentDate={descriptionModal.entry?.date || ""}
+                currentTime={descriptionModal.entry?.time || ""}
+                availableEmployees={availableEmployees}
+                employeesLoading={employeesLoading}
+                onDateTimeChange={handleDescriptionModalDateTimeChange}
                 isEditing={true}
+                isEmployee={currentUser?.role === "employee"}
             />
         </>
     );

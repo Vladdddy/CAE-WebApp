@@ -823,21 +823,21 @@ export default function Dashboard() {
     // Prende le task del turno diurno
     const dayTasks = dailyTasks.filter((task) => {
         const hour = parseInt(task.time.split(":")[0]);
-        return hour >= 7 && hour < 23;
+        return hour >= 7 && hour < 19;
     });
     const incompleteDayTasks = incompleteTasks.filter((task) => {
         const hour = parseInt(task.time.split(":")[0]);
-        return hour >= 7 && hour < 23;
+        return hour >= 7 && hour < 19;
     });
 
     // Prende le task del turno notturno
     const nightTasks = dailyTasks.filter((task) => {
         const hour = parseInt(task.time.split(":")[0]);
-        return hour >= 23 || hour < 7;
+        return hour >= 19 || hour < 7;
     });
     const incompleteNightTasks = incompleteTasks.filter((task) => {
         const hour = parseInt(task.time.split(":")[0]);
-        return hour >= 23 || hour < 7;
+        return hour >= 19 || hour < 7;
     });
 
     // Filtra i turni in base all'orario
