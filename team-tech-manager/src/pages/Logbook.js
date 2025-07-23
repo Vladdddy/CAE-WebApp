@@ -101,6 +101,12 @@ export default function Logbook() {
         entryIndex: null,
     });
 
+    // Export modal state
+    const [exportModal, setExportModal] = useState({
+        isOpen: false,
+        selectedShift: "giorno-e-notte", // Default to all shifts
+    });
+
     // Available employees state for description modal
     const [availableEmployees, setAvailableEmployees] = useState([]);
     const [employeesLoading, setEmployeesLoading] = useState(false);
@@ -129,6 +135,32 @@ export default function Logbook() {
     };
 
     const currentUser = getCurrentUser();
+
+    // Helper function to determine if a time belongs to a specific shift
+    const getShiftFromTime = (timeString) => {
+        if (!timeString) return null;
+
+        const [hours, minutes] = timeString.split(":").map(Number);
+        const timeInMinutes = hours * 60 + minutes;
+
+        if (timeInMinutes > 420 && timeInMinutes < 1140) {
+            return "giorno"; // Day shift: 07:01 - 18:59
+        } else {
+            return "notte"; // Night shift: 19:00 - 07:00
+        }
+    };
+
+    // Helper function to filter tasks and entries by shift
+    const filterByShift = (items, selectedShift) => {
+        if (selectedShift === "giorno-e-notte") {
+            return items; // Return all items
+        }
+
+        return items.filter((item) => {
+            const shift = getShiftFromTime(item.time);
+            return shift === selectedShift;
+        });
+    };
 
     // Fetch available employees when date or time changes
     const fetchAvailableEmployees = useCallback(
@@ -407,7 +439,7 @@ export default function Logbook() {
         }
         return all;
     };
-    const handleExportPDF = () => {
+    const handleExportPDF = (selectedShift = "giorno-e-notte") => {
         try {
             const formattedDate = new Date(selectedDate).toLocaleDateString(
                 "it-IT",
@@ -425,36 +457,46 @@ export default function Logbook() {
                 (entry) => entry.date === selectedDate
             );
 
+            // Filter by shift
+            const filteredTasks = filterByShift(dailyTasks, selectedShift);
+            const filteredEntries = filterByShift(dailyEntries, selectedShift);
+
             const pdfContent = document.createElement("div");
             pdfContent.style.padding = "20px";
             pdfContent.style.fontFamily = "Arial, sans-serif";
             pdfContent.style.backgroundColor = "white";
 
             const title = document.createElement("h2");
-            title.textContent = `Task e Logbook per il ${formattedDate}`;
+            const shiftText =
+                selectedShift === "giorno"
+                    ? " - Turno Giorno"
+                    : selectedShift === "notte"
+                    ? " - Turno Notte"
+                    : " - Tutti i Turni";
+            title.textContent = `Task e Logbook per il ${formattedDate}${shiftText}`;
             title.style.marginBottom = "20px";
             title.style.color = "#333";
             title.style.borderBottom = "2px solid #d1d5db";
             title.style.paddingBottom = "10px";
             pdfContent.appendChild(title);
 
-            if (dailyTasks.length === 0 && dailyEntries.length === 0) {
+            if (filteredTasks.length === 0 && filteredEntries.length === 0) {
                 const noContent = document.createElement("p");
-                noContent.textContent = "Nessun task o entry per questa data";
+                noContent.textContent = `Nessun task o entry per questa data${shiftText.toLowerCase()}`;
                 noContent.style.color = "#666";
                 noContent.style.fontStyle = "italic";
                 pdfContent.appendChild(noContent);
             } else {
                 const tasksBySimulator = {};
-                dailyTasks.forEach((task) => {
+                filteredTasks.forEach((task) => {
                     const simulator = task.simulator || "Nessun Simulatore";
                     if (!tasksBySimulator[simulator]) {
                         tasksBySimulator[simulator] = [];
                     }
                     tasksBySimulator[simulator].push(task);
                 });
-                if (dailyEntries.length > 0) {
-                    dailyEntries.forEach((entry) => {
+                if (filteredEntries.length > 0) {
+                    filteredEntries.forEach((entry) => {
                         const entrySimulator = entry.simulator || "Others";
                         if (!tasksBySimulator[entrySimulator]) {
                             tasksBySimulator[entrySimulator] = [];
@@ -1477,6 +1519,20 @@ export default function Logbook() {
         setAvailableEmployees([]);
         setEmployeesLoading(false);
     };
+
+    // Export modal handlers
+    const closeExportModal = () => {
+        setExportModal({
+            isOpen: false,
+            selectedShift: "giorno-e-notte",
+        });
+    };
+
+    const handleExportConfirm = () => {
+        handleExportPDF(exportModal.selectedShift);
+        closeExportModal();
+    };
+
     const handleSaveDescriptionForLogbook = async (updatedData) => {
         const { description, simulator, employee, date, time } = updatedData;
         const { entryIndex } = descriptionModal;
@@ -2369,7 +2425,12 @@ export default function Logbook() {
                                     </svg>{" "}
                                 </button>
                                 <button
-                                    onClick={handleExportPDF}
+                                    onClick={() =>
+                                        setExportModal({
+                                            isOpen: true,
+                                            selectedShift: "giorno-e-notte",
+                                        })
+                                    }
                                     className="aggiungi-btn flex items-center gap-2 col-span-1 sm:col-span-2 bg-blue-600 px-8 py-2 rounded"
                                 >
                                     <svg
@@ -3754,6 +3815,89 @@ export default function Logbook() {
                 isEditing={true}
                 isEmployee={currentUser?.role === "employee"}
             />
+            {/* Export Modal */}
+            {exportModal.isOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full mx-4">
+                        <h3 className="text-lg font-semibold mb-4 text-gray-800">
+                            Seleziona Turno per Export
+                        </h3>
+                        <div className="space-y-3 mb-6">
+                            <label className="flex items-center space-x-3 cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="shift"
+                                    value="giorno"
+                                    checked={
+                                        exportModal.selectedShift === "giorno"
+                                    }
+                                    onChange={(e) =>
+                                        setExportModal((prev) => ({
+                                            ...prev,
+                                            selectedShift: e.target.value,
+                                        }))
+                                    }
+                                    className="form-radio h-4 w-4 text-blue-600"
+                                />
+                                <span className="text-gray-700">Giorno</span>
+                            </label>
+                            <label className="flex items-center space-x-3 cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="shift"
+                                    value="notte"
+                                    checked={
+                                        exportModal.selectedShift === "notte"
+                                    }
+                                    onChange={(e) =>
+                                        setExportModal((prev) => ({
+                                            ...prev,
+                                            selectedShift: e.target.value,
+                                        }))
+                                    }
+                                    className="form-radio h-4 w-4 text-blue-600"
+                                />
+                                <span className="text-gray-700">Notte</span>
+                            </label>
+                            <label className="flex items-center space-x-3 cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="shift"
+                                    value="giorno-e-notte"
+                                    checked={
+                                        exportModal.selectedShift ===
+                                        "giorno-e-notte"
+                                    }
+                                    onChange={(e) =>
+                                        setExportModal((prev) => ({
+                                            ...prev,
+                                            selectedShift: e.target.value,
+                                        }))
+                                    }
+                                    className="form-radio h-4 w-4 text-blue-600"
+                                />
+                                <span className="text-gray-700">
+                                    Giorno e Notte
+                                </span>
+                            </label>
+                        </div>
+                        <div className="flex justify-end space-x-3">
+                            <button
+                                onClick={closeExportModal}
+                                className="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+                            >
+                                Annulla
+                            </button>
+                            <button
+                                onClick={handleExportConfirm}
+                                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                            >
+                                Esporta PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 }

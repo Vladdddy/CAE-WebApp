@@ -9,7 +9,7 @@
       "note": ""
     },
     "Mario": {
-      "shift": "M",
+      "shift": "ON",
       "note": ""
     },
     "Simone": {
@@ -25,11 +25,11 @@
       "note": ""
     },
     "Nicolo": {
-      "shift": "N",
+      "shift": "D",
       "note": ""
     },
     "Sara": {
-      "shift": "N",
+      "shift": "M",
       "note": ""
     },
     "Thomas": {
@@ -47,7 +47,7 @@
       "note": ""
     },
     "Mario": {
-      "shift": "M",
+      "shift": "ON",
       "note": ""
     },
     "Simone": {
@@ -63,11 +63,11 @@
       "note": ""
     },
     "Nicolo": {
-      "shift": "N",
+      "shift": "D",
       "note": ""
     },
     "Sara": {
-      "shift": "N",
+      "shift": "M",
       "note": ""
     },
     "Thomas": {
@@ -85,7 +85,7 @@
       "note": ""
     },
     "Mario": {
-      "shift": "M",
+      "shift": "ON",
       "note": ""
     },
     "Simone": {
@@ -101,11 +101,11 @@
       "note": ""
     },
     "Nicolo": {
-      "shift": "N",
+      "shift": "D",
       "note": ""
     },
     "Sara": {
-      "shift": "N",
+      "shift": "M",
       "note": ""
     },
     "Thomas": {
@@ -123,7 +123,7 @@
       "note": ""
     },
     "Mario": {
-      "shift": "M",
+      "shift": "ON",
       "note": ""
     },
     "Simone": {
@@ -139,11 +139,11 @@
       "note": ""
     },
     "Nicolo": {
-      "shift": "N",
+      "shift": "D",
       "note": ""
     },
     "Sara": {
-      "shift": "N",
+      "shift": "M",
       "note": ""
     },
     "Thomas": {
@@ -181,11 +181,11 @@
       "note": "Riposo"
     },
     "Sara": {
-      "shift": "R",
+      "shift": "M",
       "note": "Riposo"
     },
     "Thomas": {
-      "shift": "D",
+      "shift": "R",
       "note": ""
     }
   },
@@ -219,11 +219,11 @@
       "note": "Riposo"
     },
     "Sara": {
-      "shift": "R",
+      "shift": "M",
       "note": "Riposo"
     },
     "Thomas": {
-      "shift": "D",
+      "shift": "R",
       "note": ""
     }
   },
@@ -257,11 +257,11 @@
       "note": "Riposo"
     },
     "Sara": {
-      "shift": "R",
+      "shift": "M",
       "note": "Riposo"
     },
     "Thomas": {
-      "shift": "D",
+      "shift": "R",
       "note": ""
     }
   },
@@ -295,7 +295,7 @@
       "note": "Riposo"
     },
     "Sara": {
-      "shift": "R",
+      "shift": "M",
       "note": "Riposo"
     },
     "Thomas": {
@@ -329,15 +329,15 @@
       "note": ""
     },
     "Nicolo": {
-      "shift": "D",
+      "shift": "N",
       "note": ""
     },
     "Sara": {
-      "shift": "D",
+      "shift": "M",
       "note": ""
     },
     "Thomas": {
-      "shift": "R",
+      "shift": "N",
       "note": "Riposo"
     }
   },
@@ -367,15 +367,15 @@
       "note": ""
     },
     "Nicolo": {
-      "shift": "D",
+      "shift": "N",
       "note": ""
     },
     "Sara": {
-      "shift": "D",
+      "shift": "M",
       "note": ""
     },
     "Thomas": {
-      "shift": "R",
+      "shift": "N",
       "note": "Riposo"
     }
   },
@@ -405,15 +405,15 @@
       "note": ""
     },
     "Nicolo": {
-      "shift": "D",
+      "shift": "N",
       "note": ""
     },
     "Sara": {
-      "shift": "D",
+      "shift": "M",
       "note": ""
     },
     "Thomas": {
-      "shift": "R",
+      "shift": "N",
       "note": "Riposo"
     }
   },
@@ -443,11 +443,11 @@
       "note": ""
     },
     "Nicolo": {
-      "shift": "D",
+      "shift": "N",
       "note": ""
     },
     "Sara": {
-      "shift": "D",
+      "shift": "M",
       "note": ""
     },
     "Thomas": {
@@ -485,11 +485,11 @@
       "note": "Riposo"
     },
     "Sara": {
-      "shift": "R",
+      "shift": "M",
       "note": "Riposo"
     },
     "Thomas": {
-      "shift": "N",
+      "shift": "R",
       "note": ""
     }
   },
@@ -523,11 +523,11 @@
       "note": "Riposo"
     },
     "Sara": {
-      "shift": "R",
+      "shift": "M",
       "note": "Riposo"
     },
     "Thomas": {
-      "shift": "N",
+      "shift": "R",
       "note": ""
     }
   },
@@ -549,7 +549,7 @@
       "note": ""
     },
     "Andrea": {
-      "shift": "N",
+      "shift": "R",
       "note": "Riposo"
     },
     "Francesco": {
@@ -561,11 +561,11 @@
       "note": "Riposo"
     },
     "Sara": {
-      "shift": "R",
+      "shift": "M",
       "note": "Riposo"
     },
     "Thomas": {
-      "shift": "N",
+      "shift": "R",
       "note": ""
     }
   },
@@ -599,7 +599,7 @@
       "note": "Riposo"
     },
     "Sara": {
-      "shift": "R",
+      "shift": "M",
       "note": "Riposo"
     },
     "Thomas": {
@@ -633,15 +633,15 @@
       "note": ""
     },
     "Nicolo": {
-      "shift": "N",
+      "shift": "D",
       "note": ""
     },
     "Sara": {
-      "shift": "N",
+      "shift": "M",
       "note": ""
     },
     "Thomas": {
-      "shift": "R",
+      "shift": "D",
       "note": "Riposo"
     }
   },
@@ -671,15 +671,15 @@
       "note": ""
     },
     "Nicolo": {
-      "shift": "N",
+      "shift": "D",
       "note": ""
     },
     "Sara": {
-      "shift": "N",
+      "shift": "M",
       "note": ""
     },
     "Thomas": {
-      "shift": "R",
+      "shift": "D",
       "note": "Riposo"
     }
   },
@@ -709,15 +709,15 @@
       "note": ""
     },
     "Nicolo": {
-      "shift": "N",
+      "shift": "D",
       "note": ""
     },
     "Sara": {
-      "shift": "N",
+      "shift": "M",
       "note": ""
     },
     "Thomas": {
-      "shift": "R",
+      "shift": "D",
       "note": "Riposo"
     }
   },
@@ -747,11 +747,11 @@
       "note": ""
     },
     "Nicolo": {
-      "shift": "N",
+      "shift": "D",
       "note": ""
     },
     "Sara": {
-      "shift": "N",
+      "shift": "M",
       "note": ""
     },
     "Thomas": {
@@ -785,15 +785,15 @@
       "note": "Riposo"
     },
     "Nicolo": {
-      "shift": "D",
+      "shift": "R",
       "note": "Riposo"
     },
     "Sara": {
-      "shift": "D",
+      "shift": "M",
       "note": "Riposo"
     },
     "Thomas": {
-      "shift": "D",
+      "shift": "R",
       "note": ""
     }
   },
@@ -819,7 +819,7 @@
       "note": "Riposo"
     },
     "Francesco": {
-      "shift": "D",
+      "shift": "R",
       "note": "Riposo"
     },
     "Nicolo": {
@@ -827,11 +827,11 @@
       "note": "Riposo"
     },
     "Sara": {
-      "shift": "D",
+      "shift": "M",
       "note": "Riposo"
     },
     "Thomas": {
-      "shift": "D",
+      "shift": "R",
       "note": ""
     }
   },
@@ -845,7 +845,7 @@
       "note": ""
     },
     "Mario": {
-      "shift": "F",
+      "shift": "ON",
       "note": ""
     },
     "Simone": {
@@ -865,11 +865,11 @@
       "note": "Riposo"
     },
     "Sara": {
-      "shift": "R",
+      "shift": "M",
       "note": "Riposo"
     },
     "Thomas": {
-      "shift": "D",
+      "shift": "R",
       "note": ""
     }
   },
@@ -883,7 +883,7 @@
       "note": ""
     },
     "Mario": {
-      "shift": "F",
+      "shift": "ON",
       "note": ""
     },
     "Simone": {
@@ -903,7 +903,7 @@
       "note": "Riposo"
     },
     "Sara": {
-      "shift": "R",
+      "shift": "M",
       "note": "Riposo"
     },
     "Thomas": {
@@ -921,7 +921,7 @@
       "note": ""
     },
     "Mario": {
-      "shift": "F",
+      "shift": "ON",
       "note": ""
     },
     "Simone": {
@@ -937,15 +937,15 @@
       "note": ""
     },
     "Nicolo": {
-      "shift": "D",
+      "shift": "N",
       "note": ""
     },
     "Sara": {
-      "shift": "D",
+      "shift": "M",
       "note": ""
     },
     "Thomas": {
-      "shift": "R",
+      "shift": "N",
       "note": "Riposo"
     }
   },
@@ -975,15 +975,15 @@
       "note": ""
     },
     "Nicolo": {
-      "shift": "D",
+      "shift": "N",
       "note": ""
     },
     "Sara": {
-      "shift": "D",
+      "shift": "M",
       "note": ""
     },
     "Thomas": {
-      "shift": "R",
+      "shift": "N",
       "note": "Riposo"
     }
   },
@@ -1013,15 +1013,15 @@
       "note": ""
     },
     "Nicolo": {
-      "shift": "D",
+      "shift": "N",
       "note": ""
     },
     "Sara": {
-      "shift": "D",
+      "shift": "M",
       "note": ""
     },
     "Thomas": {
-      "shift": "R",
+      "shift": "N",
       "note": "Riposo"
     }
   },
@@ -1035,7 +1035,7 @@
       "note": ""
     },
     "Mario": {
-      "shift": "F",
+      "shift": "OP",
       "note": ""
     },
     "Simone": {
@@ -1051,11 +1051,11 @@
       "note": ""
     },
     "Nicolo": {
-      "shift": "D",
+      "shift": "N",
       "note": ""
     },
     "Sara": {
-      "shift": "D",
+      "shift": "M",
       "note": ""
     },
     "Thomas": {
@@ -1073,7 +1073,7 @@
       "note": ""
     },
     "Mario": {
-      "shift": "F",
+      "shift": "OP",
       "note": ""
     },
     "Simone": {
@@ -1093,11 +1093,11 @@
       "note": "Riposo"
     },
     "Sara": {
-      "shift": "R",
+      "shift": "M",
       "note": "Riposo"
     },
     "Thomas": {
-      "shift": "N",
+      "shift": "R",
       "note": ""
     }
   },
@@ -1111,7 +1111,7 @@
       "note": ""
     },
     "Mario": {
-      "shift": "F",
+      "shift": "OP",
       "note": ""
     },
     "Simone": {
@@ -1131,21 +1131,21 @@
       "note": "Riposo"
     },
     "Sara": {
-      "shift": "R",
+      "shift": "M",
       "note": "Riposo"
     },
     "Thomas": {
-      "shift": "N",
+      "shift": "R",
       "note": ""
     }
   },
   "2025-07-31": {
     "Gianluca": {
-      "shift": "ON",
+      "shift": "O",
       "note": ""
     },
     "Luca": {
-      "shift": "OP",
+      "shift": "ON",
       "note": ""
     },
     "Simone": {
@@ -1153,11 +1153,11 @@
       "note": ""
     },
     "Mario": {
-      "shift": "ON",
+      "shift": "OP",
       "note": ""
     },
     "Andrea": {
-      "shift": "D",
+      "shift": "R",
       "note": ""
     },
     "Francesco": {
@@ -1165,11 +1165,11 @@
       "note": "Riposo"
     },
     "Nicolo": {
-      "shift": "N",
+      "shift": "R",
       "note": ""
     },
     "Sara": {
-      "shift": "R",
+      "shift": "M",
       "note": ""
     },
     "Thomas": {

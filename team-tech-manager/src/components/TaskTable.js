@@ -40,11 +40,11 @@ const TaskTable = ({
 
             for (let i = 0; i < days; i++) {
                 const date = new Date(start);
-                date.setDate(start.getDate() - i);
+                date.setDate(start.getDate() + i);
                 dates.push(date.toISOString().split("T")[0]);
             }
 
-            return dates.sort((a, b) => new Date(b) - new Date(a)); // Sort in descending order (newest first)
+            return dates; // Keep chronological order (oldest first)
         };
 
         // Get all dates in the selected period

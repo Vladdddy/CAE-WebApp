@@ -1499,7 +1499,7 @@ export default function Tasks() {
 
         for (let i = 0; i < days; i++) {
             const date = new Date(start);
-            date.setDate(start.getDate() - i);
+            date.setDate(start.getDate() + i);
             dates.push(date.toISOString().split("T")[0]);
         }
 

@@ -1,12 +1,13 @@
 import { useEffect, useState, useRef, useMemo } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import html2pdf from "html2pdf.js";
 import Modal from "../components/Modal";
 import "../styles/shifts.css";
 
 const API = process.env.REACT_APP_API_URL;
-const adminShifts = ["O", "OP", "ON", "F", "M", "R", "C"];
-const employeeShifts = ["D", "N", "F", "M", "R", "C"];
-const shifts = ["O", "OP", "ON", "D", "N", "F", "M", "R", "C"]; // Combined for pattern display
+const adminShifts = ["O", "OP", "ON", "F", "M", "R", "C", "CA"];
+const employeeShifts = ["D", "N", "F", "M", "R", "C", "CA"];
+const shifts = ["O", "OP", "ON", "D", "N", "F", "M", "R", "C", "CA"]; // Combined for pattern display
 
 // Helper function to get today's date in local timezone
 const getTodayDateKey = () => {
@@ -28,15 +29,16 @@ const getDateKey = (date) => {
 // Helper function to get shift color
 const getShiftColor = (shift) => {
     const colors = {
-        O: "bg-green-100 text-green-800",
-        OP: "bg-orange-100 text-orange-800",
+        O: "bg-blue-100 text-blue-800",
+        OP: "bg-blue-100 text-blue-800",
         ON: "bg-purple-100 text-purple-800",
-        D: "bg-green-100 text-green-800",
-        N: "bg-blue-100 text-blue-800",
+        D: "bg-blue-100 text-blue-800",
+        N: "bg-purple-100 text-purple-800",
         F: "bg-yellow-100 text-yellow-800",
-        M: "bg-red-100 text-red-800",
+        M: "bg-orange-100 text-orange-800",
         R: "bg-slate-100 text-slate-800",
-        C: "bg-cyan-100 text-cyan-800",
+        C: "bg-green-100 text-green-800",
+        CA: "bg-red-100 text-red-800",
     };
     return colors[shift] || "bg-gray-100 text-gray-800";
 };
@@ -97,7 +99,136 @@ export default function Shifts() {
         selectedUsers: [],
         selectAll: false,
     });
+    const [customPatternModal, setCustomPatternModal] = useState({
+        isOpen: false,
+        shiftCount: 7,
+        shifts: new Array(7).fill(""),
+        patternName: "",
+    });
+    const [customPatterns, setCustomPatterns] = useState([]);
     const tableRef = useRef();
+
+    // Load custom patterns from API
+    useEffect(() => {
+        const loadCustomPatterns = async () => {
+            try {
+                const token = localStorage.getItem("authToken");
+                const response = await fetch(`${API}/api/patterns`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                if (response.ok) {
+                    const patterns = await response.json();
+                    setCustomPatterns(patterns);
+                } else {
+                    console.error("Failed to load custom patterns");
+                }
+            } catch (error) {
+                console.error("Error loading custom patterns:", error);
+            }
+        };
+
+        loadCustomPatterns();
+    }, []);
+
+    // Function to save custom pattern to API
+    const saveCustomPattern = async (pattern) => {
+        try {
+            const token = localStorage.getItem("authToken");
+            const response = await fetch(`${API}/api/patterns`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(pattern),
+            });
+
+            if (response.ok) {
+                const savedPattern = await response.json();
+                setCustomPatterns((prev) => [...prev, savedPattern]);
+                return savedPattern;
+            } else {
+                console.error("Failed to save custom pattern");
+                return null;
+            }
+        } catch (error) {
+            console.error("Error saving custom pattern:", error);
+            return null;
+        }
+    };
+
+    // Function to delete custom pattern from API
+    const deleteCustomPattern = async (patternId) => {
+        try {
+            const token = localStorage.getItem("authToken");
+            const response = await fetch(`${API}/api/patterns/${patternId}`, {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (response.ok) {
+                setCustomPatterns((prev) =>
+                    prev.filter((p) => p.id !== patternId)
+                );
+                return true;
+            } else {
+                console.error("Failed to delete custom pattern");
+                return false;
+            }
+        } catch (error) {
+            console.error("Error deleting custom pattern:", error);
+            return false;
+        }
+    };
+
+    // Migration function to move localStorage patterns to API (one-time use)
+    const migrateLocalStoragePatterns = async () => {
+        try {
+            const localPatterns = localStorage.getItem("customPatterns");
+            if (localPatterns) {
+                const patterns = JSON.parse(localPatterns);
+                if (patterns.length > 0) {
+                    console.log(
+                        "Migrating",
+                        patterns.length,
+                        "patterns from localStorage to API"
+                    );
+
+                    for (const pattern of patterns) {
+                        // Remove the old id since the API will generate a new one
+                        const { id, ...patternWithoutId } = pattern;
+                        await saveCustomPattern(patternWithoutId);
+                    }
+
+                    // Clear localStorage after successful migration
+                    localStorage.removeItem("customPatterns");
+                    console.log("Migration completed successfully");
+                }
+            }
+        } catch (error) {
+            console.error("Error migrating localStorage patterns:", error);
+        }
+    };
+
+    // Auto-migrate on first load if localStorage patterns exist and API patterns are empty
+    useEffect(() => {
+        const autoMigrate = async () => {
+            const localPatterns = localStorage.getItem("customPatterns");
+            if (localPatterns && customPatterns.length === 0) {
+                const patterns = JSON.parse(localPatterns);
+                if (patterns.length > 0) {
+                    console.log("Auto-migrating localStorage patterns to API");
+                    await migrateLocalStoragePatterns();
+                }
+            }
+        };
+
+        autoMigrate();
+    }, [customPatterns]);
 
     // Shift patterns
     const shiftPatterns = {
@@ -326,6 +457,65 @@ export default function Shifts() {
             window.removeEventListener("beforeunload", handleBeforeUnload);
         };
     }, [hasUnsavedChanges]);
+
+    // Custom navigation guard for internal app navigation
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    useEffect(() => {
+        // Store the original navigate function when component mounts
+        const originalPushState = window.history.pushState;
+        const originalReplaceState = window.history.replaceState;
+
+        // Override pushState to intercept navigation
+        window.history.pushState = function (state, title, url) {
+            if (hasUnsavedChanges && url && url !== location.pathname) {
+                const confirmed = window.confirm(
+                    "Hai modifiche non salvate. Sei sicuro di voler uscire? Le modifiche andranno perse."
+                );
+                if (!confirmed) {
+                    return; // Block navigation
+                }
+            }
+            return originalPushState.apply(this, arguments);
+        };
+
+        // Override replaceState to intercept navigation
+        window.history.replaceState = function (state, title, url) {
+            if (hasUnsavedChanges && url && url !== location.pathname) {
+                const confirmed = window.confirm(
+                    "Hai modifiche non salvate. Sei sicuro di voler uscire? Le modifiche andranno perse."
+                );
+                if (!confirmed) {
+                    return; // Block navigation
+                }
+            }
+            return originalReplaceState.apply(this, arguments);
+        };
+
+        // Handle browser back/forward buttons
+        const handlePopState = (event) => {
+            if (hasUnsavedChanges) {
+                const confirmed = window.confirm(
+                    "Hai modifiche non salvate. Sei sicuro di voler uscire? Le modifiche andranno perse."
+                );
+                if (!confirmed) {
+                    // Prevent the navigation by pushing the current location back
+                    window.history.pushState(null, "", location.pathname);
+                    return;
+                }
+            }
+        };
+
+        window.addEventListener("popstate", handlePopState);
+
+        return () => {
+            // Restore original functions
+            window.history.pushState = originalPushState;
+            window.history.replaceState = originalReplaceState;
+            window.removeEventListener("popstate", handlePopState);
+        };
+    }, [hasUnsavedChanges, location.pathname, navigate]);
 
     const handleChange = (name, day, field, value) => {
         const dateKey = getDateKey(day);
@@ -666,6 +856,9 @@ export default function Shifts() {
                         } else if (colorClass.includes("bg-blue-100")) {
                             shiftDiv.style.backgroundColor = "#dbeafe";
                             shiftDiv.style.color = "#1e40af";
+                        } else if (colorClass.includes("bg-slate-100")) {
+                            shiftDiv.style.backgroundColor = "#f1f5f9";
+                            shiftDiv.style.color = "#475569";
                         }
                     } else {
                         shiftDiv.style.backgroundColor = "#f3f4f6";
@@ -819,7 +1012,31 @@ export default function Shifts() {
             return;
         }
 
-        const pattern = shiftPatterns[patternModal.patternType];
+        let pattern;
+
+        // Handle custom patterns
+        if (patternModal.patternType.startsWith("custom-")) {
+            const customPatternId = parseInt(
+                patternModal.patternType.replace("custom-", "")
+            );
+            const customPattern = customPatterns.find(
+                (p) => p.id === customPatternId
+            );
+            if (!customPattern) {
+                setSuccessModal({
+                    isOpen: true,
+                    message: "Pattern personalizzato non trovato",
+                });
+                return;
+            }
+            pattern = {
+                type: "cycle",
+                pattern: customPattern.pattern,
+            };
+        } else {
+            pattern = shiftPatterns[patternModal.patternType];
+        }
+
         let startDate, endDate;
 
         // Handle different pattern types
@@ -848,7 +1065,7 @@ export default function Shifts() {
             startDate = new Date(patternModal.malattiaStartDate);
             endDate = new Date(patternModal.malattiaEndDate);
         } else {
-            // Regular patterns use the general start/end dates
+            // Regular patterns (including custom patterns) use the general start/end dates
             if (!patternModal.startDate) {
                 setSuccessModal({
                     isOpen: true,
@@ -1005,6 +1222,16 @@ export default function Shifts() {
             message = "Ferie applicate! ";
         } else if (patternModal.patternType === "malattia") {
             message = "Malattia applicata! ";
+        } else if (patternModal.patternType.startsWith("custom-")) {
+            const customPatternId = parseInt(
+                patternModal.patternType.replace("custom-", "")
+            );
+            const customPattern = customPatterns.find(
+                (p) => p.id === customPatternId
+            );
+            message = `Pattern "${
+                customPattern?.name || "Personalizzato"
+            }" applicato! `;
         } else {
             message = "Pattern applicato! ";
         }
@@ -1105,10 +1332,9 @@ export default function Shifts() {
 
             if (entry && entry.shift) {
                 const shift = entry.shift;
-                // Count working shifts: exclude R=Riposo, F=Festa
-                if (["O", "OP", "ON", "M", "C"].includes(shift)) {
+                if (["O", "OP", "ON", "M", "F"].includes(shift)) {
                     totalHours += 8; // Admin shifts are 8 hours
-                } else if (["D", "N"].includes(shift)) {
+                } else if (["D", "N", "F", "M"].includes(shift)) {
                     totalHours += 11; // Employee day/night shifts are 11 hours
                 }
             }
@@ -1317,7 +1543,7 @@ export default function Shifts() {
 
             {/* Summary Section */}
             <div className="flex gap-2 mb-6 w-[50vw]">
-                {["O", "OP", "ON", "D", "N", "F", "M", "R", "C"].map(
+                {["D", "O", "OP", "N", "ON", "F", "M", "R", "C", "CA"].map(
                     (shiftType) => {
                         const count = Object.values(data).reduce(
                             (total, dayData) => {
@@ -1341,6 +1567,7 @@ export default function Shifts() {
                             M: "Malattia",
                             R: "Riposo",
                             C: "Corso",
+                            CA: "Chiusura",
                         };
 
                         return (
@@ -1485,14 +1712,14 @@ export default function Shifts() {
                                                             className={`flex flex-col items-center rounded px-1 py-1 ${
                                                                 counts.D < 2
                                                                     ? "bg-red-100 text-white"
-                                                                    : "bg-sky-100"
+                                                                    : "bg-blue-100"
                                                             }`}
                                                         >
                                                             <span
                                                                 className={`font-bold text-xs ${
                                                                     counts.D < 2
                                                                         ? "text-red-600"
-                                                                        : "text-sky-700"
+                                                                        : "text-blue-700"
                                                                 }`}
                                                             >
                                                                 D
@@ -1501,7 +1728,7 @@ export default function Shifts() {
                                                                 className={`text-xs font-bold min-w-[20px] ${
                                                                     counts.D < 2
                                                                         ? "text-red-600"
-                                                                        : "text-sky-800"
+                                                                        : "text-blue-800"
                                                                 }`}
                                                             >
                                                                 {counts.D}
@@ -1511,14 +1738,14 @@ export default function Shifts() {
                                                             className={`flex flex-col items-center rounded px-1 py-1 ${
                                                                 counts.N < 2
                                                                     ? "bg-red-100 text-white"
-                                                                    : "bg-indigo-100"
+                                                                    : "bg-purple-100"
                                                             }`}
                                                         >
                                                             <span
                                                                 className={`font-bold text-xs ${
                                                                     counts.N < 2
                                                                         ? "text-red-600"
-                                                                        : "text-indigo-700"
+                                                                        : "text-purple-700"
                                                                 }`}
                                                             >
                                                                 N
@@ -1527,7 +1754,7 @@ export default function Shifts() {
                                                                 className={`text-xs font-bold min-w-[20px] ${
                                                                     counts.N < 2
                                                                         ? "text-red-600"
-                                                                        : "text-indigo-800"
+                                                                        : "text-purple-800"
                                                                 }`}
                                                             >
                                                                 {counts.N}
@@ -1708,60 +1935,85 @@ export default function Shifts() {
                                                 )}
                                                 <div className="space-y-2">
                                                     {isAdmin ? (
-                                                        <select
-                                                            value={
-                                                                entry.shift ||
-                                                                ""
-                                                            }
-                                                            onChange={(e) =>
-                                                                handleChange(
-                                                                    name,
-                                                                    d,
-                                                                    "shift",
-                                                                    e.target
-                                                                        .value
-                                                                )
-                                                            }
-                                                            className={`shift-select w-full p-2 px-4 text-2xs font-bold rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 transition-colors duration-200 ${
-                                                                entry.shift
-                                                                    ? getShiftColor(
-                                                                          entry.shift
-                                                                      )
-                                                                    : "bg-gray-100"
-                                                            }`}
-                                                            style={{
-                                                                fontSize:
-                                                                    "10px",
-                                                            }}
-                                                        >
-                                                            <option
-                                                                value=""
-                                                                className="text-2xs"
+                                                        <div className="relative">
+                                                            <select
+                                                                value={
+                                                                    entry.shift ||
+                                                                    ""
+                                                                }
+                                                                onChange={(e) =>
+                                                                    handleChange(
+                                                                        name,
+                                                                        d,
+                                                                        "shift",
+                                                                        e.target
+                                                                            .value
+                                                                    )
+                                                                }
+                                                                className={`shift-select w-full p-2 px-4 text-2xs font-bold rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 transition-colors duration-200 ${
+                                                                    entry.shift
+                                                                        ? getShiftColor(
+                                                                              entry.shift
+                                                                          )
+                                                                        : "bg-gray-100"
+                                                                } ${
+                                                                    entry.shift ===
+                                                                        "CA" ||
+                                                                    entry.shift ===
+                                                                        "R"
+                                                                        ? "text-transparent"
+                                                                        : ""
+                                                                }`}
                                                                 style={{
                                                                     fontSize:
                                                                         "10px",
                                                                 }}
                                                             >
-                                                                --
-                                                            </option>
-                                                            {adminShifts.map(
-                                                                (s) => (
-                                                                    <option
-                                                                        key={s}
-                                                                        value={
-                                                                            s
-                                                                        }
-                                                                        className="text-2xs"
+                                                                <option
+                                                                    value=""
+                                                                    className="text-2xs text-black"
+                                                                    style={{
+                                                                        fontSize:
+                                                                            "10px",
+                                                                    }}
+                                                                >
+                                                                    --
+                                                                </option>
+                                                                {adminShifts.map(
+                                                                    (s) => (
+                                                                        <option
+                                                                            key={
+                                                                                s
+                                                                            }
+                                                                            value={
+                                                                                s
+                                                                            }
+                                                                            className="text-2xs text-black"
+                                                                            style={{
+                                                                                fontSize:
+                                                                                    "10px",
+                                                                            }}
+                                                                        >
+                                                                            {s}
+                                                                        </option>
+                                                                    )
+                                                                )}
+                                                            </select>
+                                                            {(entry.shift ===
+                                                                "CA" ||
+                                                                entry.shift ===
+                                                                    "R") && (
+                                                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                                                    <span
+                                                                        className="text-2xs font-bold"
                                                                         style={{
                                                                             fontSize:
                                                                                 "10px",
                                                                         }}
-                                                                    >
-                                                                        {s}
-                                                                    </option>
-                                                                )
+                                                                    ></span>
+                                                                </div>
                                                             )}
-                                                        </select>
+                                                        </div>
                                                     ) : (
                                                         <p
                                                             className={`w-full p-1 px-4 text-xs font-bold rounded-md border-gray-300 transition-colors duration-200 ${
@@ -1772,8 +2024,12 @@ export default function Shifts() {
                                                                     : "bg-gray-50"
                                                             }`}
                                                         >
-                                                            {entry.shift ||
-                                                                "--"}
+                                                            {entry.shift ===
+                                                                "CA" ||
+                                                            entry.shift === "R"
+                                                                ? ""
+                                                                : entry.shift ||
+                                                                  "--"}
                                                         </p>
                                                     )}
 
@@ -2043,60 +2299,85 @@ export default function Shifts() {
                                                 )}
                                                 <div className="space-y-2">
                                                     {isAdmin ? (
-                                                        <select
-                                                            value={
-                                                                entry.shift ||
-                                                                ""
-                                                            }
-                                                            onChange={(e) =>
-                                                                handleChange(
-                                                                    name,
-                                                                    d,
-                                                                    "shift",
-                                                                    e.target
-                                                                        .value
-                                                                )
-                                                            }
-                                                            className={`shift-select w-full p-2 px-4 text-2xs font-bold rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 transition-colors duration-200 ${
-                                                                entry.shift
-                                                                    ? getShiftColor(
-                                                                          entry.shift
-                                                                      )
-                                                                    : "bg-gray-100"
-                                                            }`}
-                                                            style={{
-                                                                fontSize:
-                                                                    "10px",
-                                                            }}
-                                                        >
-                                                            <option
-                                                                value=""
-                                                                className="text-2xs"
+                                                        <div className="relative">
+                                                            <select
+                                                                value={
+                                                                    entry.shift ||
+                                                                    ""
+                                                                }
+                                                                onChange={(e) =>
+                                                                    handleChange(
+                                                                        name,
+                                                                        d,
+                                                                        "shift",
+                                                                        e.target
+                                                                            .value
+                                                                    )
+                                                                }
+                                                                className={`shift-select w-full p-2 px-4 text-2xs font-bold rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 transition-colors duration-200 ${
+                                                                    entry.shift
+                                                                        ? getShiftColor(
+                                                                              entry.shift
+                                                                          )
+                                                                        : "bg-gray-100"
+                                                                } ${
+                                                                    entry.shift ===
+                                                                        "CA" ||
+                                                                    entry.shift ===
+                                                                        "R"
+                                                                        ? "text-transparent"
+                                                                        : ""
+                                                                }`}
                                                                 style={{
                                                                     fontSize:
                                                                         "10px",
                                                                 }}
                                                             >
-                                                                --
-                                                            </option>
-                                                            {employeeShifts.map(
-                                                                (s) => (
-                                                                    <option
-                                                                        key={s}
-                                                                        value={
-                                                                            s
-                                                                        }
-                                                                        className="text-2xs"
+                                                                <option
+                                                                    value=""
+                                                                    className="text-2xs text-black"
+                                                                    style={{
+                                                                        fontSize:
+                                                                            "10px",
+                                                                    }}
+                                                                >
+                                                                    --
+                                                                </option>
+                                                                {employeeShifts.map(
+                                                                    (s) => (
+                                                                        <option
+                                                                            key={
+                                                                                s
+                                                                            }
+                                                                            value={
+                                                                                s
+                                                                            }
+                                                                            className="text-2xs text-black"
+                                                                            style={{
+                                                                                fontSize:
+                                                                                    "10px",
+                                                                            }}
+                                                                        >
+                                                                            {s}
+                                                                        </option>
+                                                                    )
+                                                                )}
+                                                            </select>
+                                                            {(entry.shift ===
+                                                                "CA" ||
+                                                                entry.shift ===
+                                                                    "R") && (
+                                                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                                                    <span
+                                                                        className="text-2xs font-bold"
                                                                         style={{
                                                                             fontSize:
                                                                                 "10px",
                                                                         }}
-                                                                    >
-                                                                        {s}
-                                                                    </option>
-                                                                )
+                                                                    ></span>
+                                                                </div>
                                                             )}
-                                                        </select>
+                                                        </div>
                                                     ) : (
                                                         <p
                                                             className={`w-full p-1 px-4 text-xs font-bold rounded-md border-gray-300 transition-colors duration-200 ${
@@ -2107,8 +2388,12 @@ export default function Shifts() {
                                                                     : "bg-gray-50"
                                                             }`}
                                                         >
-                                                            {entry.shift ||
-                                                                "--"}
+                                                            {entry.shift ===
+                                                                "CA" ||
+                                                            entry.shift === "R"
+                                                                ? ""
+                                                                : entry.shift ||
+                                                                  "--"}
                                                         </p>
                                                     )}
 
@@ -2429,8 +2714,9 @@ export default function Shifts() {
             {/* Pattern Modal */}
             {patternModal.isOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
-                        <div className="flex justify-between items-center mb-6">
+                    <div className="bg-white rounded-lg w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col">
+                        {/* Fixed Header */}
+                        <div className="flex justify-between items-center p-6 pb-4 border-b border-gray-200">
                             <h3 className="text-xl font-semibold text-gray-900">
                                 Applica Pattern Turni
                             </h3>
@@ -2455,826 +2741,870 @@ export default function Shifts() {
                             </button>
                         </div>
 
-                        <div className="separator"></div>
-
-                        {/* Pattern Type Selection */}
-                        <div className="mb-6">
-                            <div className="grid grid-cols-1 gap-3">
-                                <div className="relative">
-                                    <input
-                                        type="radio"
-                                        id="admin-pattern"
-                                        name="patternType"
-                                        value="admin"
-                                        checked={
-                                            patternModal.patternType === "admin"
-                                        }
-                                        onChange={(e) =>
-                                            setPatternModal((prev) => ({
-                                                ...prev,
-                                                patternType: e.target.value,
-                                            }))
-                                        }
-                                        className="sr-only"
-                                    />
-                                    <label
-                                        htmlFor="admin-pattern"
-                                        className={`block p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                                            patternModal.patternType === "admin"
-                                                ? "border-green-500 bg-green-50"
-                                                : "border-gray-200 hover:border-gray-300"
-                                        }`}
-                                    >
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <h4 className="font-medium text-gray-900">
-                                                    {shiftPatterns.admin.name}
-                                                </h4>
-                                                <p className="text-sm text-gray-600 mt-1">
-                                                    {
-                                                        shiftPatterns.admin
-                                                            .description
-                                                    }
-                                                </p>
-                                                <div className="flex gap-2 mt-2">
-                                                    {shiftPatterns.admin.weekdayPattern.map(
-                                                        (shift, index) => (
-                                                            <span
-                                                                key={index}
-                                                                className={`px-2 py-1 text-xs rounded ${getShiftColor(
-                                                                    shift
-                                                                )}`}
-                                                            >
-                                                                {shift}
-                                                            </span>
-                                                        )
-                                                    )}
-                                                </div>
-                                            </div>
-                                            <div
-                                                className={`w-4 h-4 rounded-full border-2 ${
-                                                    patternModal.patternType ===
-                                                    "admin"
-                                                        ? "border-green-500 bg-green-500"
-                                                        : "border-gray-300"
-                                                }`}
-                                            >
-                                                {patternModal.patternType ===
-                                                    "admin" && (
-                                                    <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </label>
-                                </div>
-
-                                <div className="relative">
-                                    <input
-                                        type="radio"
-                                        id="employee-pattern"
-                                        name="patternType"
-                                        value="employee"
-                                        checked={
-                                            patternModal.patternType ===
-                                            "employee"
-                                        }
-                                        onChange={(e) =>
-                                            setPatternModal((prev) => ({
-                                                ...prev,
-                                                patternType: e.target.value,
-                                            }))
-                                        }
-                                        className="sr-only"
-                                    />
-                                    <label
-                                        htmlFor="employee-pattern"
-                                        className={`block p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                                            patternModal.patternType ===
-                                            "employee"
-                                                ? "border-blue-500 bg-blue-50"
-                                                : "border-gray-200 hover:border-gray-300"
-                                        }`}
-                                    >
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <h4 className="font-medium text-gray-900">
-                                                    {
-                                                        shiftPatterns.employee
-                                                            .name
-                                                    }
-                                                </h4>
-                                                <p className="text-sm text-gray-600 mt-1">
-                                                    {
-                                                        shiftPatterns.employee
-                                                            .description
-                                                    }
-                                                </p>
-                                                <div className="flex gap-2 mt-2">
-                                                    {shiftPatterns.employee.pattern.map(
-                                                        (shift, index) => (
-                                                            <span
-                                                                key={index}
-                                                                className={`px-2 py-1 text-xs rounded ${getShiftColor(
-                                                                    shift
-                                                                )}`}
-                                                            >
-                                                                {shift}
-                                                            </span>
-                                                        )
-                                                    )}
-                                                </div>
-                                            </div>
-                                            <div
-                                                className={`w-4 h-4 rounded-full border-2 ${
-                                                    patternModal.patternType ===
-                                                    "employee"
-                                                        ? "border-blue-500 bg-blue-500"
-                                                        : "border-gray-300"
-                                                }`}
-                                            >
-                                                {patternModal.patternType ===
-                                                    "employee" && (
-                                                    <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </label>
-                                </div>
-
-                                <div className="relative">
-                                    <input
-                                        type="radio"
-                                        id="employee-night-pattern"
-                                        name="patternType"
-                                        value="employee_night"
-                                        checked={
-                                            patternModal.patternType ===
-                                            "employee_night"
-                                        }
-                                        onChange={(e) =>
-                                            setPatternModal((prev) => ({
-                                                ...prev,
-                                                patternType: e.target.value,
-                                            }))
-                                        }
-                                        className="sr-only"
-                                    />
-                                    <label
-                                        htmlFor="employee-night-pattern"
-                                        className={`block p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                                            patternModal.patternType ===
-                                            "employee_night"
-                                                ? "border-purple-500 bg-purple-50"
-                                                : "border-gray-200 hover:border-gray-300"
-                                        }`}
-                                    >
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <h4 className="font-medium text-gray-900">
-                                                    {
-                                                        shiftPatterns
-                                                            .employee_night.name
-                                                    }
-                                                </h4>
-                                                <p className="text-sm text-gray-600 mt-1">
-                                                    {
-                                                        shiftPatterns
-                                                            .employee_night
-                                                            .description
-                                                    }
-                                                </p>
-                                                <div className="flex gap-2 mt-2">
-                                                    {shiftPatterns.employee_night.pattern.map(
-                                                        (shift, index) => (
-                                                            <span
-                                                                key={index}
-                                                                className={`px-2 py-1 text-xs rounded ${getShiftColor(
-                                                                    shift
-                                                                )}`}
-                                                            >
-                                                                {shift}
-                                                            </span>
-                                                        )
-                                                    )}
-                                                </div>
-                                            </div>
-                                            <div
-                                                className={`w-4 h-4 rounded-full border-2 ${
-                                                    patternModal.patternType ===
-                                                    "employee_night"
-                                                        ? "border-purple-500 bg-purple-500"
-                                                        : "border-gray-300"
-                                                }`}
-                                            >
-                                                {patternModal.patternType ===
-                                                    "employee_night" && (
-                                                    <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </label>
-                                </div>
-
-                                <div className="relative">
-                                    <input
-                                        type="radio"
-                                        id="ferie-pattern"
-                                        name="patternType"
-                                        value="ferie"
-                                        checked={
-                                            patternModal.patternType === "ferie"
-                                        }
-                                        onChange={(e) =>
-                                            setPatternModal((prev) => ({
-                                                ...prev,
-                                                patternType: e.target.value,
-                                            }))
-                                        }
-                                        className="sr-only"
-                                    />
-                                    <label
-                                        htmlFor="ferie-pattern"
-                                        className={`block p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                                            patternModal.patternType === "ferie"
-                                                ? "border-yellow-500 bg-yellow-50"
-                                                : "border-gray-200 hover:border-gray-300"
-                                        }`}
-                                    >
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <h4 className="font-medium text-gray-900">
-                                                    {shiftPatterns.ferie.name}
-                                                </h4>
-                                                <p className="text-sm text-gray-600 mt-1">
-                                                    {
-                                                        shiftPatterns.ferie
-                                                            .description
-                                                    }
-                                                </p>
-                                                <div className="flex gap-2 mt-2">
-                                                    <span
-                                                        className={`px-2 py-1 text-xs rounded ${getShiftColor(
-                                                            shiftPatterns.ferie
-                                                                .shift
-                                                        )}`}
-                                                    >
-                                                        {
-                                                            shiftPatterns.ferie
-                                                                .shift
-                                                        }
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div
-                                                className={`w-4 h-4 rounded-full border-2 ${
-                                                    patternModal.patternType ===
-                                                    "ferie"
-                                                        ? "border-yellow-500 bg-yellow-500"
-                                                        : "border-gray-300"
-                                                }`}
-                                            >
-                                                {patternModal.patternType ===
-                                                    "ferie" && (
-                                                    <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </label>
-                                </div>
-
-                                <div className="relative">
-                                    <input
-                                        type="radio"
-                                        id="malattia-pattern"
-                                        name="patternType"
-                                        value="malattia"
-                                        checked={
-                                            patternModal.patternType ===
-                                            "malattia"
-                                        }
-                                        onChange={(e) =>
-                                            setPatternModal((prev) => ({
-                                                ...prev,
-                                                patternType: e.target.value,
-                                            }))
-                                        }
-                                        className="sr-only"
-                                    />
-                                    <label
-                                        htmlFor="malattia-pattern"
-                                        className={`block p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                                            patternModal.patternType ===
-                                            "malattia"
-                                                ? "border-red-500 bg-red-50"
-                                                : "border-gray-200 hover:border-gray-300"
-                                        }`}
-                                    >
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <h4 className="font-medium text-gray-900">
-                                                    {
-                                                        shiftPatterns.malattia
-                                                            .name
-                                                    }
-                                                </h4>
-                                                <p className="text-sm text-gray-600 mt-1">
-                                                    {
-                                                        shiftPatterns.malattia
-                                                            .description
-                                                    }
-                                                </p>
-                                                <div className="flex gap-2 mt-2">
-                                                    <span
-                                                        className={`px-2 py-1 text-xs rounded ${getShiftColor(
-                                                            shiftPatterns
-                                                                .malattia.shift
-                                                        )}`}
-                                                    >
-                                                        {
-                                                            shiftPatterns
-                                                                .malattia.shift
-                                                        }
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div
-                                                className={`w-4 h-4 rounded-full border-2 ${
-                                                    patternModal.patternType ===
-                                                    "malattia"
-                                                        ? "border-red-500 bg-red-500"
-                                                        : "border-gray-300"
-                                                }`}
-                                            >
-                                                {patternModal.patternType ===
-                                                    "malattia" && (
-                                                    <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="separator"></div>
-
-                        {/* Start Date Selection - Only for regular patterns */}
-                        {patternModal.patternType !== "ferie" &&
-                            patternModal.patternType !== "malattia" && (
-                                <div className="mb-6">
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Dal giorno
-                                    </label>
-                                    <input
-                                        type="date"
-                                        value={patternModal.startDate}
-                                        onChange={(e) => {
-                                            const selectedDate = new Date(
-                                                e.target.value
-                                            );
-                                            const endOfSelectedMonth = new Date(
-                                                selectedDate.getFullYear(),
-                                                selectedDate.getMonth() + 1,
-                                                0
-                                            );
-                                            const endDateStr = `${endOfSelectedMonth.getFullYear()}-${String(
-                                                endOfSelectedMonth.getMonth() +
-                                                    1
-                                            ).padStart(2, "0")}-${String(
-                                                endOfSelectedMonth.getDate()
-                                            ).padStart(2, "0")}`;
-
-                                            setPatternModal((prev) => ({
-                                                ...prev,
-                                                startDate: e.target.value,
-                                                // Auto-set end date to end of selected month if not already set
-                                                endDate:
-                                                    prev.endDate || endDateStr,
-                                            }));
-                                        }}
-                                        min={`${year}-${String(
-                                            month + 1
-                                        ).padStart(2, "0")}-01`}
-                                        max={`${year + 1}-12-31`}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
-                                    />
-                                    <p className="text-xs text-gray-500 mt-1">
-                                        Seleziona il giorno da cui iniziare ad
-                                        applicare il pattern (può essere in mesi
-                                        futuri)
-                                    </p>
-                                </div>
-                            )}
-
-                        {/* End Date Selection - Only for regular patterns */}
-                        {patternModal.patternType !== "ferie" &&
-                            patternModal.patternType !== "malattia" && (
-                                <div className="mb-6">
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Al giorno
-                                    </label>
-                                    <input
-                                        type="date"
-                                        value={patternModal.endDate}
-                                        onChange={(e) =>
-                                            setPatternModal((prev) => ({
-                                                ...prev,
-                                                endDate: e.target.value,
-                                            }))
-                                        }
-                                        min={
-                                            patternModal.startDate ||
-                                            `${year}-${String(
-                                                month + 1
-                                            ).padStart(2, "0")}-01`
-                                        }
-                                        max={`${year + 1}-12-31`}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
-                                    />
-                                    <p className="text-xs text-gray-500 mt-1">
-                                        Seleziona il giorno fino al quale
-                                        applicare il pattern
-                                    </p>
-                                    {patternModal.startDate &&
-                                        patternModal.endDate &&
-                                        (() => {
-                                            const startDate = new Date(
-                                                patternModal.startDate
-                                            );
-                                            const endDate = new Date(
-                                                patternModal.endDate
-                                            );
-                                            const isMultiMonth =
-                                                startDate.getMonth() !==
-                                                    endDate.getMonth() ||
-                                                startDate.getFullYear() !==
-                                                    endDate.getFullYear();
-
-                                            if (isMultiMonth) {
-                                                return (
-                                                    <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                                                        <div className="flex items-start gap-2">
-                                                            <svg
-                                                                className="w-4 h-4 text-blue-600 mt-0.5"
-                                                                fill="none"
-                                                                stroke="currentColor"
-                                                                viewBox="0 0 24 24"
-                                                            >
-                                                                <path
-                                                                    strokeLinecap="round"
-                                                                    strokeLinejoin="round"
-                                                                    strokeWidth={
-                                                                        2
-                                                                    }
-                                                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                                />
-                                                            </svg>
-                                                            <div>
-                                                                <p className="text-xs text-blue-800 font-medium">
-                                                                    Pattern
-                                                                    multi-mese
-                                                                </p>
-                                                                <p className="text-xs text-blue-700">
-                                                                    Il pattern
-                                                                    si estenderà
-                                                                    attraverso
-                                                                    più mesi. I
-                                                                    dati
-                                                                    verranno
-                                                                    salvati
-                                                                    automaticamente
-                                                                    in ciascun
-                                                                    mese
-                                                                    interessato.
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            }
-                                            return null;
-                                        })()}
-                                </div>
-                            )}
-
-                        {/* Ferie Date Selection */}
-                        {patternModal.patternType === "ferie" && (
+                        {/* Scrollable Content */}
+                        <div className="flex-1 overflow-y-auto p-6">
+                            {/* Pattern Type Selection */}
                             <div className="mb-6">
-                                <h4 className="text-sm font-medium text-gray-700 mb-3">
-                                    Seleziona la durata delle Ferie
+                                <h4 className="text-sm font-medium text-gray-700 mb-4">
+                                    Seleziona Tipo Pattern
                                 </h4>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Da
-                                        </label>
-                                        <input
-                                            type="date"
-                                            value={patternModal.ferieStartDate}
-                                            onChange={(e) =>
-                                                setPatternModal((prev) => ({
-                                                    ...prev,
-                                                    ferieStartDate:
-                                                        e.target.value,
-                                                }))
-                                            }
-                                            min={`${year}-${String(
-                                                month + 1
-                                            ).padStart(2, "0")}-01`}
-                                            max={`${year + 1}-12-31`}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            A
-                                        </label>
-                                        <input
-                                            type="date"
-                                            value={patternModal.ferieEndDate}
-                                            onChange={(e) =>
-                                                setPatternModal((prev) => ({
-                                                    ...prev,
-                                                    ferieEndDate:
-                                                        e.target.value,
-                                                }))
-                                            }
-                                            min={
-                                                patternModal.ferieStartDate ||
-                                                `${year}-${String(
-                                                    month + 1
-                                                ).padStart(2, "0")}-01`
-                                            }
-                                            max={`${year + 1}-12-31`}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        )}
 
-                        {/* Malattia Date Selection */}
-                        {patternModal.patternType === "malattia" && (
-                            <div className="mb-6">
-                                <h4 className="text-sm font-medium text-gray-700 mb-3">
-                                    Seleziona la durata della Malattia
-                                </h4>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Da
-                                        </label>
+                                {/* Pattern squares in a row */}
+                                <div className="flex gap-3 mb-4 flex-wrap">
+                                    {/* Admin Pattern */}
+                                    <div className="relative">
                                         <input
-                                            type="date"
-                                            value={
-                                                patternModal.malattiaStartDate
+                                            type="radio"
+                                            id="admin-pattern"
+                                            name="patternType"
+                                            value="admin"
+                                            checked={
+                                                patternModal.patternType ===
+                                                "admin"
                                             }
                                             onChange={(e) =>
                                                 setPatternModal((prev) => ({
                                                     ...prev,
-                                                    malattiaStartDate:
-                                                        e.target.value,
+                                                    patternType: e.target.value,
                                                 }))
                                             }
-                                            min={`${year}-${String(
-                                                month + 1
-                                            ).padStart(2, "0")}-01`}
-                                            max={`${year + 1}-12-31`}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
+                                            className="sr-only"
                                         />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            A
-                                        </label>
-                                        <input
-                                            type="date"
-                                            value={patternModal.malattiaEndDate}
-                                            onChange={(e) =>
-                                                setPatternModal((prev) => ({
-                                                    ...prev,
-                                                    malattiaEndDate:
-                                                        e.target.value,
-                                                }))
-                                            }
-                                            min={
-                                                patternModal.malattiaStartDate ||
-                                                `${year}-${String(
-                                                    month + 1
-                                                ).padStart(2, "0")}-01`
-                                            }
-                                            max={`${year + 1}-12-31`}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                        <div className="separator"></div>
-                        {/* User Selection */}
-                        <div className="mb-6">
-                            <label className="block text-sm font-medium text-gray-700 mb-3">
-                                Seleziona Utenti (
-                                {patternModal.selectedUsers.length} selezionati)
-                            </label>
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-60 overflow-y-auto border border-gray-200 rounded-lg p-3">
-                                {names.map((name) => {
-                                    const user = users.find(
-                                        (u) => u.name === name
-                                    );
-                                    const isSelected =
-                                        patternModal.selectedUsers.includes(
-                                            name
-                                        );
-
-                                    return (
-                                        <div
-                                            key={name}
-                                            onClick={() =>
-                                                toggleUserSelection(name)
-                                            }
-                                            className={`flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                                                isSelected
-                                                    ? "border-blue-500 bg-blue-50"
+                                        <label
+                                            htmlFor="admin-pattern"
+                                            className={`flex flex-col items-center justify-center w-12 h-12 border-2 rounded-lg cursor-pointer transition-all ${
+                                                patternModal.patternType ===
+                                                "admin"
+                                                    ? "border-blue-300 bg-blue-50"
                                                     : "border-gray-200 hover:border-gray-300"
                                             }`}
                                         >
-                                            <div
-                                                className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
-                                                    isSelected
-                                                        ? "border-blue-500 bg-blue-500"
-                                                        : "border-gray-300"
+                                            <div className="text-center">
+                                                <div className="text-[10px] font-medium text-gray-600">
+                                                    SL
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    {/* Employee Pattern */}
+                                    <div className="relative">
+                                        <input
+                                            type="radio"
+                                            id="employee-pattern"
+                                            name="patternType"
+                                            value="employee"
+                                            checked={
+                                                patternModal.patternType ===
+                                                "employee"
+                                            }
+                                            onChange={(e) =>
+                                                setPatternModal((prev) => ({
+                                                    ...prev,
+                                                    patternType: e.target.value,
+                                                }))
+                                            }
+                                            className="sr-only"
+                                        />
+                                        <label
+                                            htmlFor="employee-pattern"
+                                            className={`flex flex-col items-center justify-center w-12 h-12 border-2 rounded-lg cursor-pointer transition-all ${
+                                                patternModal.patternType ===
+                                                "employee"
+                                                    ? "border-blue-300 bg-blue-50"
+                                                    : "border-gray-200 hover:border-gray-300"
+                                            }`}
+                                        >
+                                            <div className="text-center">
+                                                <div className="text-[10px] font-medium text-gray-600">
+                                                    DRNR
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    {/* Employee Night Pattern */}
+                                    <div className="relative">
+                                        <input
+                                            type="radio"
+                                            id="employee-night-pattern"
+                                            name="patternType"
+                                            value="employee_night"
+                                            checked={
+                                                patternModal.patternType ===
+                                                "employee_night"
+                                            }
+                                            onChange={(e) =>
+                                                setPatternModal((prev) => ({
+                                                    ...prev,
+                                                    patternType: e.target.value,
+                                                }))
+                                            }
+                                            className="sr-only"
+                                        />
+                                        <label
+                                            htmlFor="employee-night-pattern"
+                                            className={`flex flex-col items-center justify-center w-12 h-12 border-2 rounded-lg cursor-pointer transition-all ${
+                                                patternModal.patternType ===
+                                                "employee_night"
+                                                    ? "border-blue-300 bg-blue-50"
+                                                    : "border-gray-200 hover:border-gray-300"
+                                            }`}
+                                        >
+                                            <div className="text-center">
+                                                <div className="text-[10px] font-medium text-gray-600">
+                                                    NRDR
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    {/* Ferie Pattern */}
+                                    <div className="relative">
+                                        <input
+                                            type="radio"
+                                            id="ferie-pattern"
+                                            name="patternType"
+                                            value="ferie"
+                                            checked={
+                                                patternModal.patternType ===
+                                                "ferie"
+                                            }
+                                            onChange={(e) =>
+                                                setPatternModal((prev) => ({
+                                                    ...prev,
+                                                    patternType: e.target.value,
+                                                }))
+                                            }
+                                            className="sr-only"
+                                        />
+                                        <label
+                                            htmlFor="ferie-pattern"
+                                            className={`flex flex-col items-center justify-center w-12 h-12 border-2 rounded-lg cursor-pointer transition-all ${
+                                                patternModal.patternType ===
+                                                "ferie"
+                                                    ? "border-blue-300 bg-blue-50"
+                                                    : "border-gray-200 hover:border-gray-300"
+                                            }`}
+                                        >
+                                            <div className="text-center">
+                                                <div className="text-[10px] font-medium text-gray-600">
+                                                    Ferie
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    {/* Malattia Pattern */}
+                                    <div className="relative">
+                                        <input
+                                            type="radio"
+                                            id="malattia-pattern"
+                                            name="patternType"
+                                            value="malattia"
+                                            checked={
+                                                patternModal.patternType ===
+                                                "malattia"
+                                            }
+                                            onChange={(e) =>
+                                                setPatternModal((prev) => ({
+                                                    ...prev,
+                                                    patternType: e.target.value,
+                                                }))
+                                            }
+                                            className="sr-only"
+                                        />
+                                        <label
+                                            htmlFor="malattia-pattern"
+                                            className={`flex flex-col items-center justify-center w-12 h-12 border-2 rounded-lg cursor-pointer transition-all ${
+                                                patternModal.patternType ===
+                                                "malattia"
+                                                    ? "border-blue-300 bg-blue-50"
+                                                    : "border-gray-200 hover:border-gray-300"
+                                            }`}
+                                        >
+                                            <div className="text-center">
+                                                <div className="text-[10px] font-medium text-gray-600">
+                                                    Malattia
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    {/* Custom Patterns */}
+                                    {customPatterns.map((customPattern) => (
+                                        <div
+                                            key={customPattern.id}
+                                            className="relative"
+                                        >
+                                            <input
+                                                type="radio"
+                                                id={`custom-pattern-${customPattern.id}`}
+                                                name="patternType"
+                                                value={`custom-${customPattern.id}`}
+                                                checked={
+                                                    patternModal.patternType ===
+                                                    `custom-${customPattern.id}`
+                                                }
+                                                onChange={(e) =>
+                                                    setPatternModal((prev) => ({
+                                                        ...prev,
+                                                        patternType:
+                                                            e.target.value,
+                                                    }))
+                                                }
+                                                className="sr-only"
+                                            />
+                                            <label
+                                                htmlFor={`custom-pattern-${customPattern.id}`}
+                                                className={`flex flex-col items-center justify-center w-12 h-12 border-2 rounded-lg cursor-pointer transition-all relative group ${
+                                                    patternModal.patternType ===
+                                                    `custom-${customPattern.id}`
+                                                        ? "border-blue-300 bg-blue-50"
+                                                        : "border-gray-200 hover:border-gray-300"
                                                 }`}
                                             >
-                                                {isSelected && (
+                                                <div className="text-center">
+                                                    <div className="text-xs font-medium text-gray-900 w-16 overflow-hidden">
+                                                        {customPattern.name
+                                                            .length > 5
+                                                            ? customPattern.name.substring(
+                                                                  0,
+                                                                  5
+                                                              ) + "..."
+                                                            : customPattern.name}
+                                                    </div>
+                                                </div>
+                                                {/* Delete button */}
+                                                <button
+                                                    onClick={async (e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+
+                                                        const success =
+                                                            await deleteCustomPattern(
+                                                                customPattern.id
+                                                            );
+                                                        if (success) {
+                                                            if (
+                                                                patternModal.patternType ===
+                                                                `custom-${customPattern.id}`
+                                                            ) {
+                                                                setPatternModal(
+                                                                    (prev) => ({
+                                                                        ...prev,
+                                                                        patternType:
+                                                                            "admin",
+                                                                    })
+                                                                );
+                                                            }
+                                                        }
+                                                    }}
+                                                    className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center hover:bg-red-600"
+                                                >
                                                     <svg
-                                                        className="w-2.5 h-2.5 text-white"
-                                                        fill="currentColor"
-                                                        viewBox="0 0 20 20"
+                                                        width="12"
+                                                        height="12"
+                                                        viewBox="0 0 12 12"
+                                                        fill="none"
                                                     >
                                                         <path
-                                                            fillRule="evenodd"
-                                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                                            clipRule="evenodd"
+                                                            d="M9 3L3 9M3 3L9 9"
+                                                            stroke="currentColor"
+                                                            strokeWidth="1.5"
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
                                                         />
                                                     </svg>
-                                                )}
-                                            </div>
-                                            <div className="flex items-center gap-1">
-                                                {user &&
-                                                    (user.role === "admin" ||
-                                                        user.role ===
-                                                            "superuser") && (
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            viewBox="0 0 24 24"
-                                                            width="12"
-                                                            height="12"
-                                                            color="#fbbf24"
-                                                            fill="currentColor"
+                                                </button>
+                                            </label>
+                                        </div>
+                                    ))}
+
+                                    {/* Custom Pattern - Add New */}
+                                    <div className="relative">
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                setCustomPatternModal({
+                                                    isOpen: true,
+                                                    shiftCount: 7,
+                                                    shifts: new Array(7).fill(
+                                                        ""
+                                                    ),
+                                                    patternName: "",
+                                                })
+                                            }
+                                            className="flex flex-col items-center justify-center w-12 h-12 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer transition-all hover:border-blue-300 hover:bg-blue-50"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 24 24"
+                                                width="24"
+                                                height="24"
+                                                color="#6b7280"
+                                                fill="none"
+                                                className="mb-1"
+                                            >
+                                                <path
+                                                    d="M12 4V20M20 12H4"
+                                                    stroke="currentColor"
+                                                    strokeWidth="1"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Pattern Details Display */}
+                                {patternModal.patternType && (
+                                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                                        <h5 className="font-medium text-sm text-gray-900 mb-1">
+                                            {patternModal.patternType ===
+                                                "admin" &&
+                                                shiftPatterns.admin.name}
+                                            {patternModal.patternType ===
+                                                "employee" &&
+                                                shiftPatterns.employee.name}
+                                            {patternModal.patternType ===
+                                                "employee_night" &&
+                                                shiftPatterns.employee_night
+                                                    .name}
+                                            {patternModal.patternType ===
+                                                "ferie" &&
+                                                shiftPatterns.ferie.name}
+                                            {patternModal.patternType ===
+                                                "malattia" &&
+                                                shiftPatterns.malattia.name}
+                                            {patternModal.patternType.startsWith(
+                                                "custom-"
+                                            ) &&
+                                                customPatterns.find(
+                                                    (p) =>
+                                                        `custom-${p.id}` ===
+                                                        patternModal.patternType
+                                                )?.name}
+                                        </h5>
+                                        <p className="text-xs text-gray-400 mb-3">
+                                            {patternModal.patternType ===
+                                                "admin" &&
+                                                shiftPatterns.admin.description}
+                                            {patternModal.patternType ===
+                                                "employee" &&
+                                                shiftPatterns.employee
+                                                    .description}
+                                            {patternModal.patternType ===
+                                                "employee_night" &&
+                                                shiftPatterns.employee_night
+                                                    .description}
+                                            {patternModal.patternType ===
+                                                "ferie" &&
+                                                shiftPatterns.ferie.description}
+                                            {patternModal.patternType ===
+                                                "malattia" &&
+                                                shiftPatterns.malattia
+                                                    .description}
+                                            {patternModal.patternType.startsWith(
+                                                "custom-"
+                                            ) &&
+                                                "Pattern personalizzato creato dall'utente"}
+                                        </p>
+                                        <div className="flex gap-2 flex-wrap">
+                                            {patternModal.patternType ===
+                                                "admin" &&
+                                                shiftPatterns.admin.weekdayPattern.map(
+                                                    (shift, index) => (
+                                                        <span
+                                                            key={index}
+                                                            className={`px-2 py-1 text-xs rounded ${getShiftColor(
+                                                                shift
+                                                            )}`}
                                                         >
-                                                            <path d="M13.7276 3.44418L15.4874 6.99288C15.7274 7.48687 16.3673 7.9607 16.9073 8.05143L20.0969 8.58575C22.1367 8.92853 22.6167 10.4206 21.1468 11.8925L18.6671 14.3927C18.2471 14.8161 18.0172 15.6327 18.1471 16.2175L18.8571 19.3125C19.417 21.7623 18.1271 22.71 15.9774 21.4296L12.9877 19.6452C12.4478 19.3226 11.5579 19.3226 11.0079 19.6452L8.01827 21.4296C5.8785 22.71 4.57865 21.7522 5.13859 19.3125L5.84851 16.2175C5.97849 15.6327 5.74852 14.8161 5.32856 14.3927L2.84884 11.8925C1.389 10.4206 1.85895 8.92853 3.89872 8.58575L7.08837 8.05143C7.61831 7.9607 8.25824 7.48687 8.49821 6.99288L10.258 3.44418C11.2179 1.51861 12.7777 1.51861 13.7276 3.44418Z" />
-                                                        </svg>
-                                                    )}
-                                                <span className="text-sm font-medium text-gray-700">
-                                                    {name}
+                                                            {shift}
+                                                        </span>
+                                                    )
+                                                )}
+                                            {patternModal.patternType ===
+                                                "employee" &&
+                                                shiftPatterns.employee.pattern.map(
+                                                    (shift, index) => (
+                                                        <span
+                                                            key={index}
+                                                            className={`px-2 py-1 text-xs rounded ${getShiftColor(
+                                                                shift
+                                                            )}`}
+                                                        >
+                                                            {shift}
+                                                        </span>
+                                                    )
+                                                )}
+                                            {patternModal.patternType ===
+                                                "employee_night" &&
+                                                shiftPatterns.employee_night.pattern.map(
+                                                    (shift, index) => (
+                                                        <span
+                                                            key={index}
+                                                            className={`px-2 py-1 text-xs rounded ${getShiftColor(
+                                                                shift
+                                                            )}`}
+                                                        >
+                                                            {shift}
+                                                        </span>
+                                                    )
+                                                )}
+                                            {(patternModal.patternType ===
+                                                "ferie" ||
+                                                patternModal.patternType ===
+                                                    "malattia") && (
+                                                <span
+                                                    className={`px-2 py-1 text-xs rounded ${getShiftColor(
+                                                        patternModal.patternType ===
+                                                            "ferie"
+                                                            ? shiftPatterns
+                                                                  .ferie.shift
+                                                            : shiftPatterns
+                                                                  .malattia
+                                                                  .shift
+                                                    )}`}
+                                                >
+                                                    {patternModal.patternType ===
+                                                    "ferie"
+                                                        ? shiftPatterns.ferie
+                                                              .shift
+                                                        : shiftPatterns.malattia
+                                                              .shift}
                                                 </span>
+                                            )}
+                                            {patternModal.patternType.startsWith(
+                                                "custom-"
+                                            ) &&
+                                                customPatterns
+                                                    .find(
+                                                        (p) =>
+                                                            `custom-${p.id}` ===
+                                                            patternModal.patternType
+                                                    )
+                                                    ?.pattern.map(
+                                                        (shift, index) => (
+                                                            <span
+                                                                key={index}
+                                                                className={`px-2 py-1 text-xs rounded ${getShiftColor(
+                                                                    shift
+                                                                )}`}
+                                                            >
+                                                                {shift}
+                                                            </span>
+                                                        )
+                                                    )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="separator"></div>
+
+                            {/* Date Selection - Only for regular patterns */}
+                            {patternModal.patternType !== "ferie" &&
+                                patternModal.patternType !== "malattia" && (
+                                    <div className="mb-6">
+                                        <h4 className="text-sm font-medium text-gray-700 mb-3">
+                                            Seleziona la durata del Pattern
+                                        </h4>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                    Da
+                                                </label>
+                                                <input
+                                                    type="date"
+                                                    value={
+                                                        patternModal.startDate
+                                                    }
+                                                    onChange={(e) => {
+                                                        const selectedDate =
+                                                            new Date(
+                                                                e.target.value
+                                                            );
+                                                        const endOfSelectedMonth =
+                                                            new Date(
+                                                                selectedDate.getFullYear(),
+                                                                selectedDate.getMonth() +
+                                                                    1,
+                                                                0
+                                                            );
+                                                        const endDateStr = `${endOfSelectedMonth.getFullYear()}-${String(
+                                                            endOfSelectedMonth.getMonth() +
+                                                                1
+                                                        ).padStart(
+                                                            2,
+                                                            "0"
+                                                        )}-${String(
+                                                            endOfSelectedMonth.getDate()
+                                                        ).padStart(2, "0")}`;
+
+                                                        setPatternModal(
+                                                            (prev) => ({
+                                                                ...prev,
+                                                                startDate:
+                                                                    e.target
+                                                                        .value,
+                                                                // Auto-set end date to end of selected month if not already set
+                                                                endDate:
+                                                                    prev.endDate ||
+                                                                    endDateStr,
+                                                            })
+                                                        );
+                                                    }}
+                                                    min={`${year}-${String(
+                                                        month + 1
+                                                    ).padStart(2, "0")}-01`}
+                                                    max={`${year + 1}-12-31`}
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                    A
+                                                </label>
+                                                <input
+                                                    type="date"
+                                                    value={patternModal.endDate}
+                                                    onChange={(e) =>
+                                                        setPatternModal(
+                                                            (prev) => ({
+                                                                ...prev,
+                                                                endDate:
+                                                                    e.target
+                                                                        .value,
+                                                            })
+                                                        )
+                                                    }
+                                                    min={
+                                                        patternModal.startDate ||
+                                                        `${year}-${String(
+                                                            month + 1
+                                                        ).padStart(2, "0")}-01`
+                                                    }
+                                                    max={`${year + 1}-12-31`}
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
+                                                />
                                             </div>
                                         </div>
-                                    );
-                                })}
+                                        {patternModal.startDate &&
+                                            patternModal.endDate &&
+                                            (() => {
+                                                const startDate = new Date(
+                                                    patternModal.startDate
+                                                );
+                                                const endDate = new Date(
+                                                    patternModal.endDate
+                                                );
+                                                const isMultiMonth =
+                                                    startDate.getMonth() !==
+                                                        endDate.getMonth() ||
+                                                    startDate.getFullYear() !==
+                                                        endDate.getFullYear();
+
+                                                if (isMultiMonth) {
+                                                    return (
+                                                        <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                                                            <div className="flex items-start gap-2">
+                                                                <svg
+                                                                    className="w-4 h-4 text-blue-600 mt-0.5"
+                                                                    fill="none"
+                                                                    stroke="currentColor"
+                                                                    viewBox="0 0 24 24"
+                                                                >
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        strokeWidth={
+                                                                            2
+                                                                        }
+                                                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                                    />
+                                                                </svg>
+                                                                <div>
+                                                                    <p className="text-xs text-blue-800 font-medium">
+                                                                        Pattern
+                                                                        multi-mese
+                                                                    </p>
+                                                                    <p className="text-xs text-blue-700">
+                                                                        Il
+                                                                        pattern
+                                                                        si
+                                                                        estenderà
+                                                                        attraverso
+                                                                        più
+                                                                        mesi. I
+                                                                        dati
+                                                                        verranno
+                                                                        salvati
+                                                                        automaticamente
+                                                                        in
+                                                                        ciascun
+                                                                        mese
+                                                                        interessato.
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                }
+                                                return null;
+                                            })()}
+                                    </div>
+                                )}
+
+                            {/* Ferie Date Selection */}
+                            {patternModal.patternType === "ferie" && (
+                                <div className="mb-6">
+                                    <h4 className="text-sm font-medium text-gray-700 mb-3">
+                                        Seleziona la durata delle Ferie
+                                    </h4>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Da
+                                            </label>
+                                            <input
+                                                type="date"
+                                                value={
+                                                    patternModal.ferieStartDate
+                                                }
+                                                onChange={(e) =>
+                                                    setPatternModal((prev) => ({
+                                                        ...prev,
+                                                        ferieStartDate:
+                                                            e.target.value,
+                                                    }))
+                                                }
+                                                min={`${year}-${String(
+                                                    month + 1
+                                                ).padStart(2, "0")}-01`}
+                                                max={`${year + 1}-12-31`}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                A
+                                            </label>
+                                            <input
+                                                type="date"
+                                                value={
+                                                    patternModal.ferieEndDate
+                                                }
+                                                onChange={(e) =>
+                                                    setPatternModal((prev) => ({
+                                                        ...prev,
+                                                        ferieEndDate:
+                                                            e.target.value,
+                                                    }))
+                                                }
+                                                min={
+                                                    patternModal.ferieStartDate ||
+                                                    `${year}-${String(
+                                                        month + 1
+                                                    ).padStart(2, "0")}-01`
+                                                }
+                                                max={`${year + 1}-12-31`}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Malattia Date Selection */}
+                            {patternModal.patternType === "malattia" && (
+                                <div className="mb-6">
+                                    <h4 className="text-sm font-medium text-gray-700 mb-3">
+                                        Seleziona la durata della Malattia
+                                    </h4>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Da
+                                            </label>
+                                            <input
+                                                type="date"
+                                                value={
+                                                    patternModal.malattiaStartDate
+                                                }
+                                                onChange={(e) =>
+                                                    setPatternModal((prev) => ({
+                                                        ...prev,
+                                                        malattiaStartDate:
+                                                            e.target.value,
+                                                    }))
+                                                }
+                                                min={`${year}-${String(
+                                                    month + 1
+                                                ).padStart(2, "0")}-01`}
+                                                max={`${year + 1}-12-31`}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                A
+                                            </label>
+                                            <input
+                                                type="date"
+                                                value={
+                                                    patternModal.malattiaEndDate
+                                                }
+                                                onChange={(e) =>
+                                                    setPatternModal((prev) => ({
+                                                        ...prev,
+                                                        malattiaEndDate:
+                                                            e.target.value,
+                                                    }))
+                                                }
+                                                min={
+                                                    patternModal.malattiaStartDate ||
+                                                    `${year}-${String(
+                                                        month + 1
+                                                    ).padStart(2, "0")}-01`
+                                                }
+                                                max={`${year + 1}-12-31`}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            <div className="separator"></div>
+                            {/* User Selection */}
+                            <div className="mb-6">
+                                <label className="block text-sm font-medium text-gray-700 mb-3">
+                                    Seleziona Utenti (
+                                    {patternModal.selectedUsers.length}{" "}
+                                    selezionati)
+                                </label>
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-60 overflow-y-auto border border-gray-200 rounded-lg p-3">
+                                    {names.map((name) => {
+                                        const user = users.find(
+                                            (u) => u.name === name
+                                        );
+                                        const isSelected =
+                                            patternModal.selectedUsers.includes(
+                                                name
+                                            );
+
+                                        return (
+                                            <div
+                                                key={name}
+                                                onClick={() =>
+                                                    toggleUserSelection(name)
+                                                }
+                                                className={`flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                                                    isSelected
+                                                        ? "border-blue-500 bg-blue-50"
+                                                        : "border-gray-200 hover:border-gray-300"
+                                                }`}
+                                            >
+                                                <div
+                                                    className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                                                        isSelected
+                                                            ? "border-blue-500 bg-blue-500"
+                                                            : "border-gray-300"
+                                                    }`}
+                                                >
+                                                    {isSelected && (
+                                                        <svg
+                                                            className="w-2.5 h-2.5 text-white"
+                                                            fill="currentColor"
+                                                            viewBox="0 0 20 20"
+                                                        >
+                                                            <path
+                                                                fillRule="evenodd"
+                                                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                                clipRule="evenodd"
+                                                            />
+                                                        </svg>
+                                                    )}
+                                                </div>
+                                                <div className="flex items-center gap-1">
+                                                    {user &&
+                                                        (user.role ===
+                                                            "admin" ||
+                                                            user.role ===
+                                                                "superuser") && (
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                viewBox="0 0 24 24"
+                                                                width="12"
+                                                                height="12"
+                                                                color="#fbbf24"
+                                                                fill="currentColor"
+                                                            >
+                                                                <path d="M13.7276 3.44418L15.4874 6.99288C15.7274 7.48687 16.3673 7.9607 16.9073 8.05143L20.0969 8.58575C22.1367 8.92853 22.6167 10.4206 21.1468 11.8925L18.6671 14.3927C18.2471 14.8161 18.0172 15.6327 18.1471 16.2175L18.8571 19.3125C19.417 21.7623 18.1271 22.71 15.9774 21.4296L12.9877 19.6452C12.4478 19.3226 11.5579 19.3226 11.0079 19.6452L8.01827 21.4296C5.8785 22.71 4.57865 21.7522 5.13859 19.3125L5.84851 16.2175C5.97849 15.6327 5.74852 14.8161 5.32856 14.3927L2.84884 11.8925C1.389 10.4206 1.85895 8.92853 3.89872 8.58575L7.08837 8.05143C7.61831 7.9607 8.25824 7.48687 8.49821 6.99288L10.258 3.44418C11.2179 1.51861 12.7777 1.51861 13.7276 3.44418Z" />
+                                                            </svg>
+                                                        )}
+                                                    <span className="text-sm font-medium text-gray-700">
+                                                        {name}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                             </div>
                         </div>
 
-                        {/* Quick Selection Buttons */}
-                        <div className="mb-6">
-                            <div className="flex gap-2 flex-wrap">
+                        {/* Fixed Footer with Action Buttons */}
+                        <div className="border-t border-gray-200 p-6 bg-white rounded-b-lg">
+                            <div className="flex justify-end gap-3">
                                 <button
-                                    onClick={() => {
-                                        const adminUsers = names.filter(
-                                            (name) => {
-                                                const user = users.find(
-                                                    (u) => u.name === name
-                                                );
-                                                return (
-                                                    user &&
-                                                    user.role === "admin"
-                                                );
-                                            }
-                                        );
-                                        setPatternModal((prev) => ({
-                                            ...prev,
-                                            selectedUsers: adminUsers,
-                                            patternType: "admin",
-                                        }));
-                                    }}
-                                    className="px-3 py-1.5 text-sm bg-yellow-100 text-yellow-800 rounded-md hover:bg-yellow-200 transition-colors"
+                                    onClick={closePatternModal}
+                                    className="px-6 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
                                 >
-                                    Tutti Admin
+                                    Annulla
                                 </button>
                                 <button
-                                    onClick={() => {
-                                        const employeeUsers = names.filter(
-                                            (name) => {
-                                                const user = users.find(
-                                                    (u) => u.name === name
-                                                );
-                                                return (
-                                                    user &&
-                                                    user.role === "employee"
-                                                );
-                                            }
-                                        );
-                                        setPatternModal((prev) => ({
-                                            ...prev,
-                                            selectedUsers: employeeUsers,
-                                            patternType: "employee",
-                                        }));
-                                    }}
-                                    className="px-3 py-1.5 text-sm bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200 transition-colors"
-                                >
-                                    Tutti Dipendenti 1
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        const employeeUsers = names.filter(
-                                            (name) => {
-                                                const user = users.find(
-                                                    (u) => u.name === name
-                                                );
-                                                return (
-                                                    user &&
-                                                    user.role === "employee"
-                                                );
-                                            }
-                                        );
-                                        setPatternModal((prev) => ({
-                                            ...prev,
-                                            selectedUsers: employeeUsers,
-                                            patternType: "employee_night",
-                                        }));
-                                    }}
-                                    className="px-3 py-1.5 text-sm bg-purple-100 text-purple-800 rounded-md hover:bg-purple-200 transition-colors"
-                                >
-                                    Tutti Dipendenti 2
-                                </button>
-                                <button
-                                    onClick={() =>
-                                        setPatternModal((prev) => ({
-                                            ...prev,
-                                            selectedUsers: [],
-                                        }))
+                                    onClick={applyShiftPattern}
+                                    disabled={
+                                        patternModal.selectedUsers.length ===
+                                            0 ||
+                                        (patternModal.patternType === "ferie" &&
+                                            (!patternModal.ferieStartDate ||
+                                                !patternModal.ferieEndDate)) ||
+                                        (patternModal.patternType ===
+                                            "malattia" &&
+                                            (!patternModal.malattiaStartDate ||
+                                                !patternModal.malattiaEndDate)) ||
+                                        (patternModal.patternType !== "ferie" &&
+                                            patternModal.patternType !==
+                                                "malattia" &&
+                                            (!patternModal.startDate ||
+                                                !patternModal.endDate))
                                     }
-                                    className="px-3 py-1.5 text-sm bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200 transition-colors"
+                                    className={`px-6 py-2 rounded-md transition-colors ${
+                                        patternModal.selectedUsers.length ===
+                                            0 ||
+                                        (patternModal.patternType === "ferie" &&
+                                            (!patternModal.ferieStartDate ||
+                                                !patternModal.ferieEndDate)) ||
+                                        (patternModal.patternType ===
+                                            "malattia" &&
+                                            (!patternModal.malattiaStartDate ||
+                                                !patternModal.malattiaEndDate)) ||
+                                        (patternModal.patternType !== "ferie" &&
+                                            patternModal.patternType !==
+                                                "malattia" &&
+                                            (!patternModal.startDate ||
+                                                !patternModal.endDate))
+                                            ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                            : "bg-green-600 text-white hover:bg-green-700"
+                                    }`}
                                 >
-                                    Deseleziona tutto
+                                    Applica Pattern
                                 </button>
                             </div>
-                        </div>
-
-                        {/* Action Buttons */}
-                        <div className="flex justify-end gap-3">
-                            <button
-                                onClick={closePatternModal}
-                                className="px-6 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-                            >
-                                Annulla
-                            </button>
-                            <button
-                                onClick={applyShiftPattern}
-                                disabled={
-                                    patternModal.selectedUsers.length === 0 ||
-                                    (patternModal.patternType === "ferie" &&
-                                        (!patternModal.ferieStartDate ||
-                                            !patternModal.ferieEndDate)) ||
-                                    (patternModal.patternType === "malattia" &&
-                                        (!patternModal.malattiaStartDate ||
-                                            !patternModal.malattiaEndDate)) ||
-                                    (patternModal.patternType !== "ferie" &&
-                                        patternModal.patternType !==
-                                            "malattia" &&
-                                        (!patternModal.startDate ||
-                                            !patternModal.endDate))
-                                }
-                                className={`px-6 py-2 rounded-md transition-colors ${
-                                    patternModal.selectedUsers.length === 0 ||
-                                    (patternModal.patternType === "ferie" &&
-                                        (!patternModal.ferieStartDate ||
-                                            !patternModal.ferieEndDate)) ||
-                                    (patternModal.patternType === "malattia" &&
-                                        (!patternModal.malattiaStartDate ||
-                                            !patternModal.malattiaEndDate)) ||
-                                    (patternModal.patternType !== "ferie" &&
-                                        patternModal.patternType !==
-                                            "malattia" &&
-                                        (!patternModal.startDate ||
-                                            !patternModal.endDate))
-                                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                        : "bg-green-600 text-white hover:bg-green-700"
-                                }`}
-                            >
-                                Applica Pattern
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -3401,6 +3731,226 @@ export default function Shifts() {
                             >
                                 Scarica
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Custom Pattern Creation Modal */}
+            {customPatternModal.isOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg w-full max-w-md mx-4 max-h-[80vh] overflow-y-auto">
+                        <div className="flex justify-between items-center p-6 border-b border-gray-200">
+                            <h3 className="text-lg font-semibold text-gray-900">
+                                Crea Pattern Personalizzato
+                            </h3>
+                            <button
+                                onClick={() =>
+                                    setCustomPatternModal({
+                                        isOpen: false,
+                                        shiftCount: 7,
+                                        shifts: new Array(7).fill(""),
+                                        patternName: "",
+                                    })
+                                }
+                                className="text-gray-400 hover:text-gray-600"
+                            >
+                                <svg
+                                    className="w-6 h-6"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M6 18L18 6M6 6l12 12"
+                                    />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div className="p-6">
+                            {/* Pattern Name */}
+                            <div className="mb-6">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Nome Pattern
+                                </label>
+                                <input
+                                    type="text"
+                                    value={customPatternModal.patternName}
+                                    onChange={(e) =>
+                                        setCustomPatternModal((prev) => ({
+                                            ...prev,
+                                            patternName: e.target.value,
+                                        }))
+                                    }
+                                    placeholder="Inserisci nome del pattern..."
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
+                                />
+                            </div>
+
+                            {/* Number of Shifts */}
+                            <div className="mb-6">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Numero di Turni
+                                </label>
+                                <select
+                                    value={customPatternModal.shiftCount}
+                                    onChange={(e) => {
+                                        const count = parseInt(e.target.value);
+                                        setCustomPatternModal((prev) => ({
+                                            ...prev,
+                                            shiftCount: count,
+                                            shifts: new Array(count).fill(""),
+                                        }));
+                                    }}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
+                                >
+                                    {[...Array(14)].map((_, i) => (
+                                        <option key={i + 1} value={i + 1}>
+                                            {i + 1}{" "}
+                                            {i + 1 === 1 ? "turno" : "turni"}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Shift Selection */}
+                            <div className="mb-6">
+                                <label className="block text-sm font-medium text-gray-700 mb-3">
+                                    Seleziona Turni
+                                </label>
+                                <div className="grid grid-cols-2 gap-3">
+                                    {customPatternModal.shifts.map(
+                                        (shift, index) => (
+                                            <div key={index}>
+                                                <label className="block text-xs text-gray-600 mb-1">
+                                                    Giorno {index + 1}
+                                                </label>
+                                                <select
+                                                    value={shift}
+                                                    onChange={(e) => {
+                                                        const newShifts = [
+                                                            ...customPatternModal.shifts,
+                                                        ];
+                                                        newShifts[index] =
+                                                            e.target.value;
+                                                        setCustomPatternModal(
+                                                            (prev) => ({
+                                                                ...prev,
+                                                                shifts: newShifts,
+                                                            })
+                                                        );
+                                                    }}
+                                                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:border-blue-500 focus:ring-blue-500"
+                                                >
+                                                    <option value="">
+                                                        Seleziona...
+                                                    </option>
+                                                    <option value="D">
+                                                        D - Diurno
+                                                    </option>
+                                                    <option value="O">
+                                                        O - Ordinario
+                                                    </option>
+                                                    <option value="OP">
+                                                        OP - Ordinario
+                                                        Prolungato
+                                                    </option>
+                                                    <option value="N">
+                                                        N - Notturno
+                                                    </option>
+                                                    <option value="ON">
+                                                        ON - Ordinario Notturno
+                                                    </option>
+                                                    <option value="F">
+                                                        F - Ferie
+                                                    </option>
+                                                    <option value="M">
+                                                        M - Malattia
+                                                    </option>
+                                                    <option value="R">
+                                                        R - Riposo
+                                                    </option>
+                                                    <option value="C">
+                                                        C - Congedo
+                                                    </option>
+                                                    <option value="CA">
+                                                        CA - Congedo Anticipato
+                                                    </option>
+                                                </select>
+                                            </div>
+                                        )
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex justify-end gap-3">
+                                <button
+                                    onClick={() =>
+                                        setCustomPatternModal({
+                                            isOpen: false,
+                                            shiftCount: 7,
+                                            shifts: new Array(7).fill(""),
+                                            patternName: "",
+                                        })
+                                    }
+                                    className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                                >
+                                    Annulla
+                                </button>
+                                <button
+                                    onClick={async () => {
+                                        if (
+                                            customPatternModal.patternName?.trim() &&
+                                            customPatternModal.shifts.every(
+                                                (shift) => shift !== ""
+                                            )
+                                        ) {
+                                            const newPattern = {
+                                                name: customPatternModal.patternName,
+                                                pattern:
+                                                    customPatternModal.shifts,
+                                                type: "custom",
+                                            };
+
+                                            const savedPattern =
+                                                await saveCustomPattern(
+                                                    newPattern
+                                                );
+                                            if (savedPattern) {
+                                                setCustomPatternModal({
+                                                    isOpen: false,
+                                                    shiftCount: 7,
+                                                    shifts: new Array(7).fill(
+                                                        ""
+                                                    ),
+                                                    patternName: "",
+                                                });
+                                            }
+                                        }
+                                    }}
+                                    disabled={
+                                        !customPatternModal.patternName?.trim() ||
+                                        customPatternModal.shifts.some(
+                                            (shift) => shift === ""
+                                        )
+                                    }
+                                    className={`px-4 py-2 rounded-md transition-colors ${
+                                        !customPatternModal.patternName?.trim() ||
+                                        customPatternModal.shifts.some(
+                                            (shift) => shift === ""
+                                        )
+                                            ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                            : "bg-blue-600 text-white hover:bg-blue-700"
+                                    }`}
+                                >
+                                    Crea Pattern
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

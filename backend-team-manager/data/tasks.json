@@ -569,5 +569,18 @@
     "status": "completato",
     "date": "2025-07-23",
     "time": "08:00"
+  },
+  {
+    "id": 83,
+    "title": "dfgdfhgds dghd hd ggsg",
+    "description": "dshgdgfnsbhtsr fdg gdfgfga",
+    "assignedTo": "Sara",
+    "simulator": "109FFS",
+    "category": "troubleshooting",
+    "subcategory": "HW",
+    "extraDetail": "AVIONIC",
+    "status": "non iniziato",
+    "date": "2025-07-25",
+    "time": "11:00"
   }
 ]
