@@ -94,6 +94,7 @@ export default function Shifts() {
     const [employeeOrderKey, setEmployeeOrderKey] = useState(0);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
     const [originalData, setOriginalData] = useState({});
+    const [changedShifts, setChangedShifts] = useState(new Set());
     const [exportModal, setExportModal] = useState({
         isOpen: false,
         selectedUsers: [],
@@ -424,6 +425,7 @@ export default function Shifts() {
                 setData(json);
                 setOriginalData(json); // Store original data
                 setHasUnsavedChanges(false); // Reset unsaved changes flag
+                setChangedShifts(new Set()); // Reset changed shifts tracking
             });
 
         // Fetch users data
@@ -531,6 +533,22 @@ export default function Shifts() {
         };
         setData(updated);
         setHasUnsavedChanges(true); // Mark as having unsaved changes
+
+        // Track changed shifts for visual feedback
+        if (field === "shift") {
+            const shiftKey = `${dateKey}-${name}`;
+            const originalValue = originalData?.[dateKey]?.[name]?.shift || "";
+
+            if (value !== originalValue) {
+                setChangedShifts((prev) => new Set(prev).add(shiftKey));
+            } else {
+                setChangedShifts((prev) => {
+                    const newSet = new Set(prev);
+                    newSet.delete(shiftKey);
+                    return newSet;
+                });
+            }
+        }
     };
 
     const saveChanges = async () => {
@@ -579,6 +597,7 @@ export default function Shifts() {
 
             setOriginalData(data); // Update original data with saved data
             setHasUnsavedChanges(false); // Reset unsaved changes flag
+            setChangedShifts(new Set()); // Reset changed shifts tracking
             setSuccessModal({
                 isOpen: true,
                 message: "Modifiche salvate con successo!",
@@ -592,6 +611,7 @@ export default function Shifts() {
     const discardChanges = () => {
         setData(originalData); // Restore original data
         setHasUnsavedChanges(false); // Reset unsaved changes flag
+        setChangedShifts(new Set()); // Reset changed shifts tracking
     };
 
     const changeMonth = (offset) => {
@@ -1921,12 +1941,19 @@ export default function Shifts() {
                                             data?.[dateKey]?.[name] || {};
                                         const isToday =
                                             dateKey === getTodayDateKey();
+                                        const shiftKey = `${dateKey}-${name}`;
+                                        const isShiftChanged =
+                                            changedShifts.has(shiftKey);
 
                                         return (
                                             <td
                                                 key={dateKey}
                                                 className={`px-3 py-2 text-center border-r border-gray-200 relative ${
-                                                    isToday ? "bg-blue-50" : ""
+                                                    isShiftChanged
+                                                        ? "bg-blue-100 border-blue-300"
+                                                        : isToday
+                                                        ? "bg-blue-50"
+                                                        : ""
                                                 }`}
                                             >
                                                 {/* Blue dot indicator for notes */}
@@ -2285,12 +2312,19 @@ export default function Shifts() {
                                             data?.[dateKey]?.[name] || {};
                                         const isToday =
                                             dateKey === getTodayDateKey();
+                                        const shiftKey = `${dateKey}-${name}`;
+                                        const isShiftChanged =
+                                            changedShifts.has(shiftKey);
 
                                         return (
                                             <td
                                                 key={dateKey}
                                                 className={`px-3 py-4 text-center border-r border-gray-200 relative ${
-                                                    isToday ? "bg-blue-50" : ""
+                                                    isShiftChanged
+                                                        ? "bg-blue-100 border-blue-300"
+                                                        : isToday
+                                                        ? "bg-blue-50"
+                                                        : ""
                                                 }`}
                                             >
                                                 {/* Blue dot indicator for notes */}

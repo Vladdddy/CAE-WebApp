@@ -9,12 +9,241 @@
       "note": ""
     },
     "Mario": {
-      "shift": "O",
+      "shift": "ON",
       "note": ""
     },
     "Simone": {
       "shift": "ON",
       "note": ""
+    }
+  },
+  "2025-06-01": {
+    "Mario": {
+      "shift": "R"
+    },
+    "Francesco": {
+      "shift": "M"
+    }
+  },
+  "2025-06-02": {
+    "Mario": {
+      "shift": "OP"
+    },
+    "Francesco": {
+      "shift": "M"
+    }
+  },
+  "2025-06-03": {
+    "Mario": {
+      "shift": "OP"
+    },
+    "Francesco": {
+      "shift": "M"
+    }
+  },
+  "2025-06-04": {
+    "Mario": {
+      "shift": "OP"
+    },
+    "Francesco": {
+      "shift": "M"
+    }
+  },
+  "2025-06-05": {
+    "Mario": {
+      "shift": "OP"
+    },
+    "Francesco": {
+      "shift": "M"
+    }
+  },
+  "2025-06-06": {
+    "Mario": {
+      "shift": "OP"
+    },
+    "Francesco": {
+      "shift": "M"
+    }
+  },
+  "2025-06-07": {
+    "Mario": {
+      "shift": "R"
+    },
+    "Francesco": {
+      "shift": "M"
+    }
+  },
+  "2025-06-08": {
+    "Mario": {
+      "shift": "R"
+    },
+    "Francesco": {
+      "shift": "M"
+    }
+  },
+  "2025-06-09": {
+    "Mario": {
+      "shift": "O"
+    },
+    "Francesco": {
+      "shift": "M"
+    }
+  },
+  "2025-06-10": {
+    "Mario": {
+      "shift": "O"
+    },
+    "Francesco": {
+      "shift": "M"
+    }
+  },
+  "2025-06-11": {
+    "Mario": {
+      "shift": "O"
+    },
+    "Francesco": {
+      "shift": "M"
+    }
+  },
+  "2025-06-12": {
+    "Mario": {
+      "shift": "O"
+    },
+    "Francesco": {
+      "shift": "M"
+    }
+  },
+  "2025-06-13": {
+    "Mario": {
+      "shift": "O"
+    },
+    "Francesco": {
+      "shift": "M"
+    }
+  },
+  "2025-06-14": {
+    "Mario": {
+      "shift": "R"
+    },
+    "Francesco": {
+      "shift": "M"
+    }
+  },
+  "2025-06-15": {
+    "Mario": {
+      "shift": "R"
+    },
+    "Francesco": {
+      "shift": "M"
+    }
+  },
+  "2025-06-16": {
+    "Mario": {
+      "shift": "ON"
+    },
+    "Francesco": {
+      "shift": "M"
+    }
+  },
+  "2025-06-17": {
+    "Mario": {
+      "shift": "ON"
+    },
+    "Francesco": {
+      "shift": "M"
+    }
+  },
+  "2025-06-18": {
+    "Mario": {
+      "shift": "ON"
+    },
+    "Francesco": {
+      "shift": "M"
+    }
+  },
+  "2025-06-19": {
+    "Mario": {
+      "shift": "ON"
+    },
+    "Francesco": {
+      "shift": "M"
+    }
+  },
+  "2025-06-20": {
+    "Mario": {
+      "shift": "ON"
+    },
+    "Francesco": {
+      "shift": "M"
+    }
+  },
+  "2025-06-21": {
+    "Mario": {
+      "shift": "R"
+    },
+    "Francesco": {
+      "shift": "M"
+    }
+  },
+  "2025-06-22": {
+    "Mario": {
+      "shift": "R"
+    },
+    "Francesco": {
+      "shift": "M"
+    }
+  },
+  "2025-06-23": {
+    "Mario": {
+      "shift": "OP"
+    },
+    "Francesco": {
+      "shift": "M"
+    }
+  },
+  "2025-06-24": {
+    "Mario": {
+      "shift": "OP"
+    },
+    "Francesco": {
+      "shift": "M"
+    }
+  },
+  "2025-06-25": {
+    "Mario": {
+      "shift": "OP"
+    },
+    "Francesco": {
+      "shift": "M"
+    }
+  },
+  "2025-06-26": {
+    "Mario": {
+      "shift": "OP"
+    },
+    "Francesco": {
+      "shift": "M"
+    }
+  },
+  "2025-06-27": {
+    "Mario": {
+      "shift": "OP"
+    },
+    "Francesco": {
+      "shift": "M"
+    }
+  },
+  "2025-06-28": {
+    "Mario": {
+      "shift": "R"
+    },
+    "Francesco": {
+      "shift": "M"
+    }
+  },
+  "2025-06-29": {
+    "Mario": {
+      "shift": "R"
     }
   }
 }

@@ -1,29 +1,11 @@
 {
-  "2025-04-30": {
-    "Luca": {
-      "shift": "",
-      "note": ""
-    },
-    "Gianluca": {
-      "shift": "",
-      "note": ""
-    },
-    "Mario": {
-      "shift": "",
-      "note": ""
-    },
-    "Simone": {
-      "shift": "",
-      "note": ""
-    }
-  },
   "2025-05-01": {
     "Luca": {
       "shift": "",
       "note": ""
     },
     "Gianluca": {
-      "shift": "",
+      "shift": "ON",
       "note": ""
     },
     "Mario": {
@@ -41,7 +23,7 @@
       "note": "Riposo"
     },
     "Gianluca": {
-      "shift": "R",
+      "shift": "ON",
       "note": "Riposo"
     },
     "Mario": {
@@ -77,7 +59,7 @@
       "note": ""
     },
     "Gianluca": {
-      "shift": "",
+      "shift": "R",
       "note": ""
     },
     "Mario": {
@@ -95,7 +77,7 @@
       "note": ""
     },
     "Gianluca": {
-      "shift": "ON",
+      "shift": "OP",
       "note": ""
     },
     "Mario": {
@@ -113,7 +95,7 @@
       "note": ""
     },
     "Gianluca": {
-      "shift": "ON",
+      "shift": "OP",
       "note": ""
     },
     "Mario": {
@@ -131,7 +113,7 @@
       "note": ""
     },
     "Gianluca": {
-      "shift": "ON",
+      "shift": "OP",
       "note": ""
     },
     "Mario": {
@@ -149,7 +131,7 @@
       "note": ""
     },
     "Gianluca": {
-      "shift": "ON",
+      "shift": "OP",
       "note": ""
     },
     "Mario": {
@@ -167,7 +149,7 @@
       "note": "Riposo"
     },
     "Gianluca": {
-      "shift": "R",
+      "shift": "OP",
       "note": "Riposo"
     },
     "Mario": {
@@ -203,7 +185,7 @@
       "note": ""
     },
     "Gianluca": {
-      "shift": "ON",
+      "shift": "R",
       "note": ""
     },
     "Mario": {
@@ -221,7 +203,7 @@
       "note": ""
     },
     "Gianluca": {
-      "shift": "OP",
+      "shift": "O",
       "note": ""
     },
     "Mario": {
@@ -239,7 +221,7 @@
       "note": ""
     },
     "Gianluca": {
-      "shift": "OP",
+      "shift": "O",
       "note": ""
     },
     "Mario": {
@@ -257,7 +239,7 @@
       "note": ""
     },
     "Gianluca": {
-      "shift": "OP",
+      "shift": "O",
       "note": ""
     },
     "Mario": {
@@ -275,7 +257,7 @@
       "note": ""
     },
     "Gianluca": {
-      "shift": "OP",
+      "shift": "O",
       "note": ""
     },
     "Mario": {
@@ -293,7 +275,7 @@
       "note": "Riposo"
     },
     "Gianluca": {
-      "shift": "R",
+      "shift": "O",
       "note": "Riposo"
     },
     "Mario": {
@@ -329,7 +311,7 @@
       "note": ""
     },
     "Gianluca": {
-      "shift": "OP",
+      "shift": "R",
       "note": ""
     },
     "Mario": {
@@ -347,7 +329,7 @@
       "note": ""
     },
     "Gianluca": {
-      "shift": "O",
+      "shift": "ON",
       "note": ""
     },
     "Mario": {
@@ -365,7 +347,7 @@
       "note": ""
     },
     "Gianluca": {
-      "shift": "O",
+      "shift": "ON",
       "note": ""
     },
     "Mario": {
@@ -383,7 +365,7 @@
       "note": ""
     },
     "Gianluca": {
-      "shift": "O",
+      "shift": "ON",
       "note": ""
     },
     "Mario": {
@@ -401,7 +383,7 @@
       "note": ""
     },
     "Gianluca": {
-      "shift": "O",
+      "shift": "ON",
       "note": ""
     },
     "Mario": {
@@ -419,7 +401,7 @@
       "note": "Riposo"
     },
     "Gianluca": {
-      "shift": "R",
+      "shift": "ON",
       "note": "Riposo"
     },
     "Mario": {
@@ -455,7 +437,7 @@
       "note": ""
     },
     "Gianluca": {
-      "shift": "O",
+      "shift": "R",
       "note": ""
     },
     "Mario": {
@@ -473,7 +455,7 @@
       "note": ""
     },
     "Gianluca": {
-      "shift": "ON",
+      "shift": "OP",
       "note": ""
     },
     "Mario": {
@@ -491,7 +473,7 @@
       "note": ""
     },
     "Gianluca": {
-      "shift": "ON",
+      "shift": "OP",
       "note": ""
     },
     "Mario": {
@@ -509,7 +491,7 @@
       "note": ""
     },
     "Gianluca": {
-      "shift": "ON",
+      "shift": "OP",
       "note": ""
     },
     "Mario": {
@@ -527,7 +509,7 @@
       "note": ""
     },
     "Gianluca": {
-      "shift": "ON",
+      "shift": "OP",
       "note": ""
     },
     "Mario": {
@@ -545,7 +527,7 @@
       "note": "Riposo"
     },
     "Gianluca": {
-      "shift": "R",
+      "shift": "OP",
       "note": "Riposo"
     },
     "Mario": {

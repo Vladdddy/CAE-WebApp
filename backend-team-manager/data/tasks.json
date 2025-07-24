@@ -582,5 +582,31 @@
     "status": "non iniziato",
     "date": "2025-07-25",
     "time": "11:00"
+  },
+  {
+    "id": 84,
+    "title": "tdrt",
+    "description": "drtdrtd",
+    "assignedTo": "Non assegnare",
+    "simulator": "109FFS",
+    "category": "troubleshooting",
+    "subcategory": "HW",
+    "extraDetail": "INTERFACE",
+    "status": "non completato",
+    "date": "2025-07-24",
+    "time": "18:00"
+  },
+  {
+    "id": 85,
+    "title": "hkghbjb",
+    "description": "",
+    "assignedTo": "Capo",
+    "simulator": "",
+    "category": "",
+    "subcategory": "",
+    "extraDetail": "",
+    "status": "da definire",
+    "date": null,
+    "time": null
   }
 ]
