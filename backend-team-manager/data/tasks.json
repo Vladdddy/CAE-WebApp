@@ -444,14 +444,14 @@
     "id": 73,
     "title": "euifyeI8ELOFU",
     "description": "",
-    "assignedTo": "Gianluca",
+    "assignedTo": "Non assegnare",
     "simulator": "",
     "category": "",
     "subcategory": "",
     "extraDetail": "",
-    "status": "da definire",
-    "date": null,
-    "time": null
+    "status": "completato",
+    "date": "2025-07-25",
+    "time": "08:00"
   },
   {
     "id": 74,
@@ -592,7 +592,7 @@
     "category": "troubleshooting",
     "subcategory": "HW",
     "extraDetail": "INTERFACE",
-    "status": "non completato",
+    "status": "completato",
     "date": "2025-07-24",
     "time": "18:00"
   },
@@ -608,5 +608,18 @@
     "status": "da definire",
     "date": null,
     "time": null
+  },
+  {
+    "id": 86,
+    "title": "thgfhfh",
+    "description": "gfhgfhfh",
+    "assignedTo": "Andrea, Francesco",
+    "simulator": "169",
+    "category": "troubleshooting",
+    "subcategory": "HW",
+    "extraDetail": "CONTROLS",
+    "status": "non iniziato",
+    "date": "2025-07-23",
+    "time": "23:00"
   }
 ]

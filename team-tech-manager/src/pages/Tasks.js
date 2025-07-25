@@ -52,6 +52,7 @@ export default function Tasks() {
     const [extraDetail, setExtraDetail] = useState("");
     const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
     const [time, setTime] = useState("08:00");
+    const [shift, setShift] = useState("D"); // New state for shift selection
     const [loading, setLoading] = useState(true);
     const [availableEmployees, setAvailableEmployees] = useState([]);
     const [employeesLoading, setEmployeesLoading] = useState(false);
@@ -222,6 +223,31 @@ export default function Tasks() {
             return assignedEmployeeNames.includes(currentUser.name);
         }
         return false;
+    };
+
+    // Helper function to determine if task is day or night shift
+    const getShiftType = (time) => {
+        if (!time) return "D"; // Default to day shift if no time
+
+        const [hours, minutes] = time.split(":").map(Number);
+        const timeInMinutes = hours * 60 + minutes;
+
+        // Night shift: 19:00 to 07:00 (>= 1140 OR <= 420)
+        if (timeInMinutes >= 1140 || timeInMinutes <= 420) {
+            return "N";
+        }
+        // Day shift: 07:01 to 18:59
+        return "D";
+    };
+
+    // Handler for shift selection
+    const handleShiftChange = (selectedShift) => {
+        setShift(selectedShift);
+        if (selectedShift === "D") {
+            setTime("08:00"); // Set to 8 AM for day shift
+        } else {
+            setTime("23:00"); // Set to 11 PM for night shift
+        }
     };
 
     // Authorization functions for notes
@@ -600,6 +626,7 @@ export default function Tasks() {
                 setExtraDetail("");
                 setDate(selectedDate);
                 setTime("08:00");
+                setShift("D");
             } else {
                 const errorData = await res.json();
                 showModal(
@@ -992,9 +1019,9 @@ export default function Tasks() {
                         taskTitle.style.fontSize = "16px";
                         taskDiv.appendChild(taskTitle);
                         const taskDetails = document.createElement("p");
-                        taskDetails.textContent = `Orario: ${
-                            task.time || "Nessun orario"
-                        } • Assegnato a: ${
+                        taskDetails.textContent = `Turno: ${getShiftType(
+                            task.time
+                        )} • Assegnato a: ${
                             task.assignedTo === "Non assegnare"
                                 ? "Non assegnato"
                                 : task.assignedTo
@@ -1272,9 +1299,7 @@ export default function Tasks() {
                         const taskDetails = document.createElement("p");
                         taskDetails.textContent = `Simulatore: ${
                             task.simulator || "N/A"
-                        } • Orario: ${
-                            task.time || "Nessun orario"
-                        } • Assegnato a: ${
+                        } • Turno: ${getShiftType(task.time)} • Assegnato a: ${
                             task.assignedTo === "Non assegnare"
                                 ? "Non assegnato"
                                 : task.assignedTo
@@ -1841,7 +1866,7 @@ export default function Tasks() {
                             {canAddTasks() && (
                                 <>
                                     <div
-                                        className=" border p-4 rounded-xl bg-white w-full max-w-xl"
+                                        className=" border p-4 rounded-xl bg-white w-full max-w-4xl"
                                         style={{
                                             boxShadow: "4px 4px 10px #00000010",
                                         }}
@@ -2117,20 +2142,61 @@ export default function Tasks() {
                                                     required
                                                 />
                                                 <label
-                                                    htmlFor="time"
+                                                    htmlFor="shift"
                                                     className="text-xs text-gray-500"
                                                 >
-                                                    Orario
+                                                    Turno
                                                 </label>
-                                                <input
-                                                    type="time"
-                                                    value={time}
-                                                    onChange={(e) =>
-                                                        setTime(e.target.value)
-                                                    }
-                                                    className="border px-3 py-2 rounded mb-4 text-gray-600 text-sm"
-                                                    required
-                                                />
+                                                <div className="flex gap-4 mb-4">
+                                                    <label className="flex items-center">
+                                                        <input
+                                                            type="radio"
+                                                            name="shift"
+                                                            value="D"
+                                                            checked={
+                                                                shift === "D"
+                                                            }
+                                                            onChange={() =>
+                                                                handleShiftChange(
+                                                                    "D"
+                                                                )
+                                                            }
+                                                            className="mr-2"
+                                                            style={{
+                                                                accentColor:
+                                                                    "#3b82f6",
+                                                                cursor: "pointer",
+                                                            }}
+                                                        />
+                                                        <span className="text-sm text-gray-600">
+                                                            D (Giorno)
+                                                        </span>
+                                                    </label>
+                                                    <label className="flex items-center">
+                                                        <input
+                                                            type="radio"
+                                                            name="shift"
+                                                            value="N"
+                                                            checked={
+                                                                shift === "N"
+                                                            }
+                                                            onChange={() =>
+                                                                handleShiftChange(
+                                                                    "N"
+                                                                )
+                                                            }
+                                                            className="mr-2"
+                                                            style={{
+                                                                accentColor:
+                                                                    "#3b82f6",
+                                                                cursor: "pointer",
+                                                            }}
+                                                        />
+                                                        <span className="text-sm text-gray-600">
+                                                            N (Notte)
+                                                        </span>
+                                                    </label>
+                                                </div>
                                                 {assignmentType === "single" ? (
                                                     <>
                                                         <label

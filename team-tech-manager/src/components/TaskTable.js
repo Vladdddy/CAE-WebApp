@@ -15,6 +15,21 @@ const TaskTable = ({
     getBorderColor,
     tasksListRef,
 }) => {
+    // Helper function to determine if task is day or night shift
+    const getShiftType = (time) => {
+        if (!time) return "D"; // Default to day shift if no time
+
+        const [hours, minutes] = time.split(":").map(Number);
+        const timeInMinutes = hours * 60 + minutes;
+
+        // Night shift: 19:00 to 07:00 (>= 1140 OR <= 420)
+        if (timeInMinutes >= 1140 || timeInMinutes <= 420) {
+            return "N";
+        }
+        // Day shift: 07:01 to 18:59
+        return "D";
+    };
+
     // Helper function to format date for display
     const formatDateForDisplay = (dateStr) => {
         const date = new Date(dateStr);
@@ -342,8 +357,10 @@ const TaskTable = ({
                                                     </p>
                                                     <div className="task-details text-xs text-gray-500 space-y-4">
                                                         <div className="text-xs">
-                                                            {task.time ||
-                                                                "Nessun orario"}
+                                                            Turno:{" "}
+                                                            {getShiftType(
+                                                                task.time
+                                                            )}
                                                         </div>
                                                         <div className="flex items-center justify-between">
                                                             <div className="flex flex-col gap-1">
@@ -459,7 +476,7 @@ const TaskTable = ({
                             </span>
                         </>
                     ) : (
-                        <>Tabella delle task</>
+                        <>Tabella task</>
                     )}
                 </p>
             </div>
@@ -500,8 +517,8 @@ const TaskTable = ({
                                         {task.title}
                                     </p>
                                     <div className="text-xs text-gray-500 capitalize">
-                                        {task.date || "Nessuna data"} •{" "}
-                                        {task.time || "Nessun orario"} •{" "}
+                                        {task.date || "Nessuna data"} • Turno:{" "}
+                                        {getShiftType(task.time)} •{" "}
                                         {task.assignedTo === "Non assegnare"
                                             ? "Non assegnato"
                                             : task.assignedTo}{" "}

@@ -1023,7 +1023,7 @@ export default function Shifts() {
         });
     };
 
-    const applyShiftPattern = () => {
+    const applyShiftPattern = async () => {
         if (patternModal.selectedUsers.length === 0) {
             setSuccessModal({
                 isOpen: true,
@@ -1114,8 +1114,53 @@ export default function Shifts() {
             return;
         }
 
-        // Create updated data structure
-        const updatedData = { ...data };
+        // Determine all affected months to fetch data for
+        const affectedMonths = new Set();
+        let currentDate = new Date(startDate);
+        while (currentDate <= endDate) {
+            const monthKey = `${currentDate.getFullYear()}-${String(
+                currentDate.getMonth() + 1
+            ).padStart(2, "0")}`;
+            affectedMonths.add(monthKey);
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            currentDate.setDate(1); // Reset to first day of month to avoid date overflow issues
+        }
+
+        // Fetch data for all affected months
+        const token = localStorage.getItem("authToken");
+        const allMonthsData = {};
+
+        try {
+            await Promise.all(
+                [...affectedMonths].map(async (monthKey) => {
+                    const [yearPart, monthPart] = monthKey.split("-");
+                    const response = await fetch(
+                        `${API}/api/shifts/${yearPart}/${monthPart}`,
+                        {
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                            },
+                        }
+                    );
+                    if (response.ok) {
+                        const monthData = await response.json();
+                        Object.keys(monthData).forEach((dateKey) => {
+                            allMonthsData[dateKey] = monthData[dateKey];
+                        });
+                    }
+                })
+            );
+        } catch (error) {
+            console.error("Error fetching data for affected months:", error);
+            setSuccessModal({
+                isOpen: true,
+                message: "Errore nel caricamento dati esistenti",
+            });
+            return;
+        }
+
+        // Merge with current data, prioritizing current local changes
+        const updatedData = { ...allMonthsData, ...data };
 
         patternModal.selectedUsers.forEach((userName, userIndex) => {
             // Start from the selected date

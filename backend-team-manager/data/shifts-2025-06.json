@@ -248,7 +248,7 @@
       "shift": "R"
     },
     "Mario": {
-      "shift": "O"
+      "shift": "ON"
     },
     "Gianluca": {
       "shift": "ON"
@@ -277,7 +277,7 @@
       "shift": "D"
     },
     "Mario": {
-      "shift": "O"
+      "shift": "ON"
     },
     "Gianluca": {
       "shift": "ON"
@@ -306,7 +306,7 @@
       "shift": "D"
     },
     "Mario": {
-      "shift": "O"
+      "shift": "ON"
     },
     "Gianluca": {
       "shift": "ON"
@@ -335,7 +335,7 @@
       "shift": "D"
     },
     "Mario": {
-      "shift": "O"
+      "shift": "ON"
     },
     "Gianluca": {
       "shift": "ON"
@@ -364,7 +364,7 @@
       "shift": "D"
     },
     "Mario": {
-      "shift": "O"
+      "shift": "ON"
     },
     "Gianluca": {
       "shift": "ON"
@@ -451,7 +451,7 @@
       "shift": "R"
     },
     "Mario": {
-      "shift": "ON"
+      "shift": "OP"
     },
     "Gianluca": {
       "shift": "OP"
@@ -480,7 +480,7 @@
       "shift": "R"
     },
     "Mario": {
-      "shift": "ON"
+      "shift": "OP"
     },
     "Gianluca": {
       "shift": "OP"
@@ -509,7 +509,7 @@
       "shift": "N"
     },
     "Mario": {
-      "shift": "ON"
+      "shift": "OP"
     },
     "Gianluca": {
       "shift": "OP"
@@ -538,7 +538,7 @@
       "shift": "N"
     },
     "Mario": {
-      "shift": "ON"
+      "shift": "OP"
     },
     "Gianluca": {
       "shift": "OP"
@@ -567,7 +567,7 @@
       "shift": "N"
     },
     "Mario": {
-      "shift": "ON"
+      "shift": "OP"
     },
     "Gianluca": {
       "shift": "OP"
@@ -654,7 +654,7 @@
       "shift": "R"
     },
     "Mario": {
-      "shift": "OP"
+      "shift": "O"
     },
     "Gianluca": {
       "shift": "O"
@@ -683,7 +683,7 @@
       "shift": "R"
     },
     "Mario": {
-      "shift": "OP"
+      "shift": "O"
     },
     "Gianluca": {
       "shift": "O"
@@ -712,7 +712,7 @@
       "shift": "R"
     },
     "Mario": {
-      "shift": "OP"
+      "shift": "O"
     },
     "Gianluca": {
       "shift": "O"
@@ -741,7 +741,7 @@
       "shift": "D"
     },
     "Mario": {
-      "shift": "OP"
+      "shift": "O"
     },
     "Gianluca": {
       "shift": "O"
@@ -770,7 +770,7 @@
       "shift": "D"
     },
     "Mario": {
-      "shift": "OP"
+      "shift": "O"
     },
     "Gianluca": {
       "shift": "O"

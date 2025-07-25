@@ -10,6 +10,21 @@ const LogbookTable = ({
     generateLogbookNoteKey,
     logbookNotes = {},
 }) => {
+    // Helper function to determine if task is day or night shift
+    const getShiftType = (time) => {
+        if (!time) return "D"; // Default to day shift if no time
+
+        const [hours, minutes] = time.split(":").map(Number);
+        const timeInMinutes = hours * 60 + minutes;
+
+        // Night shift: 19:00 to 07:00 (>= 1140 OR <= 420)
+        if (timeInMinutes >= 1140 || timeInMinutes <= 420) {
+            return "N";
+        }
+        // Day shift: 07:01 to 18:59
+        return "D";
+    };
+
     // Filter entries for the selected date
     const dayEntries = entries.filter((entry) => entry.date === selectedDate);
 
@@ -60,7 +75,7 @@ const LogbookTable = ({
                             </span>
                         </>
                     ) : (
-                        <>Tabella delle task</>
+                        <>Tabella task</>
                     )}
                 </p>
             </div>
@@ -95,7 +110,8 @@ const LogbookTable = ({
                                         {entry.title || entry.text}
                                     </p>
                                     <div className="text-xs text-gray-500 capitalize">
-                                        {entry.date} • {entry.time} •{" "}
+                                        {entry.date} • Turno:{" "}
+                                        {getShiftType(entry.time)} •{" "}
                                         {entry.duration} • {entry.author} •{" "}
                                         {entry.category}
                                         {entry.subcategory &&
@@ -201,7 +217,8 @@ const LogbookTable = ({
                                         {entry.title || entry.text}
                                     </p>
                                     <div className="text-xs text-gray-500 capitalize">
-                                        {entry.date} • {entry.time} •{" "}
+                                        {entry.date} • Turno:{" "}
+                                        {getShiftType(entry.time)} •{" "}
                                         {entry.duration} • {entry.author} •{" "}
                                         {entry.category}
                                         {entry.subcategory &&

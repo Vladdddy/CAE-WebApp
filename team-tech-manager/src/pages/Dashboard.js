@@ -63,6 +63,21 @@ export default function Dashboard() {
     };
     const currentUser = useMemo(() => getCurrentUser(), [token]);
 
+    // Helper function to determine if task is day or night shift
+    const getShiftType = (time) => {
+        if (!time) return "D"; // Default to day shift if no time
+
+        const [hours, minutes] = time.split(":").map(Number);
+        const timeInMinutes = hours * 60 + minutes;
+
+        // Night shift: 19:00 to 07:00 (>= 1140 OR <= 420)
+        if (timeInMinutes >= 1140 || timeInMinutes <= 420) {
+            return "N";
+        }
+        // Day shift: 07:01 to 18:59
+        return "D";
+    };
+
     // Fetcha le tasks dal server
     const API = process.env.REACT_APP_API_URL;
     const [tasks, setTasks] = useState([]);
@@ -1047,7 +1062,7 @@ export default function Dashboard() {
                                                         •{" "}
                                                     </span>
                                                 )}
-                                            {task.time || "Nessun orario"}{" "}
+                                            Turno: {getShiftType(task.time)} •{" "}
                                             {task.assignedTo === "Non assegnare"
                                                 ? "Non assegnato"
                                                 : task.assignedTo}{" "}
@@ -1654,17 +1669,56 @@ export default function Dashboard() {
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     Nuovo Orario
                                 </label>
-                                <input
-                                    type="time"
-                                    value={reassignModal.time}
-                                    onChange={(e) =>
-                                        handleReassignFormChange(
-                                            "time",
-                                            e.target.value
-                                        )
-                                    }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
+                                <div className="flex space-x-4">
+                                    <label className="flex items-center space-x-2 cursor-pointer">
+                                        <input
+                                            type="radio"
+                                            name="shiftTime"
+                                            value="08:00"
+                                            checked={
+                                                reassignModal.time === "08:00"
+                                            }
+                                            onChange={(e) =>
+                                                handleReassignFormChange(
+                                                    "time",
+                                                    e.target.value
+                                                )
+                                            }
+                                            className="form-radio h-4 w-4 text-blue-600 focus:ring-blue-500 accent-blue-600"
+                                            style={{
+                                                accentColor: "#3b82f6",
+                                                cursor: "pointer",
+                                            }}
+                                        />
+                                        <span className="text-gray-700 font-medium">
+                                            D
+                                        </span>
+                                    </label>
+                                    <label className="flex items-center space-x-2 cursor-pointer">
+                                        <input
+                                            type="radio"
+                                            name="shiftTime"
+                                            value="23:00"
+                                            checked={
+                                                reassignModal.time === "23:00"
+                                            }
+                                            onChange={(e) =>
+                                                handleReassignFormChange(
+                                                    "time",
+                                                    e.target.value
+                                                )
+                                            }
+                                            className="form-radio h-4 w-4 text-blue-600 focus:ring-blue-500 accent-blue-600"
+                                            style={{
+                                                accentColor: "#3b82f6",
+                                                cursor: "pointer",
+                                            }}
+                                        />
+                                        <span className="text-gray-700 font-medium">
+                                            N
+                                        </span>
+                                    </label>
+                                </div>
                             </div>
 
                             <div>

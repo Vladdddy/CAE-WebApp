@@ -22,6 +22,21 @@ export default function TaskDetailsModal({
     const [editingNoteIndex, setEditingNoteIndex] = useState(null);
     const [editingNoteText, setEditingNoteText] = useState("");
 
+    // Helper function to determine if task is day or night shift
+    const getShiftType = (time) => {
+        if (!time) return "D"; // Default to day shift if no time
+
+        const [hours, minutes] = time.split(":").map(Number);
+        const timeInMinutes = hours * 60 + minutes;
+
+        // Night shift: 19:00 to 07:00 (>= 1140 OR <= 420)
+        if (timeInMinutes >= 1140 || timeInMinutes <= 420) {
+            return "N";
+        }
+        // Day shift: 07:01 to 18:59
+        return "D";
+    };
+
     // Helper function to get a clean display ID for logbook entries
     const getDisplayId = (task) => {
         if (task.type === "logbook-entry") {
@@ -168,10 +183,10 @@ export default function TaskDetailsModal({
                             </div>
                             <div>
                                 <label className="block text-xs font-medium text-gray-600 mb-1">
-                                    Orario
+                                    Turno
                                 </label>
                                 <p className="text-gray-600 text-md">
-                                    {task.time || "Nessun orario"}
+                                    {getShiftType(task.time)}
                                 </p>
                             </div>
                             {/* Duration - Only show for logbook entries */}

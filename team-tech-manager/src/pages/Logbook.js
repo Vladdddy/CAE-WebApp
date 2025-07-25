@@ -136,6 +136,21 @@ export default function Logbook() {
 
     const currentUser = getCurrentUser();
 
+    // Helper function to determine if task is day or night shift
+    const getShiftType = (time) => {
+        if (!time) return "D"; // Default to day shift if no time
+
+        const [hours, minutes] = time.split(":").map(Number);
+        const timeInMinutes = hours * 60 + minutes;
+
+        // Night shift: 19:00 to 07:00 (>= 1140 OR <= 420)
+        if (timeInMinutes >= 1140 || timeInMinutes <= 420) {
+            return "N";
+        }
+        // Day shift: 07:01 to 18:59
+        return "D";
+    };
+
     // Helper function to determine if a time belongs to a specific shift
     const getShiftFromTime = (timeString) => {
         if (!timeString) return null;
@@ -632,9 +647,9 @@ export default function Logbook() {
                                 });
                             }
                         } else {
-                            taskDetails.textContent = `Orario: ${
-                                task.time || "Nessun orario"
-                            } • Assegnato a: ${
+                            taskDetails.textContent = `Turno: ${getShiftType(
+                                task.time
+                            )} • Assegnato a: ${
                                 task.assignedTo === "Non assegnare"
                                     ? "Non assegnato"
                                     : task.assignedTo
@@ -893,7 +908,7 @@ export default function Logbook() {
                         const entryDetails = document.createElement("p");
                         entryDetails.textContent = `Simulatore: ${
                             entry.simulator || "N/A"
-                        } • Orario: ${entry.time} • Autore: ${
+                        } • Turno: ${getShiftType(entry.time)} • Autore: ${
                             entry.author
                         } • Categoria: ${entry.category}${
                             entry.subcategory ? "/" + entry.subcategory : ""
@@ -2217,7 +2232,9 @@ export default function Logbook() {
                         : task.title}
                 </p>{" "}
                 <div className="task-details text-xs text-gray-500 space-y-2">
-                    <div className="text-xs">{task.time}</div>
+                    <div className="text-xs">
+                        Turno: {getShiftType(task.time)}
+                    </div>
                     <div className="flex items-center justify-between">
                         {" "}
                         <div className="flex flex-col gap-1">
@@ -2510,7 +2527,7 @@ export default function Logbook() {
                                                 </span>
                                             </>
                                         ) : (
-                                            <>Tabella delle task</>
+                                            <>Tabella task</>
                                         )}
                                     </p>
                                 </div>
@@ -2548,8 +2565,12 @@ export default function Logbook() {
                                                                     entry.text}
                                                             </p>{" "}
                                                             <div className="text-xs text-gray-500 capitalize">
-                                                                {entry.date} •{" "}
-                                                                {entry.time} •{" "}
+                                                                {entry.date} •
+                                                                Turno:{" "}
+                                                                {getShiftType(
+                                                                    entry.time
+                                                                )}{" "}
+                                                                •{" "}
                                                                 {entry.duration ||
                                                                     "Nessuna durata"}{" "}
                                                                 •{" "}
@@ -3177,8 +3198,8 @@ export default function Logbook() {
                                         </svg>
                                         <p className="text-gray-600">
                                             {editIndex !== null
-                                                ? "Modifica logbook"
-                                                : "Nuova logbook"}
+                                                ? "Modifica entry"
+                                                : "Nuova entry"}
                                         </p>
                                         <svg
                                             className={`ml-auto transform transition-transform duration-200 ${
