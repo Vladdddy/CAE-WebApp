@@ -1,7 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import "../styles/sidebar.css";
-import logo from "../assets/cae2.png";
 import Logo from "../assets/logo.png";
 import Modal from "./Modal";
 
@@ -379,10 +378,16 @@ export default function Sidebar({ isCollapsed, onToggle }) {
                 ) : (
                     <>
                         <img
-                            src={logo}
+                            src={`${process.env.PUBLIC_URL}/cae2.png`}
                             alt="Logo"
                             className="w-8 h-8 rounded-full object-cover"
                             title={currentUser?.name || "User"}
+                            onError={(e) => {
+                                console.error(
+                                    "Logo failed to load from PUBLIC_URL, trying relative path"
+                                );
+                                e.target.src = "/cae2.png";
+                            }}
                         />
                         <div className="flex flex-col mb-4">
                             <span className="text-xs font-medium text-white">

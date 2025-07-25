@@ -5,14 +5,14 @@ const filePath = path.join(__dirname, "..", "data", "tasks.json");
 const usersFilePath = path.join(__dirname, "..", "data", "users.json");
 const notesFilePath = path.join(__dirname, "..", "data", "notes.json");
 
-// Helper function to get active employees from users.json
-const getActiveEmployees = () => {
+// Helper function to get active employees and admins from users.json
+const getActiveUsers = () => {
     if (fs.existsSync(usersFilePath)) {
         const users = JSON.parse(fs.readFileSync(usersFilePath));
         return users.filter(
             (user) =>
                 user.active &&
-                user.role === "employee" &&
+                (user.role === "employee" || user.role === "admin") &&
                 user.department === "Operations"
         );
     }
@@ -76,6 +76,48 @@ const deleteTaskNotes = (taskId) => {
     }
 };
 
+// Helper function to add a system note (non-deletable, non-modifiable)
+const addSystemNote = (taskId, userName, action) => {
+    try {
+        let notesData = {
+            taskNotes: {},
+            logbookNotes: {},
+        };
+
+        // Load existing notes if file exists
+        if (fs.existsSync(notesFilePath)) {
+            notesData = JSON.parse(fs.readFileSync(notesFilePath));
+        }
+
+        // Create the system note
+        const systemNote = {
+            text: `${userName} ha modificato la task`,
+            author: "SYSTEM",
+            timestamp: new Date().toISOString(),
+            isSystem: true, // Mark as system note
+            isSimple: true, // Mark as simple display (no author/timestamp shown)
+        };
+
+        // Initialize taskNotes array if it doesn't exist
+        if (!notesData.taskNotes[taskId.toString()]) {
+            notesData.taskNotes[taskId.toString()] = [];
+        }
+
+        // Add the system note
+        notesData.taskNotes[taskId.toString()].push(systemNote);
+
+        // Save to file
+        fs.writeFileSync(notesFilePath, JSON.stringify(notesData, null, 2));
+        console.log(
+            `Added system note for task ID: ${taskId} by user: ${userName}`
+        );
+        return true;
+    } catch (error) {
+        console.error(`Error adding system note for task ID ${taskId}:`, error);
+        return false;
+    }
+};
+
 exports.getTasks = (req, res) => {
     res.json(tasks);
 };
@@ -97,7 +139,7 @@ exports.createTask = (req, res) => {
     // Skip active employee check for "da definire" tasks and "Non assegnare"
     if (status !== "da definire" && assignedTo !== "Non assegnare") {
         // Check if the assigned employee(s) exist in users.json and are active
-        const activeEmployees = getActiveEmployees();
+        const activeUsers = getActiveUsers();
 
         // Handle multiple employees (comma-separated)
         const assignedEmployeeNames = assignedTo.includes(",")
@@ -105,7 +147,7 @@ exports.createTask = (req, res) => {
             : [assignedTo];
 
         for (const employeeName of assignedEmployeeNames) {
-            const assignedEmployee = activeEmployees.find(
+            const assignedEmployee = activeUsers.find(
                 (emp) => emp.name === employeeName
             );
 
@@ -192,21 +234,6 @@ exports.toggleTask = (req, res) => {
     const task = tasks.find((t) => t.id === id);
     if (!task) return res.status(404).json({ message: "Task non trovato" });
 
-    // Check permissions for employees
-    if (req.user.role === "employee") {
-        // Employees can only toggle tasks assigned to them
-        // Handle multiple assignees (comma-separated)
-        const assignedEmployeeNames = task.assignedTo.includes(",")
-            ? task.assignedTo.split(",").map((name) => name.trim())
-            : [task.assignedTo];
-
-        if (!assignedEmployeeNames.includes(req.user.name)) {
-            return res.status(403).json({
-                message:
-                    "Non hai i permessi per modificare questo task. Puoi modificare solo i task assegnati a te.",
-            });
-        }
-    }
     const nextStatus = {
         "non iniziato": "in corso",
         "in corso": "completato",
@@ -216,6 +243,12 @@ exports.toggleTask = (req, res) => {
     };
 
     task.status = nextStatus[task.status] || "non iniziato";
+
+    // Add system note when employee modifies a task
+    if (req.user.role === "employee") {
+        addSystemNote(id, req.user.name, "status_change");
+    }
+
     saveTasksToFile();
     res.json(task);
 };
@@ -253,7 +286,7 @@ exports.updateTaskDescription = (req, res) => {
     });
 
     const id = parseInt(req.params.id);
-    const { description, simulator, employee, date, time } = req.body;
+    const { title, description, simulator, employee, date, time } = req.body;
     const task = tasks.find((t) => t.id === id);
 
     if (!task) {
@@ -261,34 +294,10 @@ exports.updateTaskDescription = (req, res) => {
         return res.status(404).json({ message: "Task non trovato" });
     }
 
-    // Check permissions for employees
-    if (req.user.role === "employee") {
-        // Employees can only update descriptions for tasks assigned to them
-        // Handle multiple assignees (comma-separated)
-        const assignedEmployeeNames = task.assignedTo.includes(",")
-            ? task.assignedTo.split(",").map((name) => name.trim())
-            : [task.assignedTo];
-
-        if (!assignedEmployeeNames.includes(req.user.name)) {
-            console.log(
-                "Permission denied: task assigned to",
-                task.assignedTo,
-                "but user is",
-                req.user.name
-            );
-            return res.status(403).json({
-                message:
-                    "Non hai i permessi per modificare questo task. Puoi modificare solo i task assegnati a te.",
-            });
-        }
-    }
-
     // If employee is being changed, validate the new employee
     if (employee !== undefined && employee !== task.assignedTo) {
-        const activeEmployees = getActiveEmployees();
-        const employeeExists = activeEmployees.find(
-            (emp) => emp.name === employee
-        );
+        const activeUsers = getActiveUsers();
+        const employeeExists = activeUsers.find((emp) => emp.name === employee);
 
         if (employee !== "" && !employeeExists) {
             return res.status(400).json({
@@ -298,7 +307,9 @@ exports.updateTaskDescription = (req, res) => {
     }
 
     console.log(
-        "Updating task with description:",
+        "Updating task with title:",
+        title,
+        "description:",
         description,
         "simulator:",
         simulator,
@@ -311,6 +322,9 @@ exports.updateTaskDescription = (req, res) => {
     );
 
     // Update the task fields
+    if (title !== undefined) {
+        task.title = title || "";
+    }
     task.description = description || "";
     task.simulator = simulator || "";
     if (employee !== undefined) {
@@ -321,6 +335,64 @@ exports.updateTaskDescription = (req, res) => {
     }
     if (time !== undefined) {
         task.time = time || null;
+    }
+
+    // If date or time changed, check if current employee is still available for the new slot
+    if (
+        (date !== undefined || time !== undefined) &&
+        task.assignedTo &&
+        task.assignedTo !== "Non assegnare"
+    ) {
+        const taskDate = task.date;
+        const taskTime = task.time;
+
+        if (taskDate && taskTime) {
+            const requiredShift = getShiftFromTime(taskTime);
+            const dateObj = new Date(taskDate);
+            const year = dateObj.getFullYear();
+            const month = dateObj.getMonth() + 1;
+            const shiftFilePath = getShiftDataPath(year, month);
+
+            let employeeStillAvailable = false;
+
+            if (fs.existsSync(shiftFilePath)) {
+                const shiftData = JSON.parse(fs.readFileSync(shiftFilePath));
+                const dayData = shiftData[taskDate];
+
+                if (dayData && dayData[task.assignedTo]) {
+                    const employeeShiftData = dayData[task.assignedTo];
+                    if (employeeShiftData && employeeShiftData.shift) {
+                        const userShift = employeeShiftData.shift;
+
+                        // Check if user's shift matches the required time period
+                        const isShiftMatch =
+                            userShift === requiredShift ||
+                            (userShift === "D" &&
+                                (requiredShift === "O" ||
+                                    requiredShift === "OP")) ||
+                            (userShift === "N" && requiredShift === "ON");
+
+                        employeeStillAvailable = isShiftMatch;
+                    }
+                }
+            } else {
+                // If no shift data exists, assume employee is still available
+                employeeStillAvailable = true;
+            }
+
+            // If employee is no longer available for this shift, set to "Non assegnare"
+            if (!employeeStillAvailable) {
+                console.log(
+                    `Employee ${task.assignedTo} not available for new date/time, setting to "Non assegnare"`
+                );
+                task.assignedTo = "Non assegnare";
+            }
+        }
+    }
+
+    // Add system note when employee modifies a task
+    if (req.user.role === "employee") {
+        addSystemNote(id, req.user.name, "task_update");
     }
 
     saveTasksToFile();
@@ -343,7 +415,7 @@ exports.getAvailableEmployees = (req, res) => {
     const shiftFilePath = getShiftDataPath(year, month);
 
     // Get all active employees from users.json
-    const activeEmployees = getActiveEmployees();
+    const activeUsers = getActiveUsers();
     let availableEmployees = [];
 
     if (fs.existsSync(shiftFilePath)) {
@@ -352,7 +424,7 @@ exports.getAvailableEmployees = (req, res) => {
 
         if (dayData) {
             // Find employees from users.json who are working the required shift
-            activeEmployees.forEach((employee) => {
+            activeUsers.forEach((employee) => {
                 // Check if employee has shift data for this date
                 const employeeShiftData = dayData[employee.name];
                 if (employeeShiftData && employeeShiftData.shift) {
@@ -375,7 +447,7 @@ exports.getAvailableEmployees = (req, res) => {
     } else {
         // If no shift data exists, return all active employees as potentially available
         // This provides a fallback when shift planning hasn't been done yet
-        availableEmployees = activeEmployees.map((emp) => emp.name);
+        availableEmployees = activeUsers.map((emp) => emp.name);
     }
 
     res.json({
@@ -422,8 +494,8 @@ exports.reassignTask = (req, res) => {
 
     // Check if the assigned employee exists in users.json and is active (skip for "Non assegnare")
     if (assignedTo !== "Non assegnare") {
-        const activeEmployees = getActiveEmployees();
-        const assignedEmployee = activeEmployees.find(
+        const activeUsers = getActiveUsers();
+        const assignedEmployee = activeUsers.find(
             (emp) => emp.name === assignedTo
         );
 
@@ -497,17 +569,6 @@ exports.updateTaskStatus = (req, res) => {
         return res.status(404).json({ message: "Task non trovato" });
     }
 
-    // Check permissions for employees
-    if (req.user.role === "employee") {
-        // Employees can only update status for tasks assigned to them
-        if (task.assignedTo !== req.user.name) {
-            return res.status(403).json({
-                message:
-                    "Non hai i permessi per modificare questo task. Puoi modificare solo i task assegnati a te.",
-            });
-        }
-    }
-
     // Validate status
     const validStatuses = [
         "non iniziato",
@@ -525,6 +586,12 @@ exports.updateTaskStatus = (req, res) => {
     }
 
     task.status = status;
+
+    // Add system note when employee modifies a task
+    if (req.user.role === "employee") {
+        addSystemNote(id, req.user.name, "status_update");
+    }
+
     saveTasksToFile();
     res.json(task);
 };

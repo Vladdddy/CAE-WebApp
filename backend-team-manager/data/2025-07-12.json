@@ -6,7 +6,7 @@
     "subcategory": "SW",
     "extraDetail": "COMMS",
     "simulator": "Others",
-    "date": "2025-07-14",
+    "date": "2025-07-12",
     "time": "08:00",
     "duration": "2",
     "title": "tregg"
@@ -18,9 +18,108 @@
     "subcategory": "",
     "extraDetail": "",
     "simulator": "169",
-    "date": "2025-07-14",
+    "date": "2025-07-12",
     "time": "08:00",
     "duration": "3",
     "title": "yteyety"
+  },
+  {
+    "text": "tret",
+    "author": "Gianluca",
+    "category": "troubleshooting",
+    "subcategory": "",
+    "extraDetail": "",
+    "simulator": "Others",
+    "date": "2025-07-12",
+    "time": "08:00",
+    "title": "et"
+  },
+  {
+    "text": "r",
+    "author": "Gianluca",
+    "category": "troubleshooting",
+    "subcategory": "",
+    "extraDetail": "",
+    "simulator": "Others",
+    "date": "2025-07-12",
+    "time": "08:00",
+    "title": "REREWR"
+  },
+  {
+    "text": "AERER",
+    "author": "Gianluca",
+    "category": "others",
+    "subcategory": "",
+    "extraDetail": "",
+    "simulator": "Others",
+    "date": "2025-07-12",
+    "time": "08:00",
+    "title": "EWRAR"
+  },
+  {
+    "text": "ERA",
+    "author": "Gianluca",
+    "category": "routine task",
+    "subcategory": "",
+    "extraDetail": "",
+    "simulator": "Others",
+    "date": "2025-07-12",
+    "time": "08:00",
+    "title": "EAR"
+  },
+  {
+    "text": "REARRER",
+    "author": "Gianluca",
+    "category": "troubleshooting",
+    "subcategory": "",
+    "extraDetail": "",
+    "simulator": "Others",
+    "date": "2025-07-12",
+    "time": "08:00",
+    "title": "REAR"
+  },
+  {
+    "text": "F<FDFG<S",
+    "author": "Gianluca",
+    "category": "troubleshooting",
+    "subcategory": "",
+    "extraDetail": "",
+    "simulator": "Others",
+    "date": "2025-07-12",
+    "time": "08:00",
+    "title": "E<FFG"
+  },
+  {
+    "text": "DFGDSG",
+    "author": "Gianluca",
+    "category": "troubleshooting",
+    "subcategory": "",
+    "extraDetail": "",
+    "simulator": "Others",
+    "date": "2025-07-12",
+    "time": "08:00",
+    "title": "GDSFG"
+  },
+  {
+    "text": "GFGS",
+    "author": "Gianluca",
+    "category": "troubleshooting",
+    "subcategory": "",
+    "extraDetail": "",
+    "simulator": "Others",
+    "date": "2025-07-12",
+    "time": "08:00",
+    "title": "SFDG"
+  },
+  {
+    "text": "dsfdsaf",
+    "author": "Gianluca",
+    "category": "troubleshooting",
+    "subcategory": "",
+    "extraDetail": "",
+    "simulator": "Others",
+    "date": "2025-07-25",
+    "time": "08:00",
+    "title": "dsf"
   }
 ]

@@ -218,17 +218,14 @@ const Calendar = memo(
                                                 {count.tasks > 0 && (
                                                     <span className="text-xs px-1.5 py-0.5 rounded-full bg-green-100 text-green-600">
                                                         {count.tasks} task
-                                                        {count.tasks !== 1
-                                                            ? "s"
-                                                            : ""}
                                                     </span>
                                                 )}
                                                 {count.entries > 0 && (
                                                     <span className="text-xs px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-600">
-                                                        {count.entries} entry
-                                                        {count.entries !== 1
-                                                            ? "s"
-                                                            : ""}
+                                                        {count.entries}{" "}
+                                                        {count.entries <= 99
+                                                            ? "entry"
+                                                            : "ent"}
                                                     </span>
                                                 )}
                                             </>
@@ -244,6 +241,8 @@ const Calendar = memo(
                                                 {count.total}{" "}
                                                 {type === "tasks"
                                                     ? "task"
+                                                    : count.total > 9
+                                                    ? "ent"
                                                     : "entry"}
                                                 {count.total !== 1
                                                     ? type === "tasks"

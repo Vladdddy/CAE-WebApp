@@ -387,9 +387,11 @@ const TaskTable = ({
                                                                     }
                                                                 </span>
                                                                 <span className="text-xs text-gray-500 px-2">
-                                                                    {
-                                                                        task.assignedTo
-                                                                    }
+                                                                    {task.assignedTo ===
+                                                                        "Non assegnare" ||
+                                                                    !task.assignedTo
+                                                                        ? "Non assegnato"
+                                                                        : task.assignedTo}
                                                                 </span>
                                                             </div>
                                                             {task.notes &&
@@ -519,7 +521,8 @@ const TaskTable = ({
                                     <div className="text-xs text-gray-500 capitalize">
                                         {task.date || "Nessuna data"} • Turno:{" "}
                                         {getShiftType(task.time)} •{" "}
-                                        {task.assignedTo === "Non assegnare"
+                                        {task.assignedTo === "Non assegnare" ||
+                                        !task.assignedTo
                                             ? "Non assegnato"
                                             : task.assignedTo}{" "}
                                         • {task.status}

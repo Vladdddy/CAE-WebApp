@@ -10,11 +10,11 @@
   {
     "id": 2,
     "title": "Test di una scheda grafica",
-    "assignedTo": "Nicolo",
+    "assignedTo": "",
     "status": "completato",
     "date": "2025-07-25",
     "time": "17:00",
-    "description": "vlad",
+    "description": "vlad4sfd",
     "simulator": "FTD"
   },
   {
@@ -271,7 +271,7 @@
     "category": "troubleshooting",
     "subcategory": "HW",
     "extraDetail": "COMMS",
-    "status": "riassegnato",
+    "status": "non completato",
     "date": "2025-07-21",
     "time": "09:22"
   },
@@ -357,7 +357,7 @@
     "category": "others",
     "subcategory": "",
     "extraDetail": "",
-    "status": "non iniziato",
+    "status": "non completato",
     "date": "2025-07-18",
     "time": "08:00",
     "description": ""
@@ -442,16 +442,16 @@
   },
   {
     "id": 73,
-    "title": "euifyeI8ELOFU",
-    "description": "",
-    "assignedTo": "Non assegnare",
+    "title": "Provaa",
+    "description": "ryydsfdfipogf",
+    "assignedTo": "",
     "simulator": "",
     "category": "",
     "subcategory": "",
     "extraDetail": "",
-    "status": "completato",
-    "date": "2025-07-25",
-    "time": "08:00"
+    "status": "non iniziato",
+    "date": "2025-07-18",
+    "time": "23:00"
   },
   {
     "id": 74,
@@ -470,14 +470,14 @@
     "id": 75,
     "title": "22.07",
     "description": "assignee",
-    "assignedTo": "Thomas",
+    "assignedTo": "Andrea",
     "simulator": "109FFS",
     "category": "routine task",
     "subcategory": "PM",
     "extraDetail": "",
-    "status": "non iniziato",
-    "date": "2025-07-22",
-    "time": "08:00"
+    "status": "riassegnato",
+    "date": "2025-07-23",
+    "time": "23:00"
   },
   {
     "id": 76,
@@ -501,7 +501,7 @@
     "category": "routine task",
     "subcategory": "PM",
     "extraDetail": "",
-    "status": "non iniziato",
+    "status": "in corso",
     "date": "2025-07-22",
     "time": "08:00"
   },
@@ -573,15 +573,15 @@
   {
     "id": 83,
     "title": "dfgdfhgds dghd hd ggsg",
-    "description": "dshgdgfnsbhtsr fdg gdfgfga",
-    "assignedTo": "Sara",
+    "description": "modificatort",
+    "assignedTo": "",
     "simulator": "109FFS",
     "category": "troubleshooting",
     "subcategory": "HW",
     "extraDetail": "AVIONIC",
-    "status": "non iniziato",
-    "date": "2025-07-25",
-    "time": "11:00"
+    "status": "completato",
+    "date": "2025-07-23",
+    "time": "23:00"
   },
   {
     "id": 84,
@@ -599,15 +599,15 @@
   {
     "id": 85,
     "title": "hkghbjb",
-    "description": "",
-    "assignedTo": "Capo",
+    "description": "sgfgfdsf",
+    "assignedTo": "",
     "simulator": "",
     "category": "",
     "subcategory": "",
     "extraDetail": "",
-    "status": "da definire",
-    "date": null,
-    "time": null
+    "status": "non iniziato",
+    "date": "2025-07-25",
+    "time": "08:00"
   },
   {
     "id": 86,

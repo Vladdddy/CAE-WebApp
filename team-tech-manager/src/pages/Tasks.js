@@ -73,6 +73,7 @@ export default function Tasks() {
     const [descriptionModal, setDescriptionModal] = useState({
         isOpen: false,
         taskId: null,
+        currentTitle: "",
         currentDescription: "",
         currentSimulator: "",
         currentEmployee: "",
@@ -177,22 +178,17 @@ export default function Tasks() {
 
     const canToggleTask = (task) => {
         if (!currentUser) return false;
-        // Admins, managers, supervisors, superusers can toggle any task
+        // Admins, managers, supervisors, superusers, and employees can toggle any task
         if (
-            ["admin", "manager", "supervisor", "superuser"].includes(
-                currentUser.role
-            )
+            [
+                "admin",
+                "manager",
+                "supervisor",
+                "superuser",
+                "employee",
+            ].includes(currentUser.role)
         )
             return true;
-        // Employees can only toggle their own tasks
-        if (currentUser.role === "employee") {
-            // Handle multiple assignees (comma-separated)
-            if (!task.assignedTo) return false;
-            const assignedEmployeeNames = task.assignedTo.includes(",")
-                ? task.assignedTo.split(",").map((name) => name.trim())
-                : [task.assignedTo];
-            return assignedEmployeeNames.includes(currentUser.name);
-        }
         return false;
     };
 
@@ -206,22 +202,17 @@ export default function Tasks() {
 
     const canEditDescription = (task) => {
         if (!currentUser) return false;
-        // Admins, managers, supervisors, superusers can edit any task description
+        // Admins, managers, supervisors, superusers, and employees can edit any task description
         if (
-            ["admin", "manager", "supervisor", "superuser"].includes(
-                currentUser.role
-            )
+            [
+                "admin",
+                "manager",
+                "supervisor",
+                "superuser",
+                "employee",
+            ].includes(currentUser.role)
         )
             return true;
-        // Employees can only edit descriptions for tasks assigned to them
-        if (currentUser.role === "employee") {
-            // Handle multiple assignees (comma-separated)
-            if (!task.assignedTo) return false;
-            const assignedEmployeeNames = task.assignedTo.includes(",")
-                ? task.assignedTo.split(",").map((name) => name.trim())
-                : [task.assignedTo];
-            return assignedEmployeeNames.includes(currentUser.name);
-        }
         return false;
     };
 
@@ -274,6 +265,7 @@ export default function Tasks() {
         setDescriptionModal({
             isOpen: true,
             taskId: task.id,
+            currentTitle: task.title || "",
             currentDescription: task.description || "",
             currentSimulator: task.simulator || "",
             currentEmployee: task.assignedTo || "",
@@ -294,6 +286,7 @@ export default function Tasks() {
         setDescriptionModal({
             isOpen: false,
             taskId: null,
+            currentTitle: "",
             currentDescription: "",
             currentSimulator: "",
             currentEmployee: "",
@@ -464,10 +457,29 @@ export default function Tasks() {
             if (res.ok) {
                 const updated = await res.json();
 
-                // Load notes from state and merge with the updated task
+                // Fetch updated notes from backend to include any new system notes
+                let updatedNotes = [];
+                try {
+                    updatedNotes = await notesService.getTaskNotesById(
+                        updated.id
+                    );
+                } catch (error) {
+                    console.error("Error fetching updated notes:", error);
+                    // Fallback to local notes if backend is unavailable
+                    updatedNotes = taskNotes[updated.id] || [];
+                }
+
+                // Update local notes state
+                const updatedTaskNotes = {
+                    ...taskNotes,
+                    [updated.id]: updatedNotes,
+                };
+                setTaskNotes(updatedTaskNotes);
+
+                // Load notes from updated state and merge with the updated task
                 const updatedWithNotes = {
                     ...updated,
-                    notes: taskNotes[updated.id] || [],
+                    notes: updatedNotes,
                 };
 
                 setTasks(
@@ -661,10 +673,29 @@ export default function Tasks() {
             if (res.ok) {
                 const updated = await res.json();
 
-                // Load notes from state and merge with the updated task
+                // Fetch updated notes from backend to include any new system notes
+                let updatedNotes = [];
+                try {
+                    updatedNotes = await notesService.getTaskNotesById(
+                        updated.id
+                    );
+                } catch (error) {
+                    console.error("Error fetching updated notes:", error);
+                    // Fallback to local notes if backend is unavailable
+                    updatedNotes = taskNotes[updated.id] || [];
+                }
+
+                // Update local notes state
+                const updatedTaskNotes = {
+                    ...taskNotes,
+                    [updated.id]: updatedNotes,
+                };
+                setTaskNotes(updatedTaskNotes);
+
+                // Load notes from updated state and merge with the updated task
                 const updatedWithNotes = {
                     ...updated,
-                    notes: taskNotes[updated.id] || [],
+                    notes: updatedNotes,
                 };
 
                 setTasks(
@@ -693,6 +724,89 @@ export default function Tasks() {
         } catch (error) {
             console.error("Error toggling task:", error);
             showModal("Errore", "Errore durante la modifica del task", "error");
+        }
+    };
+
+    const resetTask = async (id) => {
+        const token = localStorage.getItem("authToken");
+        try {
+            // Use the correct endpoint to update task status
+            const res = await fetch(`${API}/api/tasks/${id}/status`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    status: "non iniziato",
+                }),
+            });
+
+            if (res.status === 403) {
+                const error = await res.json();
+                showModal(
+                    "Accesso negato",
+                    error.message ||
+                        "Non hai i permessi per modificare questo task",
+                    "error"
+                );
+                return;
+            }
+
+            if (res.ok) {
+                const updated = await res.json();
+
+                // Fetch updated notes from backend to include any new system notes
+                let updatedNotes = [];
+                try {
+                    updatedNotes = await notesService.getTaskNotesById(
+                        updated.id
+                    );
+                } catch (error) {
+                    console.error("Error fetching updated notes:", error);
+                    // Fallback to local notes if backend is unavailable
+                    updatedNotes = taskNotes[updated.id] || [];
+                }
+
+                // Update local notes state
+                const updatedTaskNotes = {
+                    ...taskNotes,
+                    [updated.id]: updatedNotes,
+                };
+                setTaskNotes(updatedTaskNotes);
+
+                // Load notes from updated state and merge with the updated task
+                const updatedWithNotes = {
+                    ...updated,
+                    notes: updatedNotes,
+                };
+
+                setTasks(
+                    tasks.map((t) => (t.id === id ? updatedWithNotes : t))
+                );
+
+                // Update the modal if it's open and showing the same task
+                if (
+                    taskDetailsModal.isOpen &&
+                    taskDetailsModal.task &&
+                    taskDetailsModal.task.id === id
+                ) {
+                    setTaskDetailsModal((prev) => ({
+                        ...prev,
+                        task: updatedWithNotes,
+                    }));
+                }
+            } else {
+                console.error("Error resetting task:", await res.text());
+                showModal(
+                    "Errore",
+                    "Errore durante il reset del task",
+                    "error"
+                );
+            }
+        } catch (error) {
+            console.error("Error resetting task:", error);
+            showModal("Errore", "Errore durante il reset del task", "error");
         }
     };
 
@@ -932,7 +1046,7 @@ export default function Tasks() {
             pdfContent.style.backgroundColor = "white";
 
             // Add title
-            const title = document.createElement("h2");
+            const title = document.createElement("h1");
             title.textContent = `Task per il ${formattedDate}`;
             title.style.marginBottom = "20px";
             title.style.color = "#333";
@@ -1008,33 +1122,41 @@ export default function Tasks() {
                         const taskDiv = document.createElement("div");
                         taskDiv.style.marginBottom = "15px";
                         taskDiv.style.padding = "15px";
-                        taskDiv.style.border = "1px solid #e5e7eb";
+                        // Add colored border based on task status
+                        const borderColor = getBorderColor(task.status).replace(
+                            "20",
+                            ""
+                        ); // Remove transparency for better PDF visibility
+                        taskDiv.style.border = `1px solid ${
+                            borderColor + "60"
+                        }`;
                         taskDiv.style.borderRadius = "8px";
-                        taskDiv.style.backgroundColor = "#f9f9f9";
+                        taskDiv.style.backgroundColor = `${borderColor + "15"}`;
 
-                        const taskTitle = document.createElement("h5");
+                        const taskTitle = document.createElement("h2");
                         taskTitle.textContent = `${index + 1}. ${task.title}`;
                         taskTitle.style.margin = "0 0 8px 0";
-                        taskTitle.style.color = "#333";
-                        taskTitle.style.fontSize = "16px";
+                        taskTitle.style.color = `#1f2937`;
+                        taskTitle.style.fontSize = "18px";
+                        taskTitle.style.fontWeight = "500";
                         taskDiv.appendChild(taskTitle);
                         const taskDetails = document.createElement("p");
                         taskDetails.textContent = `Turno: ${getShiftType(
                             task.time
-                        )} • Assegnato a: ${
+                        )} • ${
                             task.assignedTo === "Non assegnare"
                                 ? "Non assegnato"
                                 : task.assignedTo
-                        } • Status: ${task.status}`;
+                        } • ${task.status}`;
                         taskDetails.style.margin = "0";
-                        taskDetails.style.color = "#666";
+                        taskDetails.style.color = "#333";
                         taskDetails.style.fontSize = "14px";
                         taskDiv.appendChild(taskDetails);
 
                         // Add task description if available
                         if (task.description) {
                             const taskDescription = document.createElement("p");
-                            taskDescription.textContent = `Descrizione: ${task.description}`;
+                            taskDescription.textContent = `"${task.description}"`;
                             taskDescription.style.margin = "8px 0 0 0";
                             taskDescription.style.color = "#666";
                             taskDescription.style.fontSize = "14px";
@@ -1045,16 +1167,12 @@ export default function Tasks() {
                         // Add notes if available
                         if (task.notes && task.notes.length > 0) {
                             const notesHeader = document.createElement("p");
-                            notesHeader.textContent = "Note:";
                             notesHeader.style.margin = "8px 0 16px 0";
-                            notesHeader.style.color = "#333";
-                            notesHeader.style.fontSize = "14px";
-                            notesHeader.style.fontWeight = "bold";
                             taskDiv.appendChild(notesHeader);
 
                             task.notes.forEach((note, noteIndex) => {
                                 const noteDiv = document.createElement("div");
-                                noteDiv.style.margin = "4px 0 4px 16px";
+                                noteDiv.style.margin = "4px 0 4px 0px";
                                 noteDiv.style.padding = "8px";
                                 noteDiv.style.backgroundColor = "#f3f4f6";
                                 noteDiv.style.borderLeft = "3px solid #d1d5db";
@@ -1068,10 +1186,8 @@ export default function Tasks() {
                                 noteDiv.appendChild(noteText);
 
                                 const noteAuthor = document.createElement("p");
-                                const noteDate = new Date(
-                                    note.timestamp
-                                ).toLocaleString("it-IT");
-                                noteAuthor.textContent = `${note.author} - ${noteDate}`;
+
+                                noteAuthor.textContent = `${note.author}`;
                                 noteAuthor.style.margin = "0";
                                 noteAuthor.style.color = "#666";
                                 noteAuthor.style.fontSize = "11px";
@@ -1285,7 +1401,12 @@ export default function Tasks() {
                         const taskDiv = document.createElement("div");
                         taskDiv.style.marginBottom = "15px";
                         taskDiv.style.padding = "15px";
-                        taskDiv.style.border = "1px solid #e5e7eb";
+                        // Add colored border based on task status
+                        const borderColor = getBorderColor(task.status).replace(
+                            "20",
+                            ""
+                        ); // Remove transparency for better PDF visibility
+                        taskDiv.style.border = `2px solid ${borderColor}`;
                         taskDiv.style.borderRadius = "8px";
                         taskDiv.style.backgroundColor = "#f9f9f9";
 
@@ -2691,6 +2812,7 @@ export default function Tasks() {
                     onClose={closeTaskDetails}
                     task={taskDetailsModal.task}
                     onToggleTask={toggleTask}
+                    onResetTask={resetTask}
                     onDeleteTask={deleteTask}
                     canToggleTask={canToggleTask}
                     canDeleteTasks={canDeleteTasks}
@@ -2706,6 +2828,7 @@ export default function Tasks() {
                     isOpen={descriptionModal.isOpen}
                     onClose={closeDescriptionModal}
                     onSave={updateTaskDescription}
+                    currentTitle={descriptionModal.currentTitle}
                     currentDescription={descriptionModal.currentDescription}
                     currentSimulator={descriptionModal.currentSimulator}
                     currentEmployee={descriptionModal.currentEmployee || ""}

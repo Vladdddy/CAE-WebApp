@@ -31,7 +31,17 @@ const saveNotesToFile = () => {
 // Get all task notes
 exports.getTaskNotes = (req, res) => {
     try {
-        res.json(notesData.taskNotes || {});
+        // Always reload data from file to get latest system notes
+        let currentNotesData = {
+            taskNotes: {},
+            logbookNotes: {},
+        };
+
+        if (fs.existsSync(notesFilePath)) {
+            currentNotesData = JSON.parse(fs.readFileSync(notesFilePath));
+        }
+
+        res.json(currentNotesData.taskNotes || {});
     } catch (error) {
         console.error("Error getting task notes:", error);
         res.status(500).json({ error: "Error retrieving task notes" });
@@ -52,7 +62,19 @@ exports.getLogbookNotes = (req, res) => {
 exports.getTaskNotesById = (req, res) => {
     try {
         const { taskId } = req.params;
-        const notes = notesData.taskNotes[taskId] || [];
+
+        // Always reload data from file to get latest system notes
+        let currentNotesData = {
+            taskNotes: {},
+            logbookNotes: {},
+        };
+
+        if (fs.existsSync(notesFilePath)) {
+            currentNotesData = JSON.parse(fs.readFileSync(notesFilePath));
+        }
+
+        const notes = currentNotesData.taskNotes[taskId] || [];
+        console.log(`Retrieved ${notes.length} notes for task ${taskId}`);
         res.json(notes);
     } catch (error) {
         console.error("Error getting task notes by ID:", error);
@@ -89,17 +111,30 @@ exports.addTaskNote = (req, res) => {
                 .json({ error: "Text and author are required" });
         }
 
+        // Always reload data from file to get latest system notes
+        let currentNotesData = {
+            taskNotes: {},
+            logbookNotes: {},
+        };
+
+        if (fs.existsSync(notesFilePath)) {
+            currentNotesData = JSON.parse(fs.readFileSync(notesFilePath));
+        }
+
         const noteData = {
             text,
             author,
             timestamp: new Date().toISOString(),
         };
 
-        if (!notesData.taskNotes[taskId]) {
-            notesData.taskNotes[taskId] = [];
+        if (!currentNotesData.taskNotes[taskId]) {
+            currentNotesData.taskNotes[taskId] = [];
         }
 
-        notesData.taskNotes[taskId].push(noteData);
+        currentNotesData.taskNotes[taskId].push(noteData);
+
+        // Update global notesData and save to file
+        notesData = currentNotesData;
         console.log("Saving notes to file...");
         saveNotesToFile();
         console.log("Notes saved successfully");
@@ -170,10 +205,20 @@ exports.updateNote = (req, res) => {
             return res.status(400).json({ error: "Text is required" });
         }
 
+        // Always reload data from file to get latest system notes
+        let currentNotesData = {
+            taskNotes: {},
+            logbookNotes: {},
+        };
+
+        if (fs.existsSync(notesFilePath)) {
+            currentNotesData = JSON.parse(fs.readFileSync(notesFilePath));
+        }
+
         const notesArray =
             type === "tasks"
-                ? notesData.taskNotes[entryId]
-                : notesData.logbookNotes[entryId];
+                ? currentNotesData.taskNotes[entryId]
+                : currentNotesData.logbookNotes[entryId];
 
         if (!notesArray || !notesArray[noteIndex]) {
             return res.status(404).json({ error: "Note not found" });
@@ -199,6 +244,14 @@ exports.updateNote = (req, res) => {
         });
 
         // Check if user is authorized to update this note
+        // System notes cannot be updated by anyone
+        if (note.isSystem) {
+            console.log("Authorization DENIED - Cannot update system notes");
+            return res.status(403).json({
+                error: "System notes cannot be modified",
+            });
+        }
+
         // Only admins, superusers or the note author can update the note
         if (
             currentUser.role !== "admin" &&
@@ -216,6 +269,8 @@ exports.updateNote = (req, res) => {
         notesArray[noteIndex].text = text;
         notesArray[noteIndex].updatedAt = new Date().toISOString();
 
+        // Update global notesData and save to file
+        notesData = currentNotesData;
         saveNotesToFile();
 
         res.json({
@@ -233,10 +288,20 @@ exports.deleteNote = (req, res) => {
     try {
         const { type, entryId, noteIndex } = req.params;
 
+        // Always reload data from file to get latest system notes
+        let currentNotesData = {
+            taskNotes: {},
+            logbookNotes: {},
+        };
+
+        if (fs.existsSync(notesFilePath)) {
+            currentNotesData = JSON.parse(fs.readFileSync(notesFilePath));
+        }
+
         const notesArray =
             type === "tasks"
-                ? notesData.taskNotes[entryId]
-                : notesData.logbookNotes[entryId];
+                ? currentNotesData.taskNotes[entryId]
+                : currentNotesData.logbookNotes[entryId];
 
         if (!notesArray || !notesArray[noteIndex]) {
             return res.status(404).json({ error: "Note not found" });
@@ -262,6 +327,14 @@ exports.deleteNote = (req, res) => {
         });
 
         // Check if user is authorized to delete this note
+        // System notes cannot be deleted by anyone
+        if (note.isSystem) {
+            console.log("Authorization DENIED - Cannot delete system notes");
+            return res.status(403).json({
+                error: "System notes cannot be deleted",
+            });
+        }
+
         // Only admins, superusers or the note author can delete the note
         if (
             currentUser.role !== "admin" &&
@@ -281,12 +354,14 @@ exports.deleteNote = (req, res) => {
         // Remove the array if it's empty
         if (notesArray.length === 0) {
             if (type === "tasks") {
-                delete notesData.taskNotes[entryId];
+                delete currentNotesData.taskNotes[entryId];
             } else {
-                delete notesData.logbookNotes[entryId];
+                delete currentNotesData.logbookNotes[entryId];
             }
         }
 
+        // Update global notesData and save to file
+        notesData = currentNotesData;
         saveNotesToFile();
 
         res.json({ message: "Note deleted successfully" });

@@ -58,7 +58,6 @@ export default function Logbook() {
     const [simulator, setSimulator] = useState("");
     const [formDate, setFormDate] = useState(date);
     const [formTime, setFormTime] = useState("08:00");
-    const [duration, setDuration] = useState("");
     const [editIndex, setEditIndex] = useState(null);
 
     const [search, setSearch] = useState("");
@@ -481,7 +480,7 @@ export default function Logbook() {
             pdfContent.style.fontFamily = "Arial, sans-serif";
             pdfContent.style.backgroundColor = "white";
 
-            const title = document.createElement("h2");
+            const title = document.createElement("h1");
             const shiftText =
                 selectedShift === "giorno"
                     ? " - Turno Giorno"
@@ -498,7 +497,7 @@ export default function Logbook() {
             if (filteredTasks.length === 0 && filteredEntries.length === 0) {
                 const noContent = document.createElement("p");
                 noContent.textContent = `Nessun task o entry per questa data${shiftText.toLowerCase()}`;
-                noContent.style.color = "#666";
+                noContent.style.color = "#d6d6d6";
                 noContent.style.fontStyle = "italic";
                 pdfContent.appendChild(noContent);
             } else {
@@ -561,7 +560,6 @@ export default function Logbook() {
                             category: entry.category,
                             subcategory: entry.subcategory,
                             extraDetail: entry.extraDetail,
-                            duration: entry.duration,
                             simulator: entry.simulator || entrySimulator,
                             originalEntry: entry,
                             originalText: entry.text,
@@ -574,7 +572,7 @@ export default function Logbook() {
                     simulatorHeader.textContent = simulator;
                     simulatorHeader.style.margin = "20px 0 10px 0";
                     simulatorHeader.style.color = "#1f2937";
-                    simulatorHeader.style.fontSize = "18px";
+                    simulatorHeader.style.fontSize = "16px";
                     simulatorHeader.style.fontWeight = "bold";
                     simulatorHeader.style.borderBottom = "1px solid #d1d5db";
                     simulatorHeader.style.paddingBottom = "20px";
@@ -588,30 +586,37 @@ export default function Logbook() {
                         taskDiv.style.marginBottom = "15px";
                         taskDiv.style.padding = "15px";
                         if (task.type === "logbook-entry") {
-                            taskDiv.style.border = "1px solid #e5e7eb";
+                            taskDiv.style.border = "1px solid #3b82f660";
                             taskDiv.style.borderRadius = "8px";
-                            taskDiv.style.backgroundColor = "#fafafa";
+                            taskDiv.style.backgroundColor = "#3b82f615";
                         } else {
-                            taskDiv.style.border = "1px solid #e5e7eb";
+                            // Add colored border based on task status
+                            const borderColor = getBorderColor(
+                                task.status
+                            ).replace("20", ""); // Remove transparency for better PDF visibility
+                            taskDiv.style.border = `1px solid ${
+                                borderColor + "60"
+                            }`;
                             taskDiv.style.borderRadius = "8px";
-                            taskDiv.style.backgroundColor = "#f9f9f9";
+                            taskDiv.style.backgroundColor = `${
+                                borderColor + "15"
+                            }`;
                         }
 
-                        const taskTitle = document.createElement("h5");
+                        const taskTitle = document.createElement("h2");
                         taskTitle.textContent = `${index + 1}. ${task.title}`;
                         taskTitle.style.margin = "0 0 8px 0";
-                        taskTitle.style.color = "#333";
-                        taskTitle.style.fontSize = "16px";
+                        taskTitle.style.color = "#1f2937";
+                        taskTitle.style.fontSize = "18px";
+                        taskTitle.style.fontWeight = "500";
                         taskDiv.appendChild(taskTitle);
                         const taskDetails = document.createElement("p");
                         if (task.type === "logbook-entry") {
-                            taskDetails.textContent = `Orario: ${
-                                task.time
-                            } • Autore: ${task.assignedTo} • Categoria: ${
-                                task.category
-                            }${task.subcategory ? "/" + task.subcategory : ""}${
-                                task.extraDetail ? "/" + task.extraDetail : ""
-                            } • Durata: ${task.duration || "N/A"}`;
+                            taskDetails.textContent = `${task.time} • ${
+                                task.assignedTo
+                            } • ${task.category}${
+                                task.subcategory ? "/" + task.subcategory : ""
+                            }${task.extraDetail ? "/" + task.extraDetail : ""}`;
 
                             if (task.fullText && task.fullText !== task.title) {
                                 const fullTextP = document.createElement("p");
@@ -625,62 +630,146 @@ export default function Logbook() {
 
                             if (task.notes && task.notes.length > 0) {
                                 const notesHeader = document.createElement("p");
-                                notesHeader.textContent = "Note:";
-                                notesHeader.style.margin = "12px 0 4px 0";
-                                notesHeader.style.color = "#333";
-                                notesHeader.style.fontSize = "14px";
-                                notesHeader.style.fontWeight = "bold";
+                                notesHeader.style.margin = "8px 0 16px 0";
                                 taskDiv.appendChild(notesHeader);
 
                                 task.notes.forEach((note, noteIndex) => {
-                                    const noteP = document.createElement("p");
-                                    noteP.textContent = `${noteIndex + 1}. ${
-                                        note.text
-                                    }`;
-                                    noteP.style.margin = "4px 0 0 16px";
-                                    noteP.style.color = "#555";
-                                    noteP.style.fontSize = "13px";
-                                    noteP.style.borderLeft =
-                                        "3px solid #d1d5db";
-                                    noteP.style.paddingLeft = "8px";
-                                    taskDiv.appendChild(noteP);
+                                    const noteDiv =
+                                        document.createElement("div");
+                                    noteDiv.style.margin = "4px 0 4px 0px";
+                                    noteDiv.style.padding = "8px";
+
+                                    // Check if it's a system note
+                                    if (note.isSystem) {
+                                        // System note styling - simpler, blue text
+                                        noteDiv.style.backgroundColor =
+                                            "#f8fafc";
+                                        noteDiv.style.borderLeft =
+                                            "3px solid #3b82f6";
+                                        noteDiv.style.borderRadius = "4px";
+
+                                        const noteText =
+                                            document.createElement("p");
+                                        noteText.textContent = note.text;
+                                        noteText.style.margin = "0";
+                                        noteText.style.color = "#3b82f6"; // Blue color
+                                        noteText.style.fontSize = "13px";
+                                        noteText.style.fontWeight = "500";
+                                        noteDiv.appendChild(noteText);
+
+                                        // No author/timestamp for system notes
+                                    } else {
+                                        // Regular note styling
+                                        noteDiv.style.backgroundColor =
+                                            "#f3f4f6";
+                                        noteDiv.style.borderLeft =
+                                            "3px solid #d1d5db";
+                                        noteDiv.style.borderRadius = "4px";
+
+                                        const noteText =
+                                            document.createElement("p");
+                                        noteText.textContent = note.text;
+                                        noteText.style.margin = "0 0 4px 0";
+                                        noteText.style.color = "#333";
+                                        noteText.style.fontSize = "13px";
+                                        noteDiv.appendChild(noteText);
+
+                                        const noteAuthor =
+                                            document.createElement("p");
+                                        noteAuthor.textContent = `${note.author}`;
+                                        noteAuthor.style.margin = "0";
+                                        noteAuthor.style.color = "#666";
+                                        noteAuthor.style.fontSize = "11px";
+                                        noteAuthor.style.fontStyle = "italic";
+                                        noteDiv.appendChild(noteAuthor);
+                                    }
+
+                                    taskDiv.appendChild(noteDiv);
                                 });
                             }
                         } else {
                             taskDetails.textContent = `Turno: ${getShiftType(
                                 task.time
-                            )} • Assegnato a: ${
+                            )} • ${
                                 task.assignedTo === "Non assegnare"
                                     ? "Non assegnato"
                                     : task.assignedTo
-                            } • Status: ${task.status}`;
+                            } • ${task.status}`;
+
+                            // Add task description if available
+                            if (task.description) {
+                                const taskDescription =
+                                    document.createElement("p");
+                                taskDescription.textContent = `"${task.description}"`;
+                                taskDescription.style.margin = "8px 0 0 0";
+                                taskDescription.style.color = "#666";
+                                taskDescription.style.fontSize = "14px";
+                                taskDescription.style.fontStyle = "italic";
+                                taskDiv.appendChild(taskDescription);
+                            }
 
                             if (task.notes && task.notes.length > 0) {
                                 const notesHeader = document.createElement("p");
-                                notesHeader.textContent = "Note:";
-                                notesHeader.style.margin = "12px 0 4px 0";
-                                notesHeader.style.color = "#333";
-                                notesHeader.style.fontSize = "14px";
-                                notesHeader.style.fontWeight = "bold";
+                                notesHeader.style.margin = "8px 0 16px 0";
                                 taskDiv.appendChild(notesHeader);
 
                                 task.notes.forEach((note, noteIndex) => {
-                                    const noteP = document.createElement("p");
-                                    noteP.textContent = `${noteIndex + 1}. ${
-                                        note.text
-                                    }`;
-                                    noteP.style.margin = "4px 0 0 16px";
-                                    noteP.style.color = "#555";
-                                    noteP.style.fontSize = "13px";
-                                    noteP.style.borderLeft =
-                                        "3px solid #d1d5db";
-                                    noteP.style.paddingLeft = "8px";
-                                    taskDiv.appendChild(noteP);
+                                    const noteDiv =
+                                        document.createElement("div");
+                                    noteDiv.style.margin = "4px 0 4px 0px";
+                                    noteDiv.style.padding = "8px";
+
+                                    // Check if it's a system note
+                                    if (note.isSystem) {
+                                        // System note styling - simpler, blue text
+                                        noteDiv.style.backgroundColor =
+                                            "#f8fafc";
+                                        noteDiv.style.borderLeft =
+                                            "3px solid #3b82f6";
+                                        noteDiv.style.borderRadius = "4px";
+
+                                        const noteText =
+                                            document.createElement("p");
+                                        noteText.textContent = note.text;
+                                        noteText.style.margin = "0";
+                                        noteText.style.color = "#3b82f6"; // Blue color
+                                        noteText.style.fontSize = "13px";
+                                        noteText.style.fontWeight = "500";
+                                        noteDiv.appendChild(noteText);
+
+                                        // No author/timestamp for system notes
+                                    } else {
+                                        // Regular note styling
+                                        noteDiv.style.backgroundColor =
+                                            "#f3f4f6";
+                                        noteDiv.style.borderLeft =
+                                            "3px solid #d1d5db";
+                                        noteDiv.style.borderRadius = "4px";
+
+                                        const noteText =
+                                            document.createElement("p");
+                                        noteText.textContent = note.text;
+                                        noteText.style.margin = "0 0 4px 0";
+                                        noteText.style.color = "#333";
+                                        noteText.style.fontSize = "13px";
+                                        noteDiv.appendChild(noteText);
+
+                                        const noteAuthor =
+                                            document.createElement("p");
+                                        noteAuthor.textContent = `${note.author}`;
+                                        noteAuthor.style.margin = "0";
+                                        noteAuthor.style.color = "#666";
+                                        noteAuthor.style.fontSize = "11px";
+                                        noteAuthor.style.fontStyle = "italic";
+                                        noteDiv.appendChild(noteAuthor);
+                                    }
+
+                                    taskDiv.appendChild(noteDiv);
                                 });
                             }
                         }
                         taskDetails.style.margin = "0";
-                        taskDetails.style.color = "#666";
+                        taskDetails.style.color = "#333";
                         taskDetails.style.fontSize = "14px";
                         taskDiv.appendChild(taskDetails);
 
@@ -757,7 +846,7 @@ export default function Logbook() {
             pdfContent.style.backgroundColor = "white";
 
             // Add title
-            const title = document.createElement("h2");
+            const title = document.createElement("h1");
             title.textContent = `Risultati Ricerca Logbook - ${currentDate}`;
             title.style.marginBottom = "20px";
             title.style.color = "#333";
@@ -890,33 +979,32 @@ export default function Logbook() {
                         const entryDiv = document.createElement("div");
                         entryDiv.style.marginBottom = "15px";
                         entryDiv.style.padding = "15px";
-                        entryDiv.style.border = "1px solid #e5e7eb";
+                        entryDiv.style.border = "1px solid #3b82f660";
                         entryDiv.style.borderRadius = "8px";
-                        entryDiv.style.backgroundColor = "#fafafa";
+                        entryDiv.style.backgroundColor = "#3b82f615";
 
-                        const entryTitle = document.createElement("h5");
+                        const entryTitle = document.createElement("h2");
                         entryTitle.textContent = `${index + 1}. ${
                             entry.name ||
                             entry.text.substring(0, 50) +
                                 (entry.text.length > 50 ? "..." : "")
                         }`;
                         entryTitle.style.margin = "0 0 8px 0";
-                        entryTitle.style.color = "#333";
-                        entryTitle.style.fontSize = "16px";
+                        entryTitle.style.color = "#1f2937";
+                        entryTitle.style.fontSize = "18px";
+                        entryTitle.style.fontWeight = "500";
                         entryDiv.appendChild(entryTitle);
 
                         const entryDetails = document.createElement("p");
-                        entryDetails.textContent = `Simulatore: ${
+                        entryDetails.textContent = `${
                             entry.simulator || "N/A"
-                        } • Turno: ${getShiftType(entry.time)} • Autore: ${
-                            entry.author
-                        } • Categoria: ${entry.category}${
-                            entry.subcategory ? "/" + entry.subcategory : ""
-                        }${
+                        } • ${getShiftType(entry.time)} • ${entry.author} • ${
+                            entry.category
+                        }${entry.subcategory ? "/" + entry.subcategory : ""}${
                             entry.extraDetail ? "/" + entry.extraDetail : ""
-                        } • Durata: ${entry.duration || "N/A"}`;
+                        }`;
                         entryDetails.style.margin = "0";
-                        entryDetails.style.color = "#666";
+                        entryDetails.style.color = "#333";
                         entryDetails.style.fontSize = "14px";
                         entryDiv.appendChild(entryDetails);
 
@@ -965,16 +1053,12 @@ export default function Logbook() {
 
                         if (entryNotes && entryNotes.length > 0) {
                             const notesHeader = document.createElement("p");
-                            notesHeader.textContent = "Note:";
-                            notesHeader.style.margin = "8px 0 4px 0";
-                            notesHeader.style.color = "#333";
-                            notesHeader.style.fontSize = "14px";
-                            notesHeader.style.fontWeight = "bold";
+                            notesHeader.style.margin = "8px 0 16px 0";
                             entryDiv.appendChild(notesHeader);
 
                             entryNotes.forEach((note) => {
                                 const noteDiv = document.createElement("div");
-                                noteDiv.style.margin = "4px 0 4px 16px";
+                                noteDiv.style.margin = "4px 0 4px 0px";
                                 noteDiv.style.padding = "8px";
                                 noteDiv.style.backgroundColor = "#f3f4f6";
                                 noteDiv.style.borderLeft = "3px solid #d1d5db";
@@ -982,10 +1066,18 @@ export default function Logbook() {
 
                                 const noteText = document.createElement("p");
                                 noteText.textContent = note.text;
-                                noteText.style.margin = "0";
+                                noteText.style.margin = "0 0 4px 0";
                                 noteText.style.color = "#333";
                                 noteText.style.fontSize = "13px";
                                 noteDiv.appendChild(noteText);
+
+                                const noteAuthor = document.createElement("p");
+                                noteAuthor.textContent = `${note.author}`;
+                                noteAuthor.style.margin = "0";
+                                noteAuthor.style.color = "#666";
+                                noteAuthor.style.fontSize = "11px";
+                                noteAuthor.style.fontStyle = "italic";
+                                noteDiv.appendChild(noteAuthor);
 
                                 entryDiv.appendChild(noteDiv);
                             });
@@ -1371,7 +1463,6 @@ export default function Logbook() {
         setSimulator("");
         setFormDate(date);
         setFormTime("08:00");
-        setDuration("");
         setEditIndex(null);
     };
     const handleSubmit = async (e) => {
@@ -1385,7 +1476,6 @@ export default function Logbook() {
             simulator: simulator || "Others",
             date: formDate,
             time: formTime,
-            duration,
             title:
                 name || text.substring(0, 50) + (text.length > 50 ? "..." : ""),
         };
@@ -1423,7 +1513,6 @@ export default function Logbook() {
         setSimulator(entry.simulator || "");
         setFormDate(entry.date);
         setFormTime(entry.time);
-        setDuration(entry.duration || "");
         setEditIndex(index);
     };
 
@@ -2110,9 +2199,9 @@ export default function Logbook() {
 
     const handleExport = () => {
         const lines = filteredEntries.map((e, i) => {
-            return `#${i + 1}\n${e.date} ${e.time} (${e.duration || "?"}) - ${
-                e.author
-            }\n${e.category}${e.subcategory ? "/" + e.subcategory : ""}${
+            return `#${i + 1}\n${e.date} ${e.time} - ${e.author}\n${
+                e.category
+            }${e.subcategory ? "/" + e.subcategory : ""}${
                 e.extraDetail ? "/" + e.extraDetail : ""
             }\n\n${e.text}\n---\n`;
         });
@@ -2233,7 +2322,9 @@ export default function Logbook() {
                 </p>{" "}
                 <div className="task-details text-xs text-gray-500 space-y-2">
                     <div className="text-xs">
-                        Turno: {getShiftType(task.time)}
+                        {task.type === "logbook-entry"
+                            ? `Ora: ${task.time}`
+                            : `Turno: ${getShiftType(task.time)}`}
                     </div>
                     <div className="flex items-center justify-between">
                         {" "}
@@ -2570,9 +2661,6 @@ export default function Logbook() {
                                                                 {getShiftType(
                                                                     entry.time
                                                                 )}{" "}
-                                                                •{" "}
-                                                                {entry.duration ||
-                                                                    "Nessuna durata"}{" "}
                                                                 •{" "}
                                                                 {entry.author ||
                                                                     entry.assignedTo}{" "}
@@ -2961,7 +3049,6 @@ export default function Logbook() {
                                                         entry.subcategory,
                                                     extraDetail:
                                                         entry.extraDetail,
-                                                    duration: entry.duration,
                                                     simulator:
                                                         entry.simulator ||
                                                         entrySimulator,
@@ -3443,22 +3530,6 @@ export default function Logbook() {
                                                     />
                                                 </div>
                                             </div>
-                                            <label
-                                                htmlFor="duration"
-                                                className="text-xs text-gray-500 mt-4"
-                                            >
-                                                Durata
-                                            </label>
-                                            <input
-                                                type="text"
-                                                id="duration"
-                                                value={duration}
-                                                onChange={(e) =>
-                                                    setDuration(e.target.value)
-                                                }
-                                                placeholder="Durata (es. 1h30)"
-                                                className="border px-3 py-2 rounded mb-8 text-gray-600 text-sm focus:outline-none"
-                                            />
                                             <button
                                                 type="submit"
                                                 className="aggiungi-btn bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
@@ -3806,6 +3877,7 @@ export default function Logbook() {
                 onClose={closeTaskDetails}
                 task={taskDetailsModal.task}
                 onToggleTask={() => {}}
+                onResetTask={() => {}}
                 onDeleteTask={handleDeleteTask}
                 canToggleTask={canToggleTask}
                 canDeleteTasks={canDeleteTasks}
