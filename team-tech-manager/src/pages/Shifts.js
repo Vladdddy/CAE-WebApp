@@ -3291,9 +3291,6 @@ export default function Shifts() {
                                                             })
                                                         );
                                                     }}
-                                                    min={`${year}-${String(
-                                                        month + 1
-                                                    ).padStart(2, "0")}-01`}
                                                     max={`${year + 1}-12-31`}
                                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
                                                 />
@@ -3315,12 +3312,7 @@ export default function Shifts() {
                                                             })
                                                         )
                                                     }
-                                                    min={
-                                                        patternModal.startDate ||
-                                                        `${year}-${String(
-                                                            month + 1
-                                                        ).padStart(2, "0")}-01`
-                                                    }
+                                                    min={patternModal.startDate}
                                                     max={`${year + 1}-12-31`}
                                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
                                                 />
@@ -3415,9 +3407,6 @@ export default function Shifts() {
                                                             e.target.value,
                                                     }))
                                                 }
-                                                min={`${year}-${String(
-                                                    month + 1
-                                                ).padStart(2, "0")}-01`}
                                                 max={`${year + 1}-12-31`}
                                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
                                             />
@@ -3439,10 +3428,7 @@ export default function Shifts() {
                                                     }))
                                                 }
                                                 min={
-                                                    patternModal.ferieStartDate ||
-                                                    `${year}-${String(
-                                                        month + 1
-                                                    ).padStart(2, "0")}-01`
+                                                    patternModal.ferieStartDate
                                                 }
                                                 max={`${year + 1}-12-31`}
                                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
@@ -3475,9 +3461,6 @@ export default function Shifts() {
                                                             e.target.value,
                                                     }))
                                                 }
-                                                min={`${year}-${String(
-                                                    month + 1
-                                                ).padStart(2, "0")}-01`}
                                                 max={`${year + 1}-12-31`}
                                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
                                             />
@@ -3499,10 +3482,7 @@ export default function Shifts() {
                                                     }))
                                                 }
                                                 min={
-                                                    patternModal.malattiaStartDate ||
-                                                    `${year}-${String(
-                                                        month + 1
-                                                    ).padStart(2, "0")}-01`
+                                                    patternModal.malattiaStartDate
                                                 }
                                                 max={`${year + 1}-12-31`}
                                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
