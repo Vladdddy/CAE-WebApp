@@ -3863,36 +3863,21 @@ export default function Shifts() {
                                                     <option value="">
                                                         Seleziona...
                                                     </option>
-                                                    <option value="D">
-                                                        D - Diurno
-                                                    </option>
-                                                    <option value="O">
-                                                        O - Ordinario
-                                                    </option>
+                                                    <option value="D">D</option>
+                                                    <option value="O">O</option>
                                                     <option value="OP">
-                                                        OP - Ordinario
-                                                        Prolungato
+                                                        OP
                                                     </option>
-                                                    <option value="N">
-                                                        N - Notturno
-                                                    </option>
+                                                    <option value="N">N</option>
                                                     <option value="ON">
-                                                        ON - Ordinario Notturno
+                                                        ON
                                                     </option>
-                                                    <option value="F">
-                                                        F - Ferie
-                                                    </option>
-                                                    <option value="M">
-                                                        M - Malattia
-                                                    </option>
-                                                    <option value="R">
-                                                        R - Riposo
-                                                    </option>
-                                                    <option value="C">
-                                                        C - Congedo
-                                                    </option>
+                                                    <option value="F">F</option>
+                                                    <option value="M">M</option>
+                                                    <option value="R">R</option>
+                                                    <option value="C">C</option>
                                                     <option value="CA">
-                                                        CA - Congedo Anticipato
+                                                        CA
                                                     </option>
                                                 </select>
                                             </div>

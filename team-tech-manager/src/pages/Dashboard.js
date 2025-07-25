@@ -36,7 +36,7 @@ export default function Dashboard() {
     const navigate = useNavigate();
     const today = new Date().toISOString().split("T")[0];
     const token = localStorage.getItem("authToken");
-    let userEmail = (localStorage.getItem("userEmail") || "Utente")[0];
+    let userEmail = localStorage.getItem("userEmail") || "Utente";
     userEmail = userEmail.charAt(0).toUpperCase();
 
     // Aggiorna il tempo corrente ogni secondo
@@ -822,20 +822,24 @@ export default function Dashboard() {
 
     // Prende le task del turno diurno
     const dayTasks = dailyTasks.filter((task) => {
+        if (!task.time) return false;
         const hour = parseInt(task.time.split(":")[0]);
         return hour >= 7 && hour < 19;
     });
     const incompleteDayTasks = incompleteTasks.filter((task) => {
+        if (!task.time) return false;
         const hour = parseInt(task.time.split(":")[0]);
         return hour >= 7 && hour < 19;
     });
 
     // Prende le task del turno notturno
     const nightTasks = dailyTasks.filter((task) => {
+        if (!task.time) return false;
         const hour = parseInt(task.time.split(":")[0]);
         return hour >= 19 || hour < 7;
     });
     const incompleteNightTasks = incompleteTasks.filter((task) => {
+        if (!task.time) return false;
         const hour = parseInt(task.time.split(":")[0]);
         return hour >= 19 || hour < 7;
     });

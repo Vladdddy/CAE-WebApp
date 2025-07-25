@@ -186,6 +186,7 @@ export default function Tasks() {
         // Employees can only toggle their own tasks
         if (currentUser.role === "employee") {
             // Handle multiple assignees (comma-separated)
+            if (!task.assignedTo) return false;
             const assignedEmployeeNames = task.assignedTo.includes(",")
                 ? task.assignedTo.split(",").map((name) => name.trim())
                 : [task.assignedTo];
@@ -214,6 +215,7 @@ export default function Tasks() {
         // Employees can only edit descriptions for tasks assigned to them
         if (currentUser.role === "employee") {
             // Handle multiple assignees (comma-separated)
+            if (!task.assignedTo) return false;
             const assignedEmployeeNames = task.assignedTo.includes(",")
                 ? task.assignedTo.split(",").map((name) => name.trim())
                 : [task.assignedTo];
