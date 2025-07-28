@@ -46,9 +46,9 @@
   {
     "id": 7,
     "title": "avionic",
-    "assignedTo": "Mario",
-    "status": "in corso",
-    "date": "2025-06-09",
+    "assignedTo": "Andrea",
+    "status": "riassegnato",
+    "date": "2025-07-28",
     "time": "08:00"
   },
   {
@@ -652,13 +652,13 @@
     "id": 89,
     "title": "Ciao",
     "description": "",
-    "assignedTo": "Gianluca",
+    "assignedTo": "Luca",
     "simulator": "109FFS",
     "category": "",
     "subcategory": "",
     "extraDetail": "",
-    "status": "da definire",
-    "date": null,
-    "time": null
+    "status": "riassegnato",
+    "date": "2025-07-28",
+    "time": "23:00"
   }
 ]
