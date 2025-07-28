@@ -342,7 +342,7 @@ export default function Sidebar({ isCollapsed, onToggle }) {
                     <>
                         <div className="flex items-center gap-3">
                             <img
-                                src={logo}
+                                src={Logo}
                                 alt="Logo"
                                 className="w-10 h-10 rounded-full object-cover"
                             />

@@ -1,4 +1,4 @@
-import "../styles/dashboard.css";
+﻿import "../styles/dashboard.css";
 import Logo from "../assets/logo.png";
 import Modal from "../components/Modal";
 import { useState, useEffect, useMemo } from "react";
@@ -786,6 +786,11 @@ export default function Dashboard() {
         ? tasks.filter((task) => task.status === "non completato")
         : [];
 
+    // Filtra i task in corso
+    const incorsoTasks = Array.isArray(tasks)
+        ? tasks.filter((task) => task.status === "in corso")
+        : [];
+
     // Filtra i task da definire
     const tasksToSchedule = Array.isArray(tasks)
         ? tasks.filter((task) => task.status === "da definire")
@@ -1020,7 +1025,8 @@ export default function Dashboard() {
                                     className={`display-task flex items-center justify-between dashboard-content p-2 rounded bg-gray-100 ${
                                         isIncompleteSection &&
                                         (task.status === "non completato" ||
-                                            task.status === "da definire") &&
+                                            task.status === "da definire" ||
+                                            task.status === "in corso") &&
                                         (currentUser?.role === "admin" ||
                                             currentUser?.role === "superuser")
                                             ? "cursor-pointer hover:bg-gray-200 transition-colors"
@@ -1035,8 +1041,8 @@ export default function Dashboard() {
                                         if (
                                             isIncompleteSection &&
                                             (task.status === "non completato" ||
-                                                task.status ===
-                                                    "da definire") &&
+                                                task.status === "da definire" ||
+                                                task.status === "in corso") &&
                                             (currentUser?.role === "admin" ||
                                                 currentUser?.role ===
                                                     "superuser")
@@ -1071,7 +1077,8 @@ export default function Dashboard() {
                                     </div>
                                     {isIncompleteSection &&
                                         (task.status === "non completato" ||
-                                            task.status === "da definire") &&
+                                            task.status === "da definire" ||
+                                            task.status === "in corso") &&
                                         (currentUser?.role === "admin" ||
                                             currentUser?.role ===
                                                 "superuser") && (
@@ -1434,6 +1441,77 @@ export default function Dashboard() {
                                         true,
                                         true
                                     )}
+                                </div>
+                            )}
+
+                            {incorsoTasks.length > 0 && (
+                                <div className="mb-6 mt-8">
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 24 24"
+                                            width="20"
+                                            height="20"
+                                            color="oklch(44.6% 0.03 256.802)"
+                                            fill="none"
+                                        >
+                                            <path
+                                                d="M12 3V6"
+                                                stroke="currentColor"
+                                                stroke-width="1.5"
+                                                stroke-linecap="round"
+                                            />
+                                            <path
+                                                d="M12 18V21"
+                                                stroke="currentColor"
+                                                stroke-width="1.5"
+                                                stroke-linecap="round"
+                                            />
+                                            <path
+                                                d="M21 12L18 12"
+                                                stroke="currentColor"
+                                                stroke-width="1.5"
+                                                stroke-linecap="round"
+                                            />
+                                            <path
+                                                d="M6 12L3 12"
+                                                stroke="currentColor"
+                                                stroke-width="1.5"
+                                                stroke-linecap="round"
+                                            />
+                                            <path
+                                                d="M18.3635 5.63672L16.2422 7.75804"
+                                                stroke="currentColor"
+                                                stroke-width="1.5"
+                                                stroke-linecap="round"
+                                            />
+                                            <path
+                                                d="M7.75804 16.2422L5.63672 18.3635"
+                                                stroke="currentColor"
+                                                stroke-width="1.5"
+                                                stroke-linecap="round"
+                                            />
+                                            <path
+                                                d="M18.3635 18.3635L16.2422 16.2422"
+                                                stroke="currentColor"
+                                                stroke-width="1.5"
+                                                stroke-linecap="round"
+                                            />
+                                            <path
+                                                d="M7.75804 7.75804L5.63672 5.63672"
+                                                stroke="currentColor"
+                                                stroke-width="1.5"
+                                                stroke-linecap="round"
+                                            />
+                                        </svg>
+                                        <h4 className="text-gray-600">
+                                            In Corso
+                                        </h4>
+                                        <span className="span">
+                                            {incorsoTasks.length} task
+                                        </span>
+                                    </div>
+                                    {renderTaskList(incorsoTasks, true, true)}
                                 </div>
                             )}
                         </div>

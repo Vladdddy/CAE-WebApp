@@ -3728,7 +3728,7 @@ export default function Shifts() {
                                             {patternModal.selectedUsers.length}{" "}
                                             selezionati)
                                         </label>
-                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-60 overflow-y-auto border border-gray-200 rounded-lg p-3">
+                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-80 overflow-y-auto border border-gray-200 rounded-lg p-3">
                                             {names.map((name) => {
                                                 const user = users.find(
                                                     (u) => u.name === name

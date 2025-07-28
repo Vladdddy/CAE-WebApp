@@ -469,7 +469,11 @@ exports.reassignTask = (req, res) => {
     }
 
     // Only allow reassignment of "non completato" and "da definire" tasks
-    if (task.status !== "non completato" && task.status !== "da definire") {
+    if (
+        task.status !== "non completato" &&
+        task.status !== "da definire" &&
+        task.status !== "in corso"
+    ) {
         return res.status(400).json({
             message:
                 "Solo i task con stato 'non completato' o 'da definire' possono essere riassegnati.",

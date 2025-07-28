@@ -88,5 +88,14 @@
         "role": "superuser",
         "department": "Operations",
         "active": true
+    },
+    {
+        "id": 14,
+        "email": "jamal",
+        "password": "jamal123",
+        "name": "Jamal",
+        "role": "employee",
+        "department": "Operations",
+        "active": true
     }
 ]
