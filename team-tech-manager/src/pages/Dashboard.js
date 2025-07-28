@@ -83,58 +83,75 @@ export default function Dashboard() {
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
     useEffect(() => {
-        fetch(`${API}/api/tasks`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        })
-            .then((res) => {
-                if (res.status === 401 || res.status === 403) {
-                    // Token is invalid, redirect to login
-                    localStorage.removeItem("authToken");
-                    localStorage.removeItem("userEmail");
-                    navigate("/login");
-                    return;
-                }
-                return res.json();
+        let isMounted = true;
+        const fetchTasks = () => {
+            fetch(`${API}/api/tasks`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
             })
-            .then((data) => {
-                if (data) {
-                    // Ensure data is an array before setting tasks
-                    setTasks(Array.isArray(data) ? data : []);
-                }
-                setLoading(false);
-            })
-            .catch((error) => {
-                console.error("Error fetching tasks:", error);
-                setTasks([]); // Set to empty array on error
-                setLoading(false);
-            });
+                .then((res) => {
+                    if (res.status === 401 || res.status === 403) {
+                        // Token is invalid, redirect to login
+                        localStorage.removeItem("authToken");
+                        localStorage.removeItem("userEmail");
+                        navigate("/login");
+                        return;
+                    }
+                    return res.json();
+                })
+                .then((data) => {
+                    if (isMounted && data) {
+                        setTasks(Array.isArray(data) ? data : []);
+                    }
+                    if (isMounted) setLoading(false);
+                })
+                .catch((error) => {
+                    console.error("Error fetching tasks:", error);
+                    if (isMounted) setTasks([]);
+                    if (isMounted) setLoading(false);
+                });
+        };
+        fetchTasks();
+        const interval = setInterval(fetchTasks, 10000);
+        return () => {
+            isMounted = false;
+            clearInterval(interval);
+        };
     }, [navigate]); // Fetcha tutti i dipendenti
     const [users, setUsers] = useState([]);
     useEffect(() => {
-        fetch(`${API}/api/users`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        })
-            .then((res) => {
-                if (res.status === 401 || res.status === 403) {
-                    localStorage.removeItem("authToken");
-                    localStorage.removeItem("userEmail");
-                    navigate("/login");
-                    return;
-                }
-                return res.json();
+        let isMounted = true;
+        const fetchUsers = () => {
+            fetch(`${API}/api/users`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
             })
-            .then((data) => {
-                if (data) {
-                    setUsers(Array.isArray(data) ? data : []);
-                }
-            })
-            .catch((error) => {
-                console.error("Error fetching users:", error);
-            });
+                .then((res) => {
+                    if (res.status === 401 || res.status === 403) {
+                        localStorage.removeItem("authToken");
+                        localStorage.removeItem("userEmail");
+                        navigate("/login");
+                        return;
+                    }
+                    return res.json();
+                })
+                .then((data) => {
+                    if (isMounted && data) {
+                        setUsers(Array.isArray(data) ? data : []);
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error fetching users:", error);
+                });
+        };
+        fetchUsers();
+        const interval = setInterval(fetchUsers, 10000);
+        return () => {
+            isMounted = false;
+            clearInterval(interval);
+        };
     }, [navigate]); // Update assignedTo in addTaskModal when currentUser is available
     useEffect(() => {
         if (currentUser?.name && addTaskModal.assignedTo === "") {
@@ -146,32 +163,40 @@ export default function Dashboard() {
     }, [currentUser?.name]); // Fetcha tutti i turni del mese corrente
     const [shifts, setShifts] = useState({});
     useEffect(() => {
-        const currentDate = new Date();
-        const year = currentDate.getFullYear();
-        const month = String(currentDate.getMonth() + 1).padStart(2, "0");
-
-        fetch(`${API}/api/shifts/${year}/${month}`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        })
-            .then((res) => {
-                if (res.status === 401 || res.status === 403) {
-                    localStorage.removeItem("authToken");
-                    localStorage.removeItem("userEmail");
-                    navigate("/login");
-                    return;
-                }
-                return res.json();
+        let isMounted = true;
+        const fetchShifts = () => {
+            const currentDate = new Date();
+            const year = currentDate.getFullYear();
+            const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+            fetch(`${API}/api/shifts/${year}/${month}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
             })
-            .then((data) => {
-                if (data) {
-                    setShifts(data || {});
-                }
-            })
-            .catch((error) => {
-                console.error("Error fetching shifts:", error);
-            });
+                .then((res) => {
+                    if (res.status === 401 || res.status === 403) {
+                        localStorage.removeItem("authToken");
+                        localStorage.removeItem("userEmail");
+                        navigate("/login");
+                        return;
+                    }
+                    return res.json();
+                })
+                .then((data) => {
+                    if (isMounted && data) {
+                        setShifts(data || {});
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error fetching shifts:", error);
+                });
+        };
+        fetchShifts();
+        const interval = setInterval(fetchShifts, 10000);
+        return () => {
+            isMounted = false;
+            clearInterval(interval);
+        };
     }, [navigate]);
 
     // Gestione dei modali
@@ -1276,35 +1301,7 @@ export default function Dashboard() {
                                     strokeLinejoin="round"
                                 />
                             </svg>{" "}
-                            <p className="text-gray-600">Task da programmare</p>
-                            {(currentUser?.role === "admin" ||
-                                currentUser?.role === "superuser") && (
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 24 24"
-                                    width="20"
-                                    height="20"
-                                    color="#3b82f6"
-                                    fill="none"
-                                    className="cursor-pointer hover:scale-110 transition-transform"
-                                    onClick={openAddTaskModal}
-                                >
-                                    <path
-                                        d="M22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12Z"
-                                        stroke="currentColor"
-                                        strokeWidth="1.5"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                    />
-                                    <path
-                                        d="M12 8V16M16 12H8"
-                                        stroke="currentColor"
-                                        strokeWidth="1.5"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                    />
-                                </svg>
-                            )}
+                            <p className="text-gray-600">Panoramica Task</p>
                         </div>
                     </div>
 
@@ -1315,7 +1312,8 @@ export default function Dashboard() {
                             Caricamento task...
                         </div>
                     ) : incompleteTasks.length === 0 &&
-                      tasksToSchedule.length === 0 ? (
+                      tasksToSchedule.length === 0 &&
+                      incorsoTasks.length === 0 ? (
                         <div className="text-center py-4 text-gray-400">
                             Nessun task da programmare o incompleto
                         </div>
@@ -1383,6 +1381,35 @@ export default function Dashboard() {
                                             {getTasksToScheduleDisplay().length}{" "}
                                             task
                                         </span>
+                                        {(currentUser?.role === "admin" ||
+                                            currentUser?.role ===
+                                                "superuser") && (
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 24 24"
+                                                width="20"
+                                                height="20"
+                                                color="#3b82f6"
+                                                fill="none"
+                                                className="cursor-pointer hover:scale-110 transition-transform"
+                                                onClick={openAddTaskModal}
+                                            >
+                                                <path
+                                                    d="M22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12Z"
+                                                    stroke="currentColor"
+                                                    strokeWidth="1.5"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                />
+                                                <path
+                                                    d="M12 8V16M16 12H8"
+                                                    stroke="currentColor"
+                                                    strokeWidth="1.5"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                />
+                                            </svg>
+                                        )}
                                     </div>
                                     {renderTaskList(
                                         getTasksToScheduleDisplay(),

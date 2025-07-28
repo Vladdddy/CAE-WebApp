@@ -165,7 +165,7 @@
     "id": 36,
     "title": "Ciao",
     "assignedTo": "Mario",
-    "status": "in corso",
+    "status": "completato",
     "date": "2025-06-24",
     "time": "08:00"
   },
@@ -271,7 +271,7 @@
     "category": "troubleshooting",
     "subcategory": "HW",
     "extraDetail": "COMMS",
-    "status": "non completato",
+    "status": "completato",
     "date": "2025-07-21",
     "time": "09:22"
   },
@@ -357,7 +357,7 @@
     "category": "others",
     "subcategory": "",
     "extraDetail": "",
-    "status": "non completato",
+    "status": "completato",
     "date": "2025-07-18",
     "time": "08:00",
     "description": ""
@@ -621,5 +621,44 @@
     "status": "non iniziato",
     "date": "2025-07-23",
     "time": "23:00"
+  },
+  {
+    "id": 87,
+    "title": "guih",
+    "description": "",
+    "assignedTo": "Gianluca",
+    "simulator": "",
+    "category": "",
+    "subcategory": "",
+    "extraDetail": "",
+    "status": "da definire",
+    "date": null,
+    "time": null
+  },
+  {
+    "id": 88,
+    "title": "sddsffs<df",
+    "description": "",
+    "assignedTo": "Non assegnare",
+    "simulator": "",
+    "category": "troubleshooting",
+    "subcategory": "",
+    "extraDetail": "",
+    "status": "completato",
+    "date": "2025-07-25",
+    "time": "08:00"
+  },
+  {
+    "id": 89,
+    "title": "Ciao",
+    "description": "",
+    "assignedTo": "Gianluca",
+    "simulator": "109FFS",
+    "category": "",
+    "subcategory": "",
+    "extraDetail": "",
+    "status": "da definire",
+    "date": null,
+    "time": null
   }
 ]
