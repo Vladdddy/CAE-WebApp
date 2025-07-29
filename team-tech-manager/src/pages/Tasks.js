@@ -10,6 +10,8 @@ import {
     notesService,
     migrateNotesFromLocalStorage,
 } from "../utils/notesService";
+import Image from "../assets/simulatore_blu.png";
+import Image2 from "../assets/simulatore.png";
 
 // Categories and troubleshooting details for task classification
 const categories = {
@@ -1959,12 +1961,22 @@ export default function Tasks() {
 
                     {/* Conditional rendering: Calendar or Task Table */}
                     {showCalendar ? (
-                        <Calendar
-                            onDayClick={handleCalendarDayClick}
-                            tasksData={tasks}
-                            currentDate={selectedDate}
-                            type="tasks"
-                        />
+                        <>
+                            <img
+                                className="simulator-image w-[30vw] "
+                                src={Image}
+                            ></img>
+                            <img
+                                className="simulator-image-two w-[30vw] "
+                                src={Image2}
+                            ></img>
+                            <Calendar
+                                onDayClick={handleCalendarDayClick}
+                                tasksData={tasks}
+                                currentDate={selectedDate}
+                                type="tasks"
+                            />
+                        </>
                     ) : (
                         <>
                             <TaskTable

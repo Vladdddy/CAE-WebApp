@@ -13,6 +13,8 @@ import {
     generateLegacyLogbookNoteKey,
     migrateNoteFromLegacyKey,
 } from "../utils/notesService";
+import Image from "../assets/simulatore_blu.png";
+import Image2 from "../assets/simulatore.png";
 
 const API = process.env.REACT_APP_API_URL;
 const categories = {
@@ -2428,14 +2430,24 @@ export default function Logbook() {
                                 </div>
                             </div>
                         ) : (
-                            <Calendar
-                                onDayClick={handleCalendarDayClick}
-                                onMonthChange={handleMonthChange}
-                                entriesData={calendarEntries}
-                                tasksData={tasks}
-                                currentDate={selectedDate}
-                                type="logbook"
-                            />
+                            <>
+                                <img
+                                    className="simulator-image w-[30vw] "
+                                    src={Image}
+                                ></img>
+                                <img
+                                    className="simulator-image-two w-[30vw] "
+                                    src={Image2}
+                                ></img>
+                                <Calendar
+                                    onDayClick={handleCalendarDayClick}
+                                    onMonthChange={handleMonthChange}
+                                    entriesData={calendarEntries}
+                                    tasksData={tasks}
+                                    currentDate={selectedDate}
+                                    type="logbook"
+                                />
+                            </>
                         )
                     ) : (
                         <>

@@ -129,6 +129,19 @@ select option:checked {
     margin-bottom: 0.75rem;
 }
 
+.simulator-image,
+.simulator-image-two {
+    position: absolute;
+    top: 50%;
+    left: 20%;
+    transform: translate(-50%, -50%);
+    z-index: -1;
+}
+
+.simulator-image-two {
+    left: 85%;
+}
+
 .simulator-header p {
     font-weight: 500;
     color: #4b5563;

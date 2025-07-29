@@ -670,7 +670,7 @@
     "category": "",
     "subcategory": "",
     "extraDetail": "",
-    "status": "non completato",
+    "status": "completato",
     "date": "2025-07-29",
     "time": "08:00"
   },
@@ -678,13 +678,65 @@
     "id": 91,
     "title": "BDkgdf",
     "description": "",
-    "assignedTo": "Gianluca",
+    "assignedTo": "Non assegnare",
     "simulator": "",
     "category": "troubleshooting",
     "subcategory": "",
     "extraDetail": "",
-    "status": "da definire",
-    "date": null,
-    "time": null
+    "status": "completato",
+    "date": "2025-07-22",
+    "time": "08:00"
+  },
+  {
+    "id": 92,
+    "title": "gdfgfd",
+    "description": "",
+    "assignedTo": "Non assegnare",
+    "simulator": "",
+    "category": "",
+    "subcategory": "",
+    "extraDetail": "",
+    "status": "completato",
+    "date": "2025-07-22",
+    "time": "08:00"
+  },
+  {
+    "id": 93,
+    "title": "fdgfdg",
+    "description": "",
+    "assignedTo": "Non assegnare",
+    "simulator": "",
+    "category": "",
+    "subcategory": "",
+    "extraDetail": "",
+    "status": "completato",
+    "date": "2025-07-22",
+    "time": "08:00"
+  },
+  {
+    "id": 94,
+    "title": "fdggdg",
+    "description": "",
+    "assignedTo": "Non assegnare",
+    "simulator": "",
+    "category": "",
+    "subcategory": "",
+    "extraDetail": "",
+    "status": "completato",
+    "date": "2025-07-22",
+    "time": "08:00"
+  },
+  {
+    "id": 95,
+    "title": "gfdgfdgf",
+    "description": "",
+    "assignedTo": "Non assegnare",
+    "simulator": "",
+    "category": "",
+    "subcategory": "",
+    "extraDetail": "",
+    "status": "completato",
+    "date": "2025-07-22",
+    "time": "08:00"
   }
 ]

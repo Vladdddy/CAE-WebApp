@@ -241,13 +241,11 @@ const Calendar = memo(
                                                 {count.total}{" "}
                                                 {type === "tasks"
                                                     ? "task"
-                                                    : count.total > 9
+                                                    : count.total <= 99
                                                     ? "ent"
                                                     : "entry"}
                                                 {count.total !== 1
-                                                    ? type === "tasks"
-                                                        ? "s"
-                                                        : "s"
+                                                    ? type === "task"
                                                     : ""}
                                             </span>
                                         )}
