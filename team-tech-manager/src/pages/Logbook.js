@@ -634,57 +634,60 @@ export default function Logbook() {
                                 taskDiv.appendChild(notesHeader);
 
                                 task.notes.forEach((note, noteIndex) => {
-                                    const noteDiv =
-                                        document.createElement("div");
-                                    noteDiv.style.margin = "4px 0 4px 0px";
-                                    noteDiv.style.padding = "8px";
+                                    if (note.author !== "SYSTEM") {
+                                        const noteDiv =
+                                            document.createElement("div");
+                                        noteDiv.style.margin = "4px 0 4px 0px";
+                                        noteDiv.style.padding = "8px";
 
-                                    // Check if it's a system note
-                                    if (note.isSystem) {
-                                        // System note styling - simpler, blue text
-                                        noteDiv.style.backgroundColor =
-                                            "#f8fafc";
-                                        noteDiv.style.borderLeft =
-                                            "3px solid #3b82f6";
-                                        noteDiv.style.borderRadius = "4px";
+                                        // Check if it's a system note
+                                        if (note.isSystem) {
+                                            // System note styling - simpler, blue text
+                                            noteDiv.style.backgroundColor =
+                                                "#f8fafc";
+                                            noteDiv.style.borderLeft =
+                                                "3px solid #3b82f6";
+                                            noteDiv.style.borderRadius = "4px";
 
-                                        const noteText =
-                                            document.createElement("p");
-                                        noteText.textContent = note.text;
-                                        noteText.style.margin = "0";
-                                        noteText.style.color = "#3b82f6"; // Blue color
-                                        noteText.style.fontSize = "13px";
-                                        noteText.style.fontWeight = "500";
-                                        noteDiv.appendChild(noteText);
+                                            const noteText =
+                                                document.createElement("p");
+                                            noteText.textContent = note.text;
+                                            noteText.style.margin = "0";
+                                            noteText.style.color = "#3b82f6"; // Blue color
+                                            noteText.style.fontSize = "13px";
+                                            noteText.style.fontWeight = "500";
+                                            noteDiv.appendChild(noteText);
 
-                                        // No author/timestamp for system notes
-                                    } else {
-                                        // Regular note styling
-                                        noteDiv.style.backgroundColor =
-                                            "#f3f4f6";
-                                        noteDiv.style.borderLeft =
-                                            "3px solid #d1d5db";
-                                        noteDiv.style.borderRadius = "4px";
+                                            // No author/timestamp for system notes
+                                        } else {
+                                            // Regular note styling
+                                            noteDiv.style.backgroundColor =
+                                                "#f3f4f6";
+                                            noteDiv.style.borderLeft =
+                                                "3px solid #d1d5db";
+                                            noteDiv.style.borderRadius = "4px";
 
-                                        const noteText =
-                                            document.createElement("p");
-                                        noteText.textContent = note.text;
-                                        noteText.style.margin = "0 0 4px 0";
-                                        noteText.style.color = "#333";
-                                        noteText.style.fontSize = "13px";
-                                        noteDiv.appendChild(noteText);
+                                            const noteText =
+                                                document.createElement("p");
+                                            noteText.textContent = note.text;
+                                            noteText.style.margin = "0 0 4px 0";
+                                            noteText.style.color = "#333";
+                                            noteText.style.fontSize = "13px";
+                                            noteDiv.appendChild(noteText);
 
-                                        const noteAuthor =
-                                            document.createElement("p");
-                                        noteAuthor.textContent = `${note.author}`;
-                                        noteAuthor.style.margin = "0";
-                                        noteAuthor.style.color = "#666";
-                                        noteAuthor.style.fontSize = "11px";
-                                        noteAuthor.style.fontStyle = "italic";
-                                        noteDiv.appendChild(noteAuthor);
+                                            const noteAuthor =
+                                                document.createElement("p");
+                                            noteAuthor.textContent = `${note.author}`;
+                                            noteAuthor.style.margin = "0";
+                                            noteAuthor.style.color = "#666";
+                                            noteAuthor.style.fontSize = "11px";
+                                            noteAuthor.style.fontStyle =
+                                                "italic";
+                                            noteDiv.appendChild(noteAuthor);
+                                        }
+
+                                        taskDiv.appendChild(noteDiv);
                                     }
-
-                                    taskDiv.appendChild(noteDiv);
                                 });
                             }
                         } else {
@@ -714,57 +717,60 @@ export default function Logbook() {
                                 taskDiv.appendChild(notesHeader);
 
                                 task.notes.forEach((note, noteIndex) => {
-                                    const noteDiv =
-                                        document.createElement("div");
-                                    noteDiv.style.margin = "4px 0 4px 0px";
-                                    noteDiv.style.padding = "8px";
+                                    if (note.author !== "SYSTEM") {
+                                        const noteDiv =
+                                            document.createElement("div");
+                                        noteDiv.style.margin = "4px 0 4px 0px";
+                                        noteDiv.style.padding = "8px";
 
-                                    // Check if it's a system note
-                                    if (note.isSystem) {
-                                        // System note styling - simpler, blue text
-                                        noteDiv.style.backgroundColor =
-                                            "#f8fafc";
-                                        noteDiv.style.borderLeft =
-                                            "3px solid #3b82f6";
-                                        noteDiv.style.borderRadius = "4px";
+                                        // Check if it's a system note
+                                        if (note.isSystem) {
+                                            // System note styling - simpler, blue text
+                                            noteDiv.style.backgroundColor =
+                                                "#f8fafc";
+                                            noteDiv.style.borderLeft =
+                                                "3px solid #3b82f6";
+                                            noteDiv.style.borderRadius = "4px";
 
-                                        const noteText =
-                                            document.createElement("p");
-                                        noteText.textContent = note.text;
-                                        noteText.style.margin = "0";
-                                        noteText.style.color = "#3b82f6"; // Blue color
-                                        noteText.style.fontSize = "13px";
-                                        noteText.style.fontWeight = "500";
-                                        noteDiv.appendChild(noteText);
+                                            const noteText =
+                                                document.createElement("p");
+                                            noteText.textContent = note.text;
+                                            noteText.style.margin = "0";
+                                            noteText.style.color = "#3b82f6"; // Blue color
+                                            noteText.style.fontSize = "13px";
+                                            noteText.style.fontWeight = "500";
+                                            noteDiv.appendChild(noteText);
 
-                                        // No author/timestamp for system notes
-                                    } else {
-                                        // Regular note styling
-                                        noteDiv.style.backgroundColor =
-                                            "#f3f4f6";
-                                        noteDiv.style.borderLeft =
-                                            "3px solid #d1d5db";
-                                        noteDiv.style.borderRadius = "4px";
+                                            // No author/timestamp for system notes
+                                        } else {
+                                            // Regular note styling
+                                            noteDiv.style.backgroundColor =
+                                                "#f3f4f6";
+                                            noteDiv.style.borderLeft =
+                                                "3px solid #d1d5db";
+                                            noteDiv.style.borderRadius = "4px";
 
-                                        const noteText =
-                                            document.createElement("p");
-                                        noteText.textContent = note.text;
-                                        noteText.style.margin = "0 0 4px 0";
-                                        noteText.style.color = "#333";
-                                        noteText.style.fontSize = "13px";
-                                        noteDiv.appendChild(noteText);
+                                            const noteText =
+                                                document.createElement("p");
+                                            noteText.textContent = note.text;
+                                            noteText.style.margin = "0 0 4px 0";
+                                            noteText.style.color = "#333";
+                                            noteText.style.fontSize = "13px";
+                                            noteDiv.appendChild(noteText);
 
-                                        const noteAuthor =
-                                            document.createElement("p");
-                                        noteAuthor.textContent = `${note.author}`;
-                                        noteAuthor.style.margin = "0";
-                                        noteAuthor.style.color = "#666";
-                                        noteAuthor.style.fontSize = "11px";
-                                        noteAuthor.style.fontStyle = "italic";
-                                        noteDiv.appendChild(noteAuthor);
+                                            const noteAuthor =
+                                                document.createElement("p");
+                                            noteAuthor.textContent = `${note.author}`;
+                                            noteAuthor.style.margin = "0";
+                                            noteAuthor.style.color = "#666";
+                                            noteAuthor.style.fontSize = "11px";
+                                            noteAuthor.style.fontStyle =
+                                                "italic";
+                                            noteDiv.appendChild(noteAuthor);
+                                        }
+
+                                        taskDiv.appendChild(noteDiv);
                                     }
-
-                                    taskDiv.appendChild(noteDiv);
                                 });
                             }
                         }

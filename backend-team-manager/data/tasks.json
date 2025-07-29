@@ -397,7 +397,7 @@
     "category": "",
     "subcategory": "",
     "extraDetail": "",
-    "status": "completato",
+    "status": "in corso",
     "date": "2025-07-22",
     "time": "14:09"
   },
@@ -462,7 +462,7 @@
     "category": "",
     "subcategory": "",
     "extraDetail": "",
-    "status": "completato",
+    "status": "in corso",
     "date": "2025-07-22",
     "time": "14:20"
   },
@@ -626,14 +626,14 @@
     "id": 87,
     "title": "guih",
     "description": "",
-    "assignedTo": "Gianluca",
+    "assignedTo": "Non assegnare",
     "simulator": "",
     "category": "",
     "subcategory": "",
     "extraDetail": "",
-    "status": "da definire",
-    "date": null,
-    "time": null
+    "status": "completato",
+    "date": "2025-07-11",
+    "time": "08:00"
   },
   {
     "id": 88,
@@ -660,5 +660,31 @@
     "status": "riassegnato",
     "date": "2025-07-28",
     "time": "23:00"
+  },
+  {
+    "id": 90,
+    "title": "fdgfdg",
+    "description": "",
+    "assignedTo": "Andrea",
+    "simulator": "",
+    "category": "",
+    "subcategory": "",
+    "extraDetail": "",
+    "status": "non completato",
+    "date": "2025-07-29",
+    "time": "08:00"
+  },
+  {
+    "id": 91,
+    "title": "BDkgdf",
+    "description": "",
+    "assignedTo": "Gianluca",
+    "simulator": "",
+    "category": "troubleshooting",
+    "subcategory": "",
+    "extraDetail": "",
+    "status": "da definire",
+    "date": null,
+    "time": null
   }
 ]

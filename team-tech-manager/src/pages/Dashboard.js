@@ -1311,12 +1311,6 @@ export default function Dashboard() {
                         <div className="text-center py-4">
                             Caricamento task...
                         </div>
-                    ) : incompleteTasks.length === 0 &&
-                      tasksToSchedule.length === 0 &&
-                      incorsoTasks.length === 0 ? (
-                        <div className="text-center py-4 text-gray-400">
-                            Nessun task da programmare o incompleto
-                        </div>
                     ) : (
                         <div>
                             <div className="flex flex-row gap-2 mb-4">
@@ -1346,7 +1340,7 @@ export default function Dashboard() {
                             {/* Tasks to schedule section */}
                             {(searchQuery.trim()
                                 ? filteredTasksToSchedule.length > 0
-                                : tasksToSchedule.length > 0) && (
+                                : tasksToSchedule.length >= 0) && (
                                 <div className="mb-6">
                                     <div className="flex items-center gap-2 mb-4">
                                         <svg
@@ -1430,7 +1424,7 @@ export default function Dashboard() {
                             <div className="separator"></div>
 
                             {/* Incomplete tasks section */}
-                            {incompleteTasks.length > 0 && (
+                            {incompleteTasks.length >= 0 && (
                                 <div className="mb-6 mt-8">
                                     <div className="flex items-center gap-2 mb-4">
                                         <svg
@@ -1471,7 +1465,7 @@ export default function Dashboard() {
                                 </div>
                             )}
 
-                            {incorsoTasks.length > 0 && (
+                            {incorsoTasks.length >= 0 && (
                                 <div className="mb-6 mt-8">
                                     <div className="flex items-center gap-2 mb-4">
                                         <svg

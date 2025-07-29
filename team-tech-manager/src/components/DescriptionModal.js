@@ -249,7 +249,12 @@ export default function DescriptionModal({
                                     ? "Modifica il testo dell'entry..."
                                     : "Descrizione del task..."
                             }
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none overflow-y-auto"
+                            className={`w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none overflow-y-auto ${
+                                employeesLoading || isEmployee
+                                    ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+                                    : "text-gray-600"
+                            }`}
+                            disabled={employeesLoading || isEmployee}
                             style={{ maxHeight: "100px", minHeight: "60px" }}
                             rows={3}
                             autoFocus

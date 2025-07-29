@@ -1171,30 +1171,35 @@ export default function Tasks() {
                             taskDiv.appendChild(notesHeader);
 
                             task.notes.forEach((note, noteIndex) => {
-                                const noteDiv = document.createElement("div");
-                                noteDiv.style.margin = "4px 0 4px 0px";
-                                noteDiv.style.padding = "8px";
-                                noteDiv.style.backgroundColor = "#f3f4f6";
-                                noteDiv.style.borderLeft = "3px solid #d1d5db";
-                                noteDiv.style.borderRadius = "4px";
+                                if (note.author !== "SYSTEM") {
+                                    const noteDiv =
+                                        document.createElement("div");
+                                    noteDiv.style.margin = "4px 0 4px 0px";
+                                    noteDiv.style.padding = "8px";
+                                    noteDiv.style.backgroundColor = "#f3f4f6";
+                                    noteDiv.style.borderLeft =
+                                        "3px solid #d1d5db";
+                                    noteDiv.style.borderRadius = "4px";
 
-                                const noteText = document.createElement("p");
-                                noteText.textContent = note.text;
-                                noteText.style.margin = "0 0 4px 0";
-                                noteText.style.color = "#333";
-                                noteText.style.fontSize = "13px";
-                                noteDiv.appendChild(noteText);
+                                    const noteText =
+                                        document.createElement("p");
+                                    noteText.textContent = note.text;
+                                    noteText.style.margin = "0 0 4px 0";
+                                    noteText.style.color = "#333";
+                                    noteText.style.fontSize = "13px";
+                                    noteDiv.appendChild(noteText);
 
-                                const noteAuthor = document.createElement("p");
+                                    const noteAuthor =
+                                        document.createElement("p");
+                                    noteAuthor.textContent = `${note.author}`;
+                                    noteAuthor.style.margin = "0";
+                                    noteAuthor.style.color = "#666";
+                                    noteAuthor.style.fontSize = "11px";
+                                    noteAuthor.style.fontStyle = "italic";
+                                    noteDiv.appendChild(noteAuthor);
 
-                                noteAuthor.textContent = `${note.author}`;
-                                noteAuthor.style.margin = "0";
-                                noteAuthor.style.color = "#666";
-                                noteAuthor.style.fontSize = "11px";
-                                noteAuthor.style.fontStyle = "italic";
-                                noteDiv.appendChild(noteAuthor);
-
-                                taskDiv.appendChild(noteDiv);
+                                    taskDiv.appendChild(noteDiv);
+                                }
                             });
                         }
 
