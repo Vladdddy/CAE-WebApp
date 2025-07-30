@@ -2226,25 +2226,29 @@ export default function Logbook() {
     const getCategoryBorderColor = (category) => {
         switch (category) {
             case "routine task":
-                return "#3b82f620";
+                return "#106beb50";
             case "troubleshooting":
-                return "#dc262620";
+                return "#106beb50";
             case "others":
-                return "#f6ad1020";
+                return "#106beb50";
             default:
-                return "#e5e7eb";
+                return "#106beb50";
         }
     };
     const getBorderColor = (status) => {
         switch (status) {
             case "completato":
-                return "#139d5420";
+                return "#139d5450";
             case "in corso":
-                return "#f6ad1020";
+                return "#f6ad1050";
             case "non completato":
-                return "#dc262620";
+                return "#dc262650";
+            case "riassegnato":
+                return "#70707050";
+            case "da definire":
+                return "#70707050";
             default:
-                return "#e5e7eb";
+                return "#edededff";
         }
     };
 
@@ -2331,8 +2335,12 @@ export default function Logbook() {
                 <div className="task-details text-xs text-gray-500 space-y-2">
                     <div className="text-xs">
                         {task.type === "logbook-entry"
-                            ? `Ora: ${task.time}`
-                            : `Turno: ${getShiftType(task.time)}`}
+                            ? `${task.time}`
+                            : `${
+                                  getShiftType(task.time) === "D"
+                                      ? "Diurno"
+                                      : "Notturno"
+                              }`}
                     </div>
                     <div className="flex items-center justify-between">
                         {" "}

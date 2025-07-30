@@ -110,7 +110,7 @@ const LogbookTable = ({
                                         {entry.title || entry.text}
                                     </p>
                                     <div className="text-xs text-gray-500 capitalize">
-                                        {entry.date} • Ora: {entry.time} •{" "}
+                                        {entry.date} • {entry.time} •{" "}
                                         {entry.duration} • {entry.author} •{" "}
                                         {entry.category}
                                         {entry.subcategory &&
@@ -216,7 +216,7 @@ const LogbookTable = ({
                                         {entry.title || entry.text}
                                     </p>
                                     <div className="text-xs text-gray-500 capitalize">
-                                        {entry.date} • Ora: {entry.time} •{" "}
+                                        {entry.date} • {entry.time} •{" "}
                                         {entry.duration} • {entry.author} •{" "}
                                         {entry.category}
                                         {entry.subcategory &&

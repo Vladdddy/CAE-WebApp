@@ -220,7 +220,9 @@ export default function TaskDetailsModal({
                                     Turno
                                 </label>
                                 <p className="text-gray-600 text-md">
-                                    {getShiftType(task.time)}
+                                    {getShiftType(task.time) === "D"
+                                        ? "Diurno"
+                                        : "Notturno"}
                                 </p>
                             </div>
                         </div>{" "}

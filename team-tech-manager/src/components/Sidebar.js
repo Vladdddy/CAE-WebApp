@@ -1,7 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import "../styles/sidebar.css";
-import Logo from "../assets/logo.png";
 import Modal from "./Modal";
 
 export default function Sidebar({ isCollapsed, onToggle }) {
@@ -123,7 +122,7 @@ export default function Sidebar({ isCollapsed, onToggle }) {
 
     return (
         <div
-            className={`sidebar-pc flex flex-col h-screen bg-gray-800 text-white p-4 fixed transition-all duration-300 ${
+            className={`sidebar-pc flex flex-col h-screen bg-gray-900 text-white p-4 fixed transition-all duration-300 ${
                 isCollapsed ? "w-20" : "w-64"
             }`}
         >
@@ -341,11 +340,28 @@ export default function Sidebar({ isCollapsed, onToggle }) {
                 {!isCollapsed ? (
                     <>
                         <div className="flex items-center gap-3">
-                            <img
-                                src={Logo}
-                                alt="Logo"
-                                className="w-10 h-10 rounded-full object-cover"
-                            />
+                            <div className="flex align-center justify-center p-2 bg-white rounded-full">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    width="24"
+                                    height="24"
+                                    color="#3b82f6"
+                                    fill="none"
+                                >
+                                    <path
+                                        d="M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                    />
+                                    <path
+                                        d="M14 14H10C7.23858 14 5 16.2386 5 19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19C19 16.2386 16.7614 14 14 14Z"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linejoin="round"
+                                    />
+                                </svg>
+                            </div>
                             <div className="flex flex-col">
                                 <span className="text-sm font-medium text-white">
                                     {currentUser?.name || "User"}
@@ -377,18 +393,28 @@ export default function Sidebar({ isCollapsed, onToggle }) {
                     </>
                 ) : (
                     <>
-                        <img
-                            src={`${process.env.PUBLIC_URL}/cae2.png`}
-                            alt="Logo"
-                            className="w-8 h-8 rounded-full object-cover"
-                            title={currentUser?.name || "User"}
-                            onError={(e) => {
-                                console.error(
-                                    "Logo failed to load from PUBLIC_URL, trying relative path"
-                                );
-                                e.target.src = "/cae2.png";
-                            }}
-                        />
+                        <div className="flex align-center justify-center p-2 bg-white rounded-full">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                width="24"
+                                height="24"
+                                color="#3b82f6"
+                                fill="none"
+                            >
+                                <path
+                                    d="M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                />
+                                <path
+                                    d="M14 14H10C7.23858 14 5 16.2386 5 19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19C19 16.2386 16.7614 14 14 14Z"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linejoin="round"
+                                />
+                            </svg>
+                        </div>
                         <div className="flex flex-col mb-4">
                             <span className="text-xs font-medium text-white">
                                 {currentUser?.name || "User"}

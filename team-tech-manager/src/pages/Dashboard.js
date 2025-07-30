@@ -1,10 +1,9 @@
 ﻿import "../styles/dashboard.css";
-import Logo from "../assets/logo.png";
+import Logo from "../assets/cae3.png";
 import Modal from "../components/Modal";
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
-// Categories and troubleshooting details for task classification
 const categories = {
     "routine task": ["PM", "MR", "Backup", "QTG"],
     troubleshooting: ["HW", "SW"],
@@ -789,15 +788,15 @@ export default function Dashboard() {
     const getBorderColor = (status) => {
         switch (status) {
             case "completato":
-                return "#139d5420";
+                return "#139d5450";
             case "in corso":
-                return "#f6ad1020";
+                return "#f6ad1050";
             case "non completato":
-                return "#dc262620";
+                return "#dc262650";
             case "riassegnato":
-                return "#8b5cf620";
+                return "#70707050";
             case "da definire":
-                return "#6366f120";
+                return "#70707050";
             default:
                 return "#e5e7eb";
         }
@@ -1058,7 +1057,7 @@ export default function Dashboard() {
                                             : ""
                                     }`}
                                     style={{
-                                        border: `2px solid ${getBorderColor(
+                                        border: `1px solid ${getBorderColor(
                                             task.status
                                         )}`,
                                     }}
@@ -1077,7 +1076,7 @@ export default function Dashboard() {
                                     }}
                                 >
                                     <div className="task-info flex-1 min-w-0">
-                                        <p className="text-gray-600 font-semibold text-sm">
+                                        <p className="text-gray-600 font-semibold text-sm mb-1 capitalize">
                                             {task.title}
                                         </p>
                                         <div className="text-xs text-gray-500 capitalize">
@@ -1092,8 +1091,11 @@ export default function Dashboard() {
                                                         )}{" "}
                                                         •{" "}
                                                     </span>
-                                                )}
-                                            Turno: {getShiftType(task.time)} •{" "}
+                                                )}{" "}
+                                            {getShiftType(task.time) === "D"
+                                                ? "Diurno"
+                                                : "Notturno"}{" "}
+                                            •{" "}
                                             {task.assignedTo === "Non assegnare"
                                                 ? "Non assegnato"
                                                 : task.assignedTo}{" "}
@@ -1111,9 +1113,9 @@ export default function Dashboard() {
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     viewBox="0 0 24 24"
-                                                    width="16"
-                                                    height="16"
-                                                    color="oklch(44.6% 0.03 256.802)"
+                                                    width="20"
+                                                    height="20"
+                                                    color="#3b82f6"
                                                     fill="none"
                                                 >
                                                     <path
@@ -1145,16 +1147,13 @@ export default function Dashboard() {
         <>
             <div className="top-dashboard flex justify-between items-center px-4 text-gray-800">
                 <div>
-                    <h1 className="text-2xl font-bold">
-                        Ciao {currentUser?.name}
-                    </h1>
+                    <h1 className="text-2xl font-bold">{currentUser?.name} </h1>
+                    <span className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-md">
+                        {currentUser?.role || "Role"}
+                    </span>
                 </div>
                 <div className="flex justify-center">
-                    <img
-                        src={Logo}
-                        alt="Company Logo"
-                        className="h-16 w-auto"
-                    />
+                    <img src={Logo} alt="CAE Logo" className="h-20 w-auto" />
                 </div>
                 <div className="date-time-display px-4 py-2">
                     <div className="flex flex-col justify-center items-center gap-1">
@@ -1176,7 +1175,7 @@ export default function Dashboard() {
                 </div>
             </div>
             <div className="dashboard-content flex justify-between gap-4 p-4 mt-16 h-full max-h-[70vh]">
-                <div className="tasks border p-4 rounded-xl bg-white w-1/2 max-w-[30vw] max-h-full overflow-y-auto pb-4">
+                <div className="tasks border p-4 rounded-xl bg-white w-full max-w-full max-h-full overflow-y-auto pb-4">
                     <div className="title flex flex-row items-center justify-between mb-4">
                         <div className="left-row title flex flex-row items-center gap-2 ">
                             <svg
@@ -1242,6 +1241,7 @@ export default function Dashboard() {
                                         {dayTasks.length} task
                                     </span>
                                 </div>
+
                                 {renderTaskList(dayTasks, "Day")}
                             </div>
 
@@ -1275,7 +1275,7 @@ export default function Dashboard() {
                         </div>
                     )}
                 </div>{" "}
-                <div className="tasks border p-4 rounded-xl bg-white w-1/2 max-w-[30vw] max-h-full overflow-y-auto pb-4">
+                <div className="tasks border p-4 rounded-xl bg-white w-full max-w-full max-h-full overflow-y-auto pb-4">
                     <div className="title flex flex-row items-center justify-between mb-4">
                         <div className="left-row title flex flex-row items-center gap-2 ">
                             <svg
@@ -1316,7 +1316,7 @@ export default function Dashboard() {
                             <div className="flex flex-row gap-2 mb-4">
                                 <input
                                     type="text"
-                                    placeholder="Cerca per testo, titolo, nome..."
+                                    placeholder="Cerca task da definire..."
                                     value={searchQuery}
                                     onChange={handleSearchChange}
                                     onKeyPress={(e) => {
@@ -1538,7 +1538,7 @@ export default function Dashboard() {
                         </div>
                     )}
                 </div>{" "}
-                <div className="employees border p-4 rounded-xl bg-white w-1/4 max-h-full overflow-y-auto">
+                <div className="employees border p-4 rounded-xl bg-white w-full max-w-full max-h-full overflow-y-auto">
                     <div className="title flex flex-row items-center gap-2 mb-4">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -1636,12 +1636,12 @@ export default function Dashboard() {
                                 adminUsers.map((admin, index) => (
                                     <div
                                         key={index}
-                                        className="display-task flex justify-center items-center dashboard-content gap-2 p-3 border border-gray-200 rounded my-4 bg-blue-50"
+                                        className="display-task flex justify-center items-center dashboard-content gap-2 p-3 border border-blue-200 rounded my-4 bg-blue-50"
                                     >
-                                        <p className="text-gray-600 text-sm text-center font-medium">
+                                        <p className="text-blue-600 text-sm text-center font-medium">
                                             {admin.name}
                                         </p>
-                                        <p className="text-gray-400 text-sm text-center">
+                                        <p className="text-blue-400 text-sm text-center">
                                             |
                                         </p>
                                         <p className="text-blue-500 font-bold text-xs text-center">

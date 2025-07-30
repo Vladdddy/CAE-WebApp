@@ -1563,15 +1563,17 @@ export default function Tasks() {
     const getBorderColor = (status) => {
         switch (status) {
             case "completato":
-                return "#139d5420";
+                return "#139d5450";
             case "in corso":
-                return "#f6ad1020";
+                return "#f6ad1050";
             case "non completato":
-                return "#dc262620";
+                return "#dc262650";
             case "riassegnato":
-                return "#8b5cf620";
+                return "#70707050";
+            case "da definire":
+                return "#70707050";
             default:
-                return "#e5e7eb";
+                return "#edededff";
         }
     }; // Filter functions
     const handleFilterChange = (field, value) => {

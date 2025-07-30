@@ -357,10 +357,11 @@ const TaskTable = ({
                                                     </p>
                                                     <div className="task-details text-xs text-gray-500 space-y-4">
                                                         <div className="text-xs">
-                                                            Turno:{" "}
                                                             {getShiftType(
                                                                 task.time
-                                                            )}
+                                                            ) === "D"
+                                                                ? "Diurno"
+                                                                : "Notturno"}{" "}
                                                         </div>
                                                         <div className="flex items-center justify-between">
                                                             <div className="flex flex-col gap-1">

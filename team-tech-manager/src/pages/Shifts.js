@@ -73,7 +73,7 @@ export default function Shifts() {
     });
     const [users, setUsers] = useState([]);
     const [expandedRows, setExpandedRows] = useState(new Set());
-    const [isHoursSummaryExpanded, setIsHoursSummaryExpanded] = useState(true);
+    const [isHoursSummaryExpanded, setIsHoursSummaryExpanded] = useState(false);
     const [patternModal, setPatternModal] = useState({
         isOpen: false,
         selectedUsers: [],
