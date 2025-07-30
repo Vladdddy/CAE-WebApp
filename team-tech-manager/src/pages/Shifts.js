@@ -193,12 +193,6 @@ export default function Shifts() {
             if (localPatterns) {
                 const patterns = JSON.parse(localPatterns);
                 if (patterns.length > 0) {
-                    console.log(
-                        "Migrating",
-                        patterns.length,
-                        "patterns from localStorage to API"
-                    );
-
                     for (const pattern of patterns) {
                         // Remove the old id since the API will generate a new one
                         const { id, ...patternWithoutId } = pattern;
@@ -207,7 +201,6 @@ export default function Shifts() {
 
                     // Clear localStorage after successful migration
                     localStorage.removeItem("customPatterns");
-                    console.log("Migration completed successfully");
                 }
             }
         } catch (error) {
@@ -234,12 +227,6 @@ export default function Shifts() {
                     );
 
                     if (mostRecentOrder) {
-                        console.log(
-                            "Migrating employee order to global:",
-                            employeeOrderKeys[0],
-                            "->",
-                            mostRecentOrder
-                        );
                         localStorage.setItem(
                             "global-employee-order",
                             mostRecentOrder
@@ -248,12 +235,7 @@ export default function Shifts() {
                         // Clean up old month-specific orders
                         employeeOrderKeys.forEach((key) => {
                             localStorage.removeItem(key);
-                            console.log("Removed old employee order key:", key);
                         });
-
-                        console.log(
-                            "Employee order migration completed successfully"
-                        );
                     }
                 }
             }
@@ -269,7 +251,6 @@ export default function Shifts() {
             if (localPatterns && customPatterns.length === 0) {
                 const patterns = JSON.parse(localPatterns);
                 if (patterns.length > 0) {
-                    console.log("Auto-migrating localStorage patterns to API");
                     await migrateLocalStoragePatterns();
                 }
             }
@@ -407,9 +388,6 @@ export default function Shifts() {
             return a.name.localeCompare(b.name);
         });
 
-        console.log("Filtered users:", filteredUsers);
-        console.log("Sorted users:", sortedUsers);
-
         return sortedUsers.map((user) => user.name);
     };
 
@@ -458,8 +436,6 @@ export default function Shifts() {
 
     // Calculate names dynamically based on users state - combine admins and employees
     const names = [...admins, ...employees];
-    console.log("Current users:", users);
-    console.log("Generated names:", names);
 
     useEffect(() => {
         setDays(getMonthDays(year, month));
@@ -487,7 +463,6 @@ export default function Shifts() {
         })
             .then((res) => res.json())
             .then((json) => {
-                console.log("Fetched users:", json);
                 setUsers(json);
             })
             .catch((error) => console.error("Error fetching users:", error));

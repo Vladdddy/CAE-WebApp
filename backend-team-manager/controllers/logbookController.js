@@ -24,7 +24,6 @@ const deleteLogbookNotes = (entryKeys) => {
                 ) {
                     delete notesData.logbookNotes[entryKey];
                     deletedCount++;
-                    console.log(`Deleted notes for logbook entry: ${entryKey}`);
                 }
             });
 
@@ -33,7 +32,6 @@ const deleteLogbookNotes = (entryKeys) => {
                     notesFilePath,
                     JSON.stringify(notesData, null, 2)
                 );
-                console.log(`Total logbook notes deleted: ${deletedCount}`);
             }
 
             return deletedCount;
@@ -137,10 +135,6 @@ exports.saveEntriesByDate = (req, res) => {
 
         // Delete notes for removed entries
         if (keysToDelete.length > 0) {
-            console.log(
-                `Found ${keysToDelete.length} logbook note keys to delete:`,
-                keysToDelete
-            );
             deleteLogbookNotes(keysToDelete);
         }
 

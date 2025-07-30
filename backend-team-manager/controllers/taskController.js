@@ -65,7 +65,6 @@ const deleteTaskNotes = (taskId) => {
                     notesFilePath,
                     JSON.stringify(notesData, null, 2)
                 );
-                console.log(`Deleted notes for task ID: ${taskId}`);
                 return true;
             }
         }
@@ -108,9 +107,7 @@ const addSystemNote = (taskId, userName, action) => {
 
         // Save to file
         fs.writeFileSync(notesFilePath, JSON.stringify(notesData, null, 2));
-        console.log(
-            `Added system note for task ID: ${taskId} by user: ${userName}`
-        );
+
         return true;
     } catch (error) {
         console.error(`Error adding system note for task ID ${taskId}:`, error);
@@ -279,18 +276,11 @@ exports.deleteTask = (req, res) => {
 
 // Add description and simulator to a task
 exports.updateTaskDescription = (req, res) => {
-    console.log("updateTaskDescription called with:", {
-        id: req.params.id,
-        body: req.body,
-        user: req.user,
-    });
-
     const id = parseInt(req.params.id);
     const { title, description, simulator, employee, date, time } = req.body;
     const task = tasks.find((t) => t.id === id);
 
     if (!task) {
-        console.log("Task not found with id:", id);
         return res.status(404).json({ message: "Task non trovato" });
     }
 
@@ -305,21 +295,6 @@ exports.updateTaskDescription = (req, res) => {
             });
         }
     }
-
-    console.log(
-        "Updating task with title:",
-        title,
-        "description:",
-        description,
-        "simulator:",
-        simulator,
-        "employee:",
-        employee,
-        "date:",
-        date,
-        "time:",
-        time
-    );
 
     // Update the task fields
     if (title !== undefined) {
@@ -382,9 +357,6 @@ exports.updateTaskDescription = (req, res) => {
 
             // If employee is no longer available for this shift, set to "Non assegnare"
             if (!employeeStillAvailable) {
-                console.log(
-                    `Employee ${task.assignedTo} not available for new date/time, setting to "Non assegnare"`
-                );
                 task.assignedTo = "Non assegnare";
             }
         }
@@ -396,7 +368,6 @@ exports.updateTaskDescription = (req, res) => {
     }
 
     saveTasksToFile();
-    console.log("Task updated successfully:", task);
     res.json(task);
 };
 

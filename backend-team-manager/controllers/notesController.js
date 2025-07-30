@@ -74,7 +74,6 @@ exports.getTaskNotesById = (req, res) => {
         }
 
         const notes = currentNotesData.taskNotes[taskId] || [];
-        console.log(`Retrieved ${notes.length} notes for task ${taskId}`);
         res.json(notes);
     } catch (error) {
         console.error("Error getting task notes by ID:", error);
@@ -97,15 +96,10 @@ exports.getLogbookNotesById = (req, res) => {
 // Add a note to a task
 exports.addTaskNote = (req, res) => {
     try {
-        console.log("addTaskNote called with:", {
-            params: req.params,
-            body: req.body,
-        });
         const { taskId } = req.params;
         const { text, author } = req.body;
 
         if (!text || !author) {
-            console.log("Missing text or author:", { text, author });
             return res
                 .status(400)
                 .json({ error: "Text and author are required" });
@@ -135,9 +129,7 @@ exports.addTaskNote = (req, res) => {
 
         // Update global notesData and save to file
         notesData = currentNotesData;
-        console.log("Saving notes to file...");
         saveNotesToFile();
-        console.log("Notes saved successfully");
 
         res.status(201).json({
             message: "Note added successfully",
@@ -154,15 +146,10 @@ exports.addTaskNote = (req, res) => {
 // Add a note to a logbook entry
 exports.addLogbookNote = (req, res) => {
     try {
-        console.log("addLogbookNote called with:", {
-            params: req.params,
-            body: req.body,
-        });
         const { entryId } = req.params;
         const { text, author } = req.body;
 
         if (!text || !author) {
-            console.log("Missing text or author:", { text, author });
             return res
                 .status(400)
                 .json({ error: "Text and author are required" });
@@ -179,9 +166,7 @@ exports.addLogbookNote = (req, res) => {
         }
 
         notesData.logbookNotes[entryId].push(noteData);
-        console.log("Saving notes to file...");
         saveNotesToFile();
-        console.log("Notes saved successfully");
 
         res.status(201).json({
             message: "Note added successfully",
@@ -227,44 +212,21 @@ exports.updateNote = (req, res) => {
         const note = notesArray[noteIndex];
         const currentUser = req.user;
 
-        // Debug logging
-        console.log("Update note authorization check:", {
-            currentUser: {
-                name: currentUser?.name,
-                role: currentUser?.role,
-            },
-            noteAuthor: note?.author,
-            isAdmin:
-                currentUser?.role === "admin" ||
-                currentUser?.role === "superuser",
-            isOwner: note?.author === currentUser?.name,
-            type,
-            entryId,
-            noteIndex,
-        });
-
-        // Check if user is authorized to update this note
-        // System notes cannot be updated by anyone
         if (note.isSystem) {
-            console.log("Authorization DENIED - Cannot update system notes");
             return res.status(403).json({
                 error: "System notes cannot be modified",
             });
         }
 
-        // Only admins, superusers or the note author can update the note
         if (
             currentUser.role !== "admin" &&
             currentUser.role !== "superuser" &&
             note.author !== currentUser.name
         ) {
-            console.log("Authorization DENIED for note update");
             return res.status(403).json({
                 error: "You can only modify your own notes or you must be an admin/superuser",
             });
         }
-
-        console.log("Authorization GRANTED for note update");
 
         notesArray[noteIndex].text = text;
         notesArray[noteIndex].updatedAt = new Date().toISOString();
@@ -310,44 +272,21 @@ exports.deleteNote = (req, res) => {
         const note = notesArray[noteIndex];
         const currentUser = req.user;
 
-        // Debug logging
-        console.log("Delete note authorization check:", {
-            currentUser: {
-                name: currentUser?.name,
-                role: currentUser?.role,
-            },
-            noteAuthor: note?.author,
-            isAdmin:
-                currentUser?.role === "admin" ||
-                currentUser?.role === "superuser",
-            isOwner: note?.author === currentUser?.name,
-            type,
-            entryId,
-            noteIndex,
-        });
-
-        // Check if user is authorized to delete this note
-        // System notes cannot be deleted by anyone
         if (note.isSystem) {
-            console.log("Authorization DENIED - Cannot delete system notes");
             return res.status(403).json({
                 error: "System notes cannot be deleted",
             });
         }
 
-        // Only admins, superusers or the note author can delete the note
         if (
             currentUser.role !== "admin" &&
             currentUser.role !== "superuser" &&
             note.author !== currentUser.name
         ) {
-            console.log("Authorization DENIED for note deletion");
             return res.status(403).json({
                 error: "You can only delete your own notes or you must be an admin/superuser",
             });
         }
-
-        console.log("Authorization GRANTED for note deletion");
 
         notesArray.splice(noteIndex, 1);
 

@@ -516,14 +516,6 @@ export default function Dashboard() {
 
         setReassignModal((prev) => ({ ...prev, loading: true }));
 
-        console.log("Reassigning task:", {
-            taskId: reassignModal.task.id,
-            date: reassignModal.date,
-            time: reassignModal.time,
-            assignedTo: reassignModal.assignedTo,
-            apiUrl: `${API}/api/tasks/${reassignModal.task.id}/reassign`,
-        });
-
         try {
             const response = await fetch(
                 `${API}/api/tasks/${reassignModal.task.id}/reassign`,
@@ -541,12 +533,8 @@ export default function Dashboard() {
                 }
             );
 
-            console.log("Response status:", response.status);
-            console.log("Response ok:", response.ok);
-
             if (response.ok) {
                 const updatedTask = await response.json();
-                console.log("Task updated successfully:", updatedTask);
                 // Update the tasks state
                 setTasks((prevTasks) =>
                     prevTasks.map((task) =>
@@ -565,7 +553,6 @@ export default function Dashboard() {
             } else {
                 // Try to get error response as text first, then parse as JSON if possible
                 const responseText = await response.text();
-                console.log("Error response text:", responseText);
 
                 let errorData;
                 try {
@@ -579,7 +566,6 @@ export default function Dashboard() {
                     };
                 }
 
-                console.log("Error response:", errorData);
                 setModal({
                     isOpen: true,
                     title: "Errore",

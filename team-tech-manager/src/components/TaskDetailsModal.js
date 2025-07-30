@@ -532,10 +532,6 @@ export default function TaskDetailsModal({
                                                         "Inserisci una nota prima di salvare"
                                                     );
                                                 } else {
-                                                    console.log(
-                                                        "Nota salvata:",
-                                                        noteText
-                                                    );
                                                     setShowNoteInput(false);
                                                     setNoteText("");
                                                 }

@@ -42,6 +42,7 @@ const troubleshootingDetails = [
 ];
 
 export default function Tasks() {
+    const [image, setImage] = useState(); //Immagine
     const [tasks, setTasks] = useState([]);
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
@@ -303,20 +304,12 @@ export default function Tasks() {
     // Fetch available employees when date or time changes
     const fetchAvailableEmployees = useCallback(
         async (selectedDate, selectedTime) => {
-            console.log(
-                "fetchAvailableEmployees called with:",
-                selectedDate,
-                selectedTime
-            );
-
             if (!selectedDate || !selectedTime) {
                 setAvailableEmployees([]);
-                console.log("No date/time provided, clearing employees");
                 return;
             }
 
             setEmployeesLoading(true);
-            console.log("Setting employeesLoading to true");
             const token = localStorage.getItem("authToken");
 
             try {
@@ -331,20 +324,13 @@ export default function Tasks() {
 
                 if (response.ok) {
                     const data = await response.json();
-                    console.log("Fetched employees:", data.availableEmployees);
                     setAvailableEmployees(data.availableEmployees);
                 } else {
-                    console.error(
-                        "Error fetching available employees:",
-                        await response.text()
-                    );
                     setAvailableEmployees([]);
                 }
             } catch (error) {
-                console.error("Error fetching available employees:", error);
                 setAvailableEmployees([]);
             } finally {
-                console.log("Setting employeesLoading to false");
                 setEmployeesLoading(false);
             }
         },
@@ -901,8 +887,6 @@ export default function Tasks() {
                 return task;
             });
             setTasks(updatedTasks);
-
-            console.log("Nota salvata con successo:", noteText);
 
             // Update the task in the modal if it's the same task
             if (taskDetailsModal.task && taskDetailsModal.task.id === taskId) {
@@ -2531,9 +2515,71 @@ export default function Tasks() {
                                                         </label>
                                                     </div>
                                                 </div>{" "}
+                                                <label
+                                                    htmlFor=""
+                                                    className="text-xs text-gray-500"
+                                                >
+                                                    Immagine
+                                                </label>
+                                                <label
+                                                    htmlFor="image"
+                                                    className={`inline-flex items-center justify-center w-24 h-24 rounded-lg border-dashed border-2 transition ${
+                                                        image
+                                                            ? "border-green-300 bg-green-100 text-green-600 hover:bg-green-200"
+                                                            : "border-blue-200 text-blue-600 hover:bg-blue-100"
+                                                    } cursor-pointer`}
+                                                >
+                                                    {image ? (
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            className="h-6 w-6"
+                                                            viewBox="0 0 20 20"
+                                                            fill="currentColor"
+                                                        >
+                                                            <path
+                                                                fillRule="evenodd"
+                                                                d="M16.707 5.293a1 1 0 00-1.414 0L9 11.586 6.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l7-7a1 1 0 000-1.414z"
+                                                                clipRule="evenodd"
+                                                            />
+                                                        </svg>
+                                                    ) : (
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            className="h-6 w-6"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            stroke="currentColor"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth={2}
+                                                                d="M12 4v16m8-8H4"
+                                                            />
+                                                        </svg>
+                                                    )}
+                                                </label>
+                                                <input
+                                                    type="file"
+                                                    id="image"
+                                                    accept="image/*"
+                                                    onChange={(e) =>
+                                                        setImage(
+                                                            e.target.files[0]
+                                                        )
+                                                    }
+                                                    className="hidden"
+                                                />
+                                                {image && (
+                                                    <div className="flex items-center gap-1 mb-2 text-green-600 text-sm">
+                                                        <span>
+                                                            {image.name}
+                                                        </span>
+                                                    </div>
+                                                )}
                                                 <button
                                                     type="submit"
-                                                    className="aggiungi-btn col-span-1 sm:col-span-2 bg-blue-600 text-white px-4 py-2 rounded"
+                                                    className="aggiungi-btn col-span-1 sm:col-span-2 bg-blue-600 text-white px-4 py-2 rounded mt-4"
                                                 >
                                                     Aggiungi
                                                 </button>

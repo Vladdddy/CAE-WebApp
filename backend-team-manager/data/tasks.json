@@ -777,5 +777,18 @@
     "status": "completato",
     "date": "2025-07-30",
     "time": "08:00"
+  },
+  {
+    "id": 99,
+    "title": "Prova image",
+    "description": "fdgdfgzdfg",
+    "assignedTo": "Andrea",
+    "simulator": "FTD",
+    "category": "routine task",
+    "subcategory": "MR",
+    "extraDetail": "",
+    "status": "non iniziato",
+    "date": "2025-07-30",
+    "time": "08:00"
   }
 ]

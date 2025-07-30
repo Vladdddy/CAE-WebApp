@@ -181,20 +181,12 @@ export default function Logbook() {
     // Fetch available employees when date or time changes
     const fetchAvailableEmployees = useCallback(
         async (selectedDate, selectedTime) => {
-            console.log(
-                "fetchAvailableEmployees called with:",
-                selectedDate,
-                selectedTime
-            );
-
             if (!selectedDate || !selectedTime) {
                 setAvailableEmployees([]);
-                console.log("No date/time provided, clearing employees");
                 return;
             }
 
             setEmployeesLoading(true);
-            console.log("Setting employeesLoading to true");
             const token = localStorage.getItem("authToken");
 
             try {
@@ -209,7 +201,6 @@ export default function Logbook() {
 
                 if (response.ok) {
                     const data = await response.json();
-                    console.log("Fetched employees:", data.availableEmployees);
                     setAvailableEmployees(data.availableEmployees);
                 } else {
                     console.error(
@@ -222,7 +213,6 @@ export default function Logbook() {
                 console.error("Error fetching available employees:", error);
                 setAvailableEmployees([]);
             } finally {
-                console.log("Setting employeesLoading to false");
                 setEmployeesLoading(false);
             }
         },
@@ -232,11 +222,6 @@ export default function Logbook() {
     // Handle date/time change in description modal
     const handleDescriptionModalDateTimeChange = useCallback(
         async (newDate, newTime) => {
-            console.log(
-                "Date/time changed in description modal:",
-                newDate,
-                newTime
-            );
             if (newDate && newTime) {
                 await fetchAvailableEmployees(newDate, newTime);
             }
@@ -1155,13 +1140,8 @@ export default function Logbook() {
     ) => {
         let filtered = [...entriesToFilter];
 
-        console.log("=== APPLY FILTERS DEBUG ===");
-        console.log("Input entries:", entriesToFilter);
-        console.log("Search term:", searchTerm);
-
         if (searchTerm && searchTerm.trim()) {
             const searchLower = searchTerm.toLowerCase();
-            console.log("Searching for:", searchLower);
 
             filtered = filtered.filter((entry) => {
                 // For logbook entries
@@ -1210,49 +1190,8 @@ export default function Logbook() {
                     assignedToMatch ||
                     statusMatch;
 
-                if (matches) {
-                    console.log("MATCH found in entry:", entry);
-                    console.log(
-                        "Text match:",
-                        textMatch,
-                        "- searching in:",
-                        entry.text
-                    );
-                    console.log(
-                        "Title match:",
-                        titleMatch,
-                        "- searching in:",
-                        entry.title
-                    );
-                    console.log(
-                        "Author match:",
-                        authorMatch,
-                        "- searching in:",
-                        entry.author
-                    );
-                    console.log(
-                        "Description match:",
-                        descriptionMatch,
-                        "- searching in:",
-                        entry.description
-                    );
-                    console.log(
-                        "Simulator match:",
-                        simulatorMatch,
-                        "- searching in:",
-                        entry.simulator
-                    );
-                    console.log(
-                        "AssignedTo match:",
-                        assignedToMatch,
-                        "- searching in:",
-                        entry.assignedTo
-                    );
-                }
-
                 return matches;
             });
-            console.log("After text filter:", filtered);
         }
 
         if (categoryFilter) {
@@ -1269,9 +1208,6 @@ export default function Logbook() {
             );
         }
 
-        console.log("Final filtered results:", filtered);
-        console.log("=== APPLY FILTERS DEBUG END ===");
-
         return filtered;
     };
     const handleSearch = async () => {
@@ -1279,16 +1215,8 @@ export default function Logbook() {
         setShowFilterResults(true);
         let filtered = [];
 
-        console.log("=== DEBUG: Search started ===");
-        console.log("Search term:", search);
-        console.log("Filter category:", filterCategory);
-        console.log("Filter subcategory:", filterSubcategory);
-        console.log("Start date:", startDate);
-        console.log("End date:", endDate);
-
         if (startDate && endDate) {
             const allEntries = await loadEntriesFromRange();
-            console.log("Loaded entries from range:", allEntries);
 
             // Add tasks to the search results
             const filteredTasks = tasks.filter((task) => {
@@ -1308,7 +1236,6 @@ export default function Logbook() {
             }));
 
             const combinedData = [...allEntries, ...tasksAsEntries];
-            console.log("Combined entries and tasks:", combinedData);
 
             filtered = applyFilters(
                 combinedData,
@@ -1323,8 +1250,6 @@ export default function Logbook() {
 
             const searchStartDate = threeMonthsAgo.toISOString().split("T")[0];
             const searchEndDate = today.toISOString().split("T")[0];
-
-            console.log("Searching from", searchStartDate, "to", searchEndDate);
 
             const dates = getDateRange(searchStartDate, searchEndDate);
             let allEntries = [];
@@ -1343,9 +1268,7 @@ export default function Logbook() {
                             ...data.map((e) => ({ ...e, date: d }))
                         );
                     }
-                } catch (error) {
-                    console.log(`No data for ${d}`);
-                }
+                } catch (error) {}
             }
 
             const todayDate = new Date().toISOString().split("T")[0];
@@ -1385,8 +1308,6 @@ export default function Logbook() {
             }));
 
             const combinedData = [...allEntries, ...tasksAsEntries];
-            console.log("All loaded entries and tasks:", combinedData);
-            console.log("Sample entry structure:", combinedData[0]);
 
             filtered = applyFilters(
                 combinedData,
@@ -1398,9 +1319,6 @@ export default function Logbook() {
             filtered = [...entries];
             setShowFilterResults(false);
         }
-
-        console.log("Filtered results:", filtered);
-        console.log("=== DEBUG: Search completed ===");
 
         setFilteredEntries(filtered);
         setIsSearching(false);
@@ -1541,14 +1459,7 @@ export default function Logbook() {
     const openDescriptionModal = (task) => {
         let entryIndex = -1;
 
-        console.log("Opening description modal for task:", task);
-        console.log("Current entries:", entries);
-
         if (task.originalEntry) {
-            console.log(
-                "Using originalEntry to find index:",
-                task.originalEntry
-            );
             entryIndex = entries.findIndex(
                 (entry) =>
                     entry.text === task.originalEntry.text &&
@@ -1557,7 +1468,6 @@ export default function Logbook() {
                     entry.author === task.originalEntry.author
             );
         } else {
-            console.log("Using fallback method to find index");
             entryIndex = entries.findIndex(
                 (entry) =>
                     entry.text === task.fullText &&
@@ -1567,12 +1477,7 @@ export default function Logbook() {
             );
         }
 
-        console.log("Found entryIndex:", entryIndex);
-
         if (entryIndex === -1) {
-            console.log(
-                "Entry not found with strict matching, trying flexible matching"
-            );
             entryIndex = entries.findIndex((entry) => {
                 const textMatch = task.originalEntry
                     ? entry.text === task.originalEntry.text
@@ -1585,19 +1490,8 @@ export default function Logbook() {
                     ? entry.time === task.originalEntry.time
                     : entry.time === task.time;
 
-                console.log("Checking entry:", entry);
-                console.log(
-                    "Text match:",
-                    textMatch,
-                    "Date match:",
-                    dateMatch,
-                    "Time match:",
-                    timeMatch
-                );
-
                 return textMatch && dateMatch && timeMatch;
             });
-            console.log("Flexible matching result:", entryIndex);
         }
 
         setDescriptionModal({
@@ -1608,11 +1502,6 @@ export default function Logbook() {
 
         // Fetch available employees for the task's date and time
         if (task.date && task.time) {
-            console.log(
-                "Fetching available employees for:",
-                task.date,
-                task.time
-            );
             fetchAvailableEmployees(task.date, task.time);
         } else {
             // If no date/time, clear available employees and reset loading state
@@ -1649,14 +1538,9 @@ export default function Logbook() {
         const { description, simulator, employee, date, time } = updatedData;
         const { entryIndex } = descriptionModal;
 
-        console.log("Saving description with entryIndex:", entryIndex);
-        console.log("Current entries state:", entries);
-        console.log("Description modal entry:", descriptionModal.entry);
-
         if (entryIndex === -1) {
             const task = descriptionModal.entry;
             if (task && task.originalEntry) {
-                console.log("Trying to save using originalEntry data");
                 const foundIndex = entries.findIndex(
                     (entry) =>
                         entry.text === task.originalEntry.text &&
@@ -1666,7 +1550,6 @@ export default function Logbook() {
                 );
 
                 if (foundIndex !== -1) {
-                    console.log("Found entry at index:", foundIndex);
                     const updatedEntries = [...entries];
                     const originalEntry = updatedEntries[foundIndex];
 
@@ -1693,7 +1576,6 @@ export default function Logbook() {
                         );
                         return;
                     } catch (error) {
-                        console.error("Error saving entry:", error);
                         showModal(
                             "Errore",
                             "Errore durante l'aggiornamento dell'entry",
@@ -1702,9 +1584,6 @@ export default function Logbook() {
                         return;
                     }
                 } else {
-                    console.log(
-                        "Could not find entry even with originalEntry data"
-                    );
                 }
             }
 
@@ -1845,8 +1724,6 @@ export default function Logbook() {
         try {
             const currentTask = taskDetailsModal.task;
             if (currentTask && currentTask.type === "logbook-entry") {
-                console.log("Saving note for logbook entry:", currentTask);
-
                 const originalEntry = currentTask.originalEntry || {
                     id:
                         currentTask.id && currentTask.id.startsWith("entry-")
@@ -1878,9 +1755,6 @@ export default function Logbook() {
 
                     if (legacyNotes1.length > 0) {
                         existingNotes = legacyNotes1;
-                        console.log(
-                            `Migrating notes from legacy keys to new key: ${logbookNoteKey}`
-                        );
                     } else {
                         const legacyKeys2 = generateLegacyLogbookNoteKey(
                             currentTask.originalEntry,
@@ -1894,9 +1768,6 @@ export default function Logbook() {
                             [];
                         if (legacyNotes2.length > 0) {
                             existingNotes = legacyNotes2;
-                            console.log(
-                                `Migrating notes from legacy keys to new key: ${logbookNoteKey}`
-                            );
                         }
                     }
                 }
@@ -1929,7 +1800,6 @@ export default function Logbook() {
                     task: updatedTask,
                 });
 
-                console.log("Nota aggiunta alla logbook entry con successo");
                 showModal("Successo", "Nota aggiunta con successo!", "success");
                 return;
             } else {
@@ -1962,8 +1832,6 @@ export default function Logbook() {
                     return task;
                 });
                 setTasks(updatedTasks);
-
-                console.log("Nota salvata con successo:", noteText);
 
                 if (
                     taskDetailsModal.task &&
