@@ -593,23 +593,30 @@ export default function Tasks() {
         }
 
         try {
+            // Create FormData to handle file uploads
+            const formData = new FormData();
+            formData.append("title", title);
+            formData.append("description", description);
+            formData.append("assignedTo", finalAssignedTo);
+            formData.append("simulator", simulator);
+            formData.append("category", category);
+            formData.append("subcategory", subcategory);
+            formData.append("extraDetail", extraDetail);
+            formData.append("date", date);
+            formData.append("time", time);
+
+            // Add image if one is selected
+            if (image) {
+                formData.append("images", image);
+            }
+
             const res = await fetch(`${API}/api/tasks`, {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
+                    // Don't set Content-Type header - let the browser set it with boundary for FormData
                 },
-                body: JSON.stringify({
-                    title,
-                    description,
-                    assignedTo: finalAssignedTo,
-                    simulator,
-                    category,
-                    subcategory,
-                    extraDetail,
-                    date,
-                    time,
-                }),
+                body: formData,
             });
 
             if (res.ok) {
@@ -627,6 +634,7 @@ export default function Tasks() {
                 setDate(selectedDate);
                 setTime("08:00");
                 setShift("D");
+                setImage(null); // Clear the image state
             } else {
                 const errorData = await res.json();
                 showModal(

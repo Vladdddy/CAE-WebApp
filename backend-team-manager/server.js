@@ -1,6 +1,7 @@
 // 📄 server.js aggiornato per includere /api/shifts
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 const taskRoutes = require("./routes/tasks");
 const logbookRoutes = require("./routes/logbook");
 const shiftRoutes = require("./routes/shifts");
@@ -13,6 +14,9 @@ require("dotenv").config();
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// Serve uploaded images statically
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/tasks", taskRoutes);

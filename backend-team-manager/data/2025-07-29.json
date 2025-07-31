@@ -1,0 +1,24 @@
+[
+  {
+    "text": "Customer called due was not possible to engage C/L and VIBRATION.\nFrom IOS found the message \"MCL PC NOT RUNNING\" \nFrom MCL was not posible reset the error message. \nReloaded MCL node but the issue was the same. \nReloaded CORE SIMULATION and MCL node to solve.",
+    "author": "Fabrizio",
+    "category": "troubleshooting",
+    "subcategory": "SW",
+    "extraDetail": "MOTION",
+    "simulator": "109FFS",
+    "date": "2025-07-29",
+    "time": "13:00",
+    "title": "A109 MCL ISSUE "
+  },
+  {
+    "text": "Customer called because a list of numbers appeared on central MFD preventing the crew from reading ENG values.\nReloaded \"Avionic\" and \"Display\" nodes to solve.",
+    "author": "Aharon",
+    "category": "troubleshooting",
+    "subcategory": "SW",
+    "extraDetail": "AVIONIC",
+    "simulator": "169",
+    "date": "2025-07-29",
+    "time": "07:05",
+    "title": "AW169 MFD avionic fault."
+  }
+]

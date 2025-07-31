@@ -1,0 +1,101 @@
+[
+    {
+        "id": 2,
+        "email": "mario",
+        "password": "mario123",
+        "name": "Mario",
+        "role": "admin",
+        "department": "Operations",
+        "active": true
+    },
+    {
+        "id": 3,
+        "email": "luca",
+        "password": "luca123",
+        "name": "Luca",
+        "role": "admin",
+        "department": "Operations",
+        "active": true
+    },
+    {
+        "id": 5,
+        "email": "simone",
+        "password": "simone123",
+        "name": "Simone",
+        "role": "admin",
+        "department": "Operations",
+        "active": true
+    },
+    {
+        "id": 6,
+        "email": "sara.gialli",
+        "password": "sara123",
+        "name": "Sara",
+        "role": "employee",
+        "department": "Operations",
+        "active": true
+    },
+    {
+        "id": 7,
+        "email": "andrea.bianchi",
+        "password": "andrea123",
+        "name": "Andrea",
+        "role": "employee",
+        "department": "Operations",
+        "active": true
+    },
+    {
+        "id": 8,
+        "email": "francesco.verde",
+        "password": "francesco123",
+        "name": "Francesco",
+        "role": "employee",
+        "department": "Operations",
+        "active": true
+    },
+    {
+        "id": 10,
+        "email": "nicolo",
+        "password": "nicolo123",
+        "name": "Nicolo",
+        "role": "employee",
+        "department": "Operations",
+        "active": true
+    },
+    {
+        "id": 11,
+        "email": "gianluca",
+        "password": "gianluca123",
+        "name": "Gianluca",
+        "role": "admin",
+        "department": "Operations",
+        "active": true
+    },
+    {
+        "id": 12,
+        "email": "thomas",
+        "password": "thomas123",
+        "name": "Thomas",
+        "role": "employee",
+        "department": "Operations",
+        "active": true
+    },
+    {
+        "id": 13,
+        "email": "capo",
+        "password": "capo123",
+        "name": "Capo",
+        "role": "superuser",
+        "department": "Operations",
+        "active": true
+    },
+    {
+        "id": 14,
+        "email": "jamal",
+        "password": "jamal123",
+        "name": "Jamal",
+        "role": "employee",
+        "department": "Operations",
+        "active": true
+    }
+]

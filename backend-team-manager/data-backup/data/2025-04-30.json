@@ -1,0 +1,20 @@
+[
+  {
+    "text": "Ciao",
+    "author": "Gianluca",
+    "category": "troubleshooting",
+    "subcategory": "HW",
+    "extraDetail": "OTHERS",
+    "time": "10:46:20"
+  },
+  {
+    "text": "visual",
+    "author": "Gianluca",
+    "category": "troubleshooting",
+    "subcategory": "HW",
+    "extraDetail": "VISUAL",
+    "date": "2025-04-30",
+    "time": "08:00",
+    "duration": ""
+  }
+]

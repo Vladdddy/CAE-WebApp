@@ -23,6 +23,9 @@ export default function TaskDetailsModal({
     const [editingNoteIndex, setEditingNoteIndex] = useState(null);
     const [editingNoteText, setEditingNoteText] = useState("");
 
+    // Get API base URL
+    const API = process.env.REACT_APP_API_URL || "http://localhost:5000";
+
     // Helper function to determine if task is day or night shift
     const getShiftType = (time) => {
         if (!time) return "D"; // Default to day shift if no time
@@ -553,6 +556,223 @@ export default function TaskDetailsModal({
                                 </div>
                             )}
                         </div>
+                        {/* Images Section */}
+                        {task.images && task.images.length > 0 && (
+                            <div>
+                                <div className="separator"></div>
+                                <label className="block text-xs font-medium text-gray-600 mb-3">
+                                    Immagine allegata
+                                </label>
+                                <div className="grid grid-cols-2 gap-3">
+                                    {task.images.map((image, index) => {
+                                        // Extract just the filename from the full path
+                                        const filename =
+                                            image.filename ||
+                                            image.path
+                                                .split("/")
+                                                .pop()
+                                                .split("\\")
+                                                .pop();
+                                        const imageUrl = `${API}/uploads/task-images/${filename}`;
+
+                                        console.log("Image details:", {
+                                            index,
+                                            filename,
+                                            imageUrl,
+                                            API,
+                                            originalPath: image.path,
+                                            originalFilename: image.filename,
+                                        });
+
+                                        return (
+                                            <div
+                                                key={index}
+                                                className="relative group cursor-pointer"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    console.log(
+                                                        "Container clicked:",
+                                                        imageUrl
+                                                    );
+                                                    // Open image in a new tab for full view
+                                                    try {
+                                                        window.open(
+                                                            imageUrl,
+                                                            "_blank",
+                                                            "noopener,noreferrer"
+                                                        );
+                                                    } catch (error) {
+                                                        console.error(
+                                                            "Error opening image:",
+                                                            error
+                                                        );
+                                                        // Fallback: try creating a link and clicking it
+                                                        const link =
+                                                            document.createElement(
+                                                                "a"
+                                                            );
+                                                        link.href = imageUrl;
+                                                        link.target = "_blank";
+                                                        link.rel =
+                                                            "noopener noreferrer";
+                                                        document.body.appendChild(
+                                                            link
+                                                        );
+                                                        link.click();
+                                                        document.body.removeChild(
+                                                            link
+                                                        );
+                                                    }
+                                                }}
+                                            >
+                                                <img
+                                                    src={imageUrl}
+                                                    alt={
+                                                        image.originalname ||
+                                                        `Immagine ${index + 1}`
+                                                    }
+                                                    className="w-full h-32 object-cover rounded-lg border border-gray-200 hover:border-gray-300 transition-colors cursor-pointer"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        console.log(
+                                                            "Image clicked:",
+                                                            imageUrl
+                                                        );
+                                                        // Open image in a new tab for full view
+                                                        try {
+                                                            window.open(
+                                                                imageUrl,
+                                                                "_blank",
+                                                                "noopener,noreferrer"
+                                                            );
+                                                        } catch (error) {
+                                                            console.error(
+                                                                "Error opening image:",
+                                                                error
+                                                            );
+                                                            // Fallback: try creating a link and clicking it
+                                                            const link =
+                                                                document.createElement(
+                                                                    "a"
+                                                                );
+                                                            link.href =
+                                                                imageUrl;
+                                                            link.target =
+                                                                "_blank";
+                                                            link.rel =
+                                                                "noopener noreferrer";
+                                                            document.body.appendChild(
+                                                                link
+                                                            );
+                                                            link.click();
+                                                            document.body.removeChild(
+                                                                link
+                                                            );
+                                                        }
+                                                    }}
+                                                    onError={(e) => {
+                                                        console.error(
+                                                            "Image failed to load:",
+                                                            imageUrl
+                                                        );
+                                                        e.target.src =
+                                                            "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTMgNkM3IDQgMTcgNCAxOSA2VjE4QzE3IDIwIDcgMjAgMyAxOFY2WiIgc3Ryb2tlPSIjOTk5IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8cGF0aCBkPSJNOSAxMkw5IDEyLjAxIiBzdHJva2U9IiM5OTkiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik05IDE2SDE1TDE4IDEzTDE1IDEwSDkiIHN0cm9rZT0iIzk5OSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+";
+                                                        e.target.alt =
+                                                            "Immagine non disponibile";
+                                                    }}
+                                                />
+                                                <div
+                                                    className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all rounded-lg flex items-center justify-center"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        console.log(
+                                                            "Overlay clicked:",
+                                                            imageUrl
+                                                        );
+                                                        // Open image in a new tab for full view
+                                                        try {
+                                                            window.open(
+                                                                imageUrl,
+                                                                "_blank",
+                                                                "noopener,noreferrer"
+                                                            );
+                                                        } catch (error) {
+                                                            console.error(
+                                                                "Error opening image:",
+                                                                error
+                                                            );
+                                                            // Fallback: try creating a link and clicking it
+                                                            const link =
+                                                                document.createElement(
+                                                                    "a"
+                                                                );
+                                                            link.href =
+                                                                imageUrl;
+                                                            link.target =
+                                                                "_blank";
+                                                            link.rel =
+                                                                "noopener noreferrer";
+                                                            document.body.appendChild(
+                                                                link
+                                                            );
+                                                            link.click();
+                                                            document.body.removeChild(
+                                                                link
+                                                            );
+                                                        }
+                                                    }}
+                                                >
+                                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            viewBox="0 0 24 24"
+                                                            width="32"
+                                                            height="32"
+                                                            color="white"
+                                                            fill="none"
+                                                        >
+                                                            <path
+                                                                d="M21.544 11.045C21.848 11.4713 22 11.6845 22 12C22 12.3155 21.848 12.5287 21.544 12.955C20.1779 14.8706 16.6892 19 12 19C7.31078 19 3.8221 14.8706 2.45604 12.955C2.15201 12.5287 2 12.3155 2 12C2 11.6845 2.15201 11.4713 2.45604 11.045C3.8221 9.12944 7.31078 5 12 5C16.6892 5 20.1779 9.12944 21.544 11.045Z"
+                                                                stroke="currentColor"
+                                                                strokeWidth="1.5"
+                                                            />
+                                                            <path
+                                                                d="M15 12C15 13.6569 13.6569 15 12 15C10.3431 15 9 13.6569 9 12C9 10.3431 10.3431 9 12 9C13.6569 9 15 10.3431 15 12Z"
+                                                                stroke="currentColor"
+                                                                strokeWidth="1.5"
+                                                            />
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent rounded-b-lg p-2">
+                                                    <p className="text-white text-xs truncate">
+                                                        {image.originalname ||
+                                                            `Immagine ${
+                                                                index + 1
+                                                            }`}
+                                                    </p>
+                                                    <p className="text-white/70 text-xs">
+                                                        {image.size
+                                                            ? `${(
+                                                                  image.size /
+                                                                  1024
+                                                              ).toFixed(1)} KB`
+                                                            : ""}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                <p className="text-gray-400 text-xs mt-2">
+                                    Clicca sull'immagine per visualizzarla a
+                                    schermo intero
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </div>{" "}
                 {/* Fixed Footer - Action Buttons */}

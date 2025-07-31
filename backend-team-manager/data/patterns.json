@@ -1,10 +1,56 @@
 [
   {
-    "name": "Test",
+    "name": "Luca",
     "pattern": [
-      "M"
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "R",
+      "R"
     ],
     "type": "custom",
-    "id": 1753291476744
+    "id": 1753348487354
+  },
+  {
+    "name": "O",
+    "pattern": [
+      "O"
+    ],
+    "type": "custom",
+    "id": 1753426917905
+  },
+  {
+    "name": "OP",
+    "pattern": [
+      "OP"
+    ],
+    "type": "custom",
+    "id": 1753426968332
+  },
+  {
+    "name": "ON",
+    "pattern": [
+      "ON"
+    ],
+    "type": "custom",
+    "id": 1753427098169
+  },
+  {
+    "name": "CA",
+    "pattern": [
+      "CA"
+    ],
+    "type": "custom",
+    "id": 1753793166251
+  },
+  {
+    "name": "F",
+    "pattern": [
+      "F"
+    ],
+    "type": "custom",
+    "id": 1753793903852
   }
 ]

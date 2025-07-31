@@ -1,0 +1,26 @@
+[
+  {
+    "text": "Descrizione della entry#1",
+    "author": "Administrator",
+    "category": "troubleshooting",
+    "subcategory": "HW",
+    "extraDetail": "SOUND",
+    "simulator": "FTD",
+    "date": "2025-06-25",
+    "time": "08:00",
+    "duration": "3",
+    "title": "Entry#1"
+  },
+  {
+    "text": "Entry#2 desc",
+    "author": "Administrator",
+    "category": "routine task",
+    "subcategory": "PM",
+    "extraDetail": "",
+    "simulator": "139#1",
+    "date": "2025-06-25",
+    "time": "08:00",
+    "duration": "1",
+    "title": "Entry#2"
+  }
+]

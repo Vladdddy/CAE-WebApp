@@ -22,6 +22,8 @@ export default function DescriptionModal({
     const [employee, setEmployee] = useState(currentEmployee);
     const [date, setDate] = useState(currentDate);
     const [shift, setShift] = useState("D"); // Changed from time to shift
+    const [assignmentType, setAssignmentType] = useState("single"); // "single" or "multiple"
+    const [selectedEmployees, setSelectedEmployees] = useState([]);
     const initialLoadRef = useRef(true);
 
     // Helper function to convert shift to time
@@ -44,6 +46,16 @@ export default function DescriptionModal({
         setEmployee(currentEmployee);
         setDate(currentDate);
         setShift(timeToShift(currentTime));
+        
+        // Initialize assignment type based on current employee
+        if (currentEmployee && currentEmployee.includes(',')) {
+            setAssignmentType("multiple");
+            setSelectedEmployees(currentEmployee.split(',').map(emp => emp.trim()));
+            setEmployee("");
+        } else {
+            setAssignmentType("single");
+            setSelectedEmployees([]);
+        }
 
         // Reset the initial load flag when modal opens
         if (isOpen) {
@@ -77,21 +89,31 @@ export default function DescriptionModal({
 
     // Reset employee selection if current employee is not available for the new date/time
     useEffect(() => {
-        if (
-            employee &&
-            availableEmployees.length > 0 &&
-            !availableEmployees.includes(employee)
-        ) {
-            setEmployee("");
-        } else if (
-            availableEmployees.length === 0 &&
-            employee &&
-            employee !== "Non assegnare"
-        ) {
-            // If no employees are available for this date/shift, automatically set to "Non assegnare"
-            setEmployee("Non assegnare");
+        if (assignmentType === "single") {
+            if (
+                employee &&
+                availableEmployees.length > 0 &&
+                !availableEmployees.includes(employee)
+            ) {
+                setEmployee("");
+            } else if (
+                availableEmployees.length === 0 &&
+                employee &&
+                employee !== "Non assegnare"
+            ) {
+                // If no employees are available for this date/shift, automatically set to "Non assegnare"
+                setEmployee("Non assegnare");
+            }
+        } else {
+            // For multiple assignment, filter out employees that are no longer available
+            const availableSelected = selectedEmployees.filter(emp => 
+                availableEmployees.includes(emp)
+            );
+            if (availableSelected.length !== selectedEmployees.length) {
+                setSelectedEmployees(availableSelected);
+            }
         }
-    }, [availableEmployees, employee]);
+    }, [availableEmployees, employee, selectedEmployees, assignmentType]);
 
     if (!isOpen) return null;
 
@@ -102,7 +124,15 @@ export default function DescriptionModal({
     };
     const handleSave = () => {
         const time = shiftToTime(shift);
-        onSave({ title, description, simulator, employee, date, time });
+        let finalEmployee = "";
+        
+        if (assignmentType === "single") {
+            finalEmployee = employee;
+        } else {
+            finalEmployee = selectedEmployees.join(", ");
+        }
+        
+        onSave({ title, description, simulator, employee: finalEmployee, date, time });
         onClose();
     };
 
@@ -155,39 +185,149 @@ export default function DescriptionModal({
                     </div>
                     <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Dipendente
+                            Assegna a
                         </label>
-                        <select
-                            value={employee}
-                            onChange={(e) =>
-                                !isEmployee && setEmployee(e.target.value)
-                            }
-                            className={`border px-3 py-2 rounded mb-4 text-sm w-full ${
-                                employeesLoading || isEmployee
-                                    ? "bg-gray-100 text-gray-500 cursor-not-allowed"
-                                    : "text-gray-600"
-                            }`}
-                            disabled={employeesLoading || isEmployee}
-                        >
-                            <option value="">
-                                {employeesLoading
-                                    ? "Caricamento dipendenti..."
-                                    : availableEmployees.length === 0
-                                    ? "Nessun dipendente disponibile"
-                                    : "Seleziona dipendente..."}
-                            </option>
-                            {availableEmployees.length === 0 &&
-                                !employeesLoading && (
-                                    <option value="Non assegnare">
-                                        Non assegnare
-                                    </option>
-                                )}
-                            {availableEmployees.map((employeeName) => (
-                                <option key={employeeName} value={employeeName}>
-                                    {employeeName}
+                        
+                        {/* Assignment type radio buttons */}
+                        <div className="flex flex-col sm:flex-row gap-4 mb-4">
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="radio"
+                                    id="singleAssignee"
+                                    name="assignmentType"
+                                    value="single"
+                                    checked={assignmentType === "single"}
+                                    onChange={(e) => {
+                                        setAssignmentType(e.target.value);
+                                        setSelectedEmployees([]);
+                                    }}
+                                    className="w-4 h-4 text-blue-600 accent-blue-600 cursor-pointer"
+                                    disabled={isEmployee}
+                                />
+                                <label
+                                    htmlFor="singleAssignee"
+                                    className={`text-xs cursor-pointer ${
+                                        isEmployee ? "text-gray-400" : "text-gray-700"
+                                    }`}
+                                >
+                                    1 assegnato
+                                </label>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="radio"
+                                    id="multipleAssignees"
+                                    name="assignmentType"
+                                    value="multiple"
+                                    checked={assignmentType === "multiple"}
+                                    onChange={(e) => {
+                                        setAssignmentType(e.target.value);
+                                        setEmployee("");
+                                    }}
+                                    className="w-4 h-4 text-blue-600 accent-blue-600 cursor-pointer"
+                                    disabled={isEmployee}
+                                />
+                                <label
+                                    htmlFor="multipleAssignees"
+                                    className={`text-xs cursor-pointer ${
+                                        isEmployee ? "text-gray-400" : "text-gray-700"
+                                    }`}
+                                >
+                                    più assegnatari
+                                </label>
+                            </div>
+                        </div>
+
+                        {/* Single employee dropdown */}
+                        {assignmentType === "single" ? (
+                            <select
+                                value={employee}
+                                onChange={(e) =>
+                                    !isEmployee && setEmployee(e.target.value)
+                                }
+                                className={`border px-3 py-2 rounded mb-4 text-sm w-full ${
+                                    employeesLoading || isEmployee
+                                        ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+                                        : "text-gray-600"
+                                }`}
+                                disabled={employeesLoading || isEmployee}
+                            >
+                                <option value="">
+                                    {employeesLoading
+                                        ? "Caricamento dipendenti..."
+                                        : availableEmployees.length === 0
+                                        ? "Nessun dipendente disponibile"
+                                        : "Seleziona dipendente..."}
                                 </option>
-                            ))}
-                        </select>
+                                {availableEmployees.length === 0 &&
+                                    !employeesLoading && (
+                                        <option value="Non assegnare">
+                                            Non assegnare
+                                        </option>
+                                    )}
+                                {availableEmployees.map((employeeName) => (
+                                    <option key={employeeName} value={employeeName}>
+                                        {employeeName}
+                                    </option>
+                                ))}
+                            </select>
+                        ) : (
+                            /* Multiple employees checkboxes */
+                            <div className="space-y-2 max-h-32 overflow-y-auto border border-gray-200 rounded-md p-3">
+                                {employeesLoading ? (
+                                    <p className="text-sm text-gray-500">
+                                        Caricamento dipendenti...
+                                    </p>
+                                ) : availableEmployees.length === 0 ? (
+                                    <p className="text-sm text-gray-500">
+                                        Nessun dipendente disponibile
+                                    </p>
+                                ) : (
+                                    availableEmployees.map((employeeName) => (
+                                        <div
+                                            key={employeeName}
+                                            className="flex items-center gap-2"
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                id={`employee-${employeeName}`}
+                                                checked={selectedEmployees.includes(
+                                                    employeeName
+                                                )}
+                                                onChange={(e) => {
+                                                    if (!isEmployee) {
+                                                        if (e.target.checked) {
+                                                            setSelectedEmployees([
+                                                                ...selectedEmployees,
+                                                                employeeName,
+                                                            ]);
+                                                        } else {
+                                                            setSelectedEmployees(
+                                                                selectedEmployees.filter(
+                                                                    (emp) =>
+                                                                        emp !==
+                                                                        employeeName
+                                                                )
+                                                            );
+                                                        }
+                                                    }
+                                                }}
+                                                className="w-4 h-4 text-blue-600 accent-blue-600 cursor-pointer"
+                                                disabled={isEmployee}
+                                            />
+                                            <label
+                                                htmlFor={`employee-${employeeName}`}
+                                                className={`text-sm cursor-pointer ${
+                                                    isEmployee ? "text-gray-400" : "text-gray-700"
+                                                }`}
+                                            >
+                                                {employeeName}
+                                            </label>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        )}
                     </div>
                     <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700 mb-2">

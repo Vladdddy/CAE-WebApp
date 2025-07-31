@@ -75,6 +75,30 @@ const deleteTaskNotes = (taskId) => {
     }
 };
 
+// Helper function to delete images for a specific task
+const deleteTaskImages = (taskId) => {
+    try {
+        const task = tasks.find((t) => t.id === taskId);
+        if (task && task.images && task.images.length > 0) {
+            task.images.forEach((image) => {
+                try {
+                    if (fs.existsSync(image.path)) {
+                        fs.unlinkSync(image.path);
+                        console.log(`Deleted image: ${image.path}`);
+                    }
+                } catch (error) {
+                    console.error(`Error deleting image ${image.path}:`, error);
+                }
+            });
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error(`Error deleting images for task ID ${taskId}:`, error);
+        return false;
+    }
+};
+
 // Helper function to add a system note (non-deletable, non-modifiable)
 const addSystemNote = (taskId, userName, action) => {
     try {
@@ -132,6 +156,17 @@ exports.createTask = (req, res) => {
         time,
         status,
     } = req.body;
+
+    // Handle uploaded images
+    const images = req.files
+        ? req.files.map((file) => ({
+              filename: file.filename,
+              originalname: file.originalname,
+              path: file.path,
+              size: file.size,
+              uploadDate: new Date().toISOString(),
+          }))
+        : [];
 
     // Skip active employee check for "da definire" tasks and "Non assegnare"
     if (status !== "da definire" && assignedTo !== "Non assegnare") {
@@ -220,6 +255,7 @@ exports.createTask = (req, res) => {
         status: status || "non iniziato",
         date: status === "da definire" ? null : date,
         time: status === "da definire" ? null : time,
+        images: images || [],
     };
     tasks.push(newTask);
     saveTasksToFile();
@@ -263,6 +299,9 @@ exports.deleteTask = (req, res) => {
                 "Non hai i permessi per eliminare i task. Solo amministratori, manager, supervisori e superuser possono eliminare i task.",
         });
     }
+
+    // Delete all images associated with this task
+    deleteTaskImages(id);
 
     const index = tasks.findIndex((t) => t.id === id);
     tasks.splice(index, 1);
@@ -569,4 +608,48 @@ exports.updateTaskStatus = (req, res) => {
 
     saveTasksToFile();
     res.json(task);
+};
+
+// Delete a specific image from a task
+exports.deleteTaskImage = (req, res) => {
+    const taskId = parseInt(req.params.taskId);
+    const imageId = parseInt(req.params.imageId);
+
+    const task = tasks.find((t) => t.id === taskId);
+    if (!task) {
+        return res.status(404).json({ message: "Task non trovato" });
+    }
+
+    if (!task.images || task.images.length === 0) {
+        return res
+            .status(404)
+            .json({ message: "Nessuna immagine trovata per questo task" });
+    }
+
+    const imageIndex = task.images.findIndex((img, index) => index === imageId);
+    if (imageIndex === -1) {
+        return res.status(404).json({ message: "Immagine non trovata" });
+    }
+
+    const imageToDelete = task.images[imageIndex];
+
+    // Delete the physical file
+    try {
+        if (fs.existsSync(imageToDelete.path)) {
+            fs.unlinkSync(imageToDelete.path);
+        }
+    } catch (error) {
+        console.error(`Error deleting image file: ${error.message}`);
+        return res
+            .status(500)
+            .json({
+                message: "Errore durante l'eliminazione del file immagine",
+            });
+    }
+
+    // Remove the image from the task
+    task.images.splice(imageIndex, 1);
+
+    saveTasksToFile();
+    res.json({ success: true, message: "Immagine eliminata con successo" });
 };

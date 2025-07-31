@@ -33,6 +33,12 @@
     "Simone": {
       "shift": "F",
       "note": "Festa nazionale"
+    },
+    "Silvia": {
+      "shift": "N"
+    },
+    "Massimo": {
+      "shift": "D"
     }
   },
   "2026-01-02": {
@@ -51,6 +57,12 @@
     "Simone": {
       "shift": "R",
       "note": "Riposo"
+    },
+    "Silvia": {
+      "shift": "N"
+    },
+    "Massimo": {
+      "shift": "D"
     }
   },
   "2026-01-03": {
@@ -69,6 +81,12 @@
     "Simone": {
       "shift": "R",
       "note": "Riposo"
+    },
+    "Silvia": {
+      "shift": "R"
+    },
+    "Massimo": {
+      "shift": "D"
     }
   },
   "2026-01-04": {
@@ -87,6 +105,12 @@
     "Simone": {
       "shift": "ON",
       "note": ""
+    },
+    "Silvia": {
+      "shift": "R"
+    },
+    "Massimo": {
+      "shift": "D"
     }
   },
   "2026-01-05": {
@@ -105,6 +129,12 @@
     "Simone": {
       "shift": "F",
       "note": "Festa nazionale"
+    },
+    "Silvia": {
+      "shift": "R"
+    },
+    "Massimo": {
+      "shift": "R"
     }
   },
   "2026-01-06": {
@@ -123,6 +153,12 @@
     "Simone": {
       "shift": "OP",
       "note": ""
+    },
+    "Silvia": {
+      "shift": "R"
+    },
+    "Massimo": {
+      "shift": "R"
     }
   },
   "2026-01-07": {
@@ -141,6 +177,12 @@
     "Simone": {
       "shift": "OP",
       "note": ""
+    },
+    "Silvia": {
+      "shift": "D"
+    },
+    "Massimo": {
+      "shift": "R"
     }
   },
   "2026-01-08": {
@@ -159,6 +201,12 @@
     "Simone": {
       "shift": "OP",
       "note": ""
+    },
+    "Silvia": {
+      "shift": "D"
+    },
+    "Massimo": {
+      "shift": "R"
     }
   },
   "2026-01-09": {
@@ -177,6 +225,12 @@
     "Simone": {
       "shift": "R",
       "note": "Riposo"
+    },
+    "Silvia": {
+      "shift": "D"
+    },
+    "Massimo": {
+      "shift": "N"
     }
   },
   "2026-01-10": {
@@ -195,6 +249,12 @@
     "Simone": {
       "shift": "R",
       "note": "Riposo"
+    },
+    "Silvia": {
+      "shift": "D"
+    },
+    "Massimo": {
+      "shift": "N"
     }
   },
   "2026-01-11": {
@@ -213,6 +273,12 @@
     "Simone": {
       "shift": "F",
       "note": "Festa nazionale"
+    },
+    "Silvia": {
+      "shift": "R"
+    },
+    "Massimo": {
+      "shift": "N"
     }
   },
   "2026-01-12": {
@@ -231,6 +297,12 @@
     "Simone": {
       "shift": "O",
       "note": ""
+    },
+    "Silvia": {
+      "shift": "R"
+    },
+    "Massimo": {
+      "shift": "N"
     }
   },
   "2026-01-13": {
@@ -249,6 +321,12 @@
     "Simone": {
       "shift": "O",
       "note": ""
+    },
+    "Silvia": {
+      "shift": "R"
+    },
+    "Massimo": {
+      "shift": "R"
     }
   },
   "2026-01-14": {
@@ -267,6 +345,12 @@
     "Simone": {
       "shift": "O",
       "note": ""
+    },
+    "Silvia": {
+      "shift": "R"
+    },
+    "Massimo": {
+      "shift": "R"
     }
   },
   "2026-01-15": {
@@ -285,6 +369,12 @@
     "Simone": {
       "shift": "O",
       "note": ""
+    },
+    "Silvia": {
+      "shift": "N"
+    },
+    "Massimo": {
+      "shift": "R"
     }
   },
   "2026-01-16": {
@@ -303,6 +393,12 @@
     "Simone": {
       "shift": "R",
       "note": "Riposo"
+    },
+    "Silvia": {
+      "shift": "N"
+    },
+    "Massimo": {
+      "shift": "R"
     }
   },
   "2026-01-17": {
@@ -321,6 +417,12 @@
     "Simone": {
       "shift": "R",
       "note": "Riposo"
+    },
+    "Silvia": {
+      "shift": "N"
+    },
+    "Massimo": {
+      "shift": "D"
     }
   },
   "2026-01-18": {
@@ -339,6 +441,12 @@
     "Simone": {
       "shift": "O",
       "note": ""
+    },
+    "Silvia": {
+      "shift": "N"
+    },
+    "Massimo": {
+      "shift": "D"
     }
   },
   "2026-01-19": {
@@ -357,6 +465,12 @@
     "Simone": {
       "shift": "ON",
       "note": ""
+    },
+    "Silvia": {
+      "shift": "R"
+    },
+    "Massimo": {
+      "shift": "D"
     }
   },
   "2026-01-20": {
@@ -375,6 +489,12 @@
     "Simone": {
       "shift": "ON",
       "note": ""
+    },
+    "Silvia": {
+      "shift": "R"
+    },
+    "Massimo": {
+      "shift": "D"
     }
   },
   "2026-01-21": {
@@ -393,6 +513,12 @@
     "Simone": {
       "shift": "ON",
       "note": ""
+    },
+    "Silvia": {
+      "shift": "R"
+    },
+    "Massimo": {
+      "shift": "R"
     }
   },
   "2026-01-22": {
@@ -411,6 +537,12 @@
     "Simone": {
       "shift": "ON",
       "note": ""
+    },
+    "Silvia": {
+      "shift": "R"
+    },
+    "Massimo": {
+      "shift": "R"
     }
   },
   "2026-01-23": {
@@ -429,6 +561,12 @@
     "Simone": {
       "shift": "R",
       "note": "Riposo"
+    },
+    "Silvia": {
+      "shift": "D"
+    },
+    "Massimo": {
+      "shift": "R"
     }
   },
   "2026-01-24": {
@@ -447,6 +585,12 @@
     "Simone": {
       "shift": "R",
       "note": "Riposo"
+    },
+    "Silvia": {
+      "shift": "D"
+    },
+    "Massimo": {
+      "shift": "R"
     }
   },
   "2026-01-25": {
@@ -465,6 +609,12 @@
     "Simone": {
       "shift": "ON",
       "note": ""
+    },
+    "Silvia": {
+      "shift": "D"
+    },
+    "Massimo": {
+      "shift": "N"
     }
   },
   "2026-01-26": {
@@ -483,6 +633,12 @@
     "Simone": {
       "shift": "OP",
       "note": ""
+    },
+    "Silvia": {
+      "shift": "D"
+    },
+    "Massimo": {
+      "shift": "N"
     }
   },
   "2026-01-27": {
@@ -501,6 +657,12 @@
     "Simone": {
       "shift": "OP",
       "note": ""
+    },
+    "Silvia": {
+      "shift": "R"
+    },
+    "Massimo": {
+      "shift": "N"
     }
   },
   "2026-01-28": {
@@ -519,6 +681,12 @@
     "Simone": {
       "shift": "OP",
       "note": ""
+    },
+    "Silvia": {
+      "shift": "R"
+    },
+    "Massimo": {
+      "shift": "N"
     }
   },
   "2026-01-29": {
@@ -537,6 +705,12 @@
     "Simone": {
       "shift": "OP",
       "note": ""
+    },
+    "Silvia": {
+      "shift": "R"
+    },
+    "Massimo": {
+      "shift": "R"
     }
   },
   "2026-01-30": {
@@ -555,6 +729,33 @@
     "Simone": {
       "shift": "R",
       "note": "Riposo"
+    },
+    "Silvia": {
+      "shift": "R"
+    },
+    "Massimo": {
+      "shift": "R"
+    }
+  },
+  "2026-01-31": {
+    "Luca": {
+      "shift": "R",
+      "note": "Riposo"
+    },
+    "Gianluca": {
+      "shift": "R",
+      "note": "Riposo"
+    },
+    "Mario": {
+      "shift": "R",
+      "note": "Riposo"
+    },
+    "Simone": {
+      "shift": "R",
+      "note": "Riposo"
+    },
+    "Massimo": {
+      "shift": "R"
     }
   }
 }

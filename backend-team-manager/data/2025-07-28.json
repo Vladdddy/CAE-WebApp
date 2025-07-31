@@ -1,0 +1,101 @@
+[
+  {
+    "text": "Customer called due to sim. stuck in reposition.\nFull reload required to solve.",
+    "author": "Daniele",
+    "category": "troubleshooting",
+    "subcategory": "SW",
+    "extraDetail": "VISUAL",
+    "simulator": "139#3",
+    "date": "2025-07-28",
+    "time": "19:30",
+    "title": "AW139@3 Stuck in reposition"
+  },
+  {
+    "text": "customer called due to , sim stuck in reposition , reoladed all simulation , solved",
+    "author": "Leonardo",
+    "category": "troubleshooting",
+    "subcategory": "SW",
+    "extraDetail": "OTHERS",
+    "simulator": "169",
+    "date": "2025-07-28",
+    "time": "21:00",
+    "title": "A169 stuck in reposition"
+  },
+  {
+    "text": "during reloading simulation , found interface \"usb_2\" abnormally loaded , rebooted cppdms one time, solved",
+    "author": "Leonardo",
+    "category": "troubleshooting",
+    "subcategory": "SW",
+    "extraDetail": "AVIONIC",
+    "simulator": "109FFS",
+    "date": "2025-07-28",
+    "time": "00:00",
+    "title": "A109  MR "
+  },
+  {
+    "text": "during mr found ownship crash ,restarted process to solve",
+    "author": "Leonardo",
+    "category": "troubleshooting",
+    "subcategory": "SW",
+    "extraDetail": "IOS",
+    "simulator": "109FFS",
+    "date": "2025-07-28",
+    "time": "01:00",
+    "title": "A109 ownship"
+  },
+  {
+    "text": "Paint touch up done on Pilot Cyclic, Copilot Cyclic and Collective.\nMost of the avionic panels have been painted.",
+    "author": "Daniele",
+    "category": "routine task",
+    "subcategory": "MR",
+    "extraDetail": "",
+    "simulator": "139#3",
+    "date": "2025-07-28",
+    "time": "04:00",
+    "title": "AW139#3 Paint touch up"
+  },
+  {
+    "text": "Tested all the avionics panel and fixed the following:\nLT panel - 9x NVG filter replaced + 2x backlights replaced + 1x backlight fixed (welding detached).\nRCP panel - 8x NVG filters replaced + 5x backlights replaced.\nFire panel - 1x backlight replaced.\nLDG LTS panel - 2x backlights replaced.\nSX5 panel - 2x backlights replaced.\nFloats panel - 2x backlights replaced.\nLT panel - 7x NVG filters replaced + 2x backlights replaced.\nMFD/PFD selection panel - 2x backlights replaced.",
+    "author": "Daniele",
+    "category": "troubleshooting",
+    "subcategory": "HW",
+    "extraDetail": "AVIONIC",
+    "simulator": "139#3",
+    "date": "2025-07-28",
+    "time": "03:00",
+    "title": "AW139#3 Panels backlights fixing"
+  },
+  {
+    "text": "AW HOST has been rebooted before performing the MR due to issues in the last few days with the AFCS",
+    "author": "Daniele",
+    "category": "troubleshooting",
+    "subcategory": "SW",
+    "extraDetail": "COMPUTER",
+    "simulator": "139#3",
+    "date": "2025-07-28",
+    "time": "03:30",
+    "title": "A139#3 AW HOST rebooted"
+  },
+  {
+    "text": "Performed Visual PM:\nUV dots fixed on TCL and BFR.\nGeometry touch up not required after the UV dots fixing.\nBrightness was good, FS40 file updated, put on our repository.\nColors were perfect.",
+    "author": "Daniele",
+    "category": "routine task",
+    "subcategory": "PM",
+    "extraDetail": "",
+    "simulator": "139#3",
+    "date": "2025-07-28",
+    "time": "00:30",
+    "title": "Performed Visual PM"
+  },
+  {
+    "text": "Performed cleaning PM.\nSomeone lost part of the swiffer attachment, couldn't find it anyywhere.\nSomeone (for the third times in 3 weeks) lost all the vacuum cleaner attachment.\nIt takes months to me to find all the attachment all around the company and now they're lost again.\nNow we have to vacuum the floor with the nozzle instead the brush.\nRoll of paper is missing as well.\nAGAIN.",
+    "author": "Daniele",
+    "category": "routine task",
+    "subcategory": "PM",
+    "extraDetail": "",
+    "simulator": "139#3",
+    "date": "2025-07-29",
+    "time": "04:00",
+    "title": "AW139#3 Performed Cleaning PM"
+  }
+]

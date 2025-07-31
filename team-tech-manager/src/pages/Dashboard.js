@@ -233,6 +233,7 @@ export default function Dashboard() {
         extraDetail: "",
         date: null, // Will be null for "da definire" tasks
         time: null, // Will be null for "da definire" tasks
+        images: [], // Array to store selected image files
         availableEmployees: [],
         loading: false,
         employeesLoading: false,
@@ -269,6 +270,7 @@ export default function Dashboard() {
             extraDetail: "",
             date: null, // Will be null for "da definire" tasks
             time: null, // Will be null for "da definire" tasks
+            images: [], // Reset images array
             availableEmployees: [],
             loading: false,
             employeesLoading: false,
@@ -691,6 +693,31 @@ export default function Dashboard() {
         }
     };
 
+    // Handle image file selection
+    const handleImageSelection = (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length > 5) {
+            setModal({
+                isOpen: true,
+                title: "Errore",
+                message: "Puoi caricare al massimo 5 immagini.",
+                type: "error",
+                onConfirm: null,
+                confirmText: "OK",
+            });
+            return;
+        }
+        setAddTaskModal((prev) => ({ ...prev, images: files }));
+    };
+
+    // Remove selected image
+    const removeImage = (index) => {
+        setAddTaskModal((prev) => ({
+            ...prev,
+            images: prev.images.filter((_, i) => i !== index),
+        }));
+    };
+
     // Handle add task form submission
     const handleAddTask = async (e) => {
         e.preventDefault();
@@ -710,23 +737,28 @@ export default function Dashboard() {
         setAddTaskModal((prev) => ({ ...prev, loading: true }));
 
         try {
+            // Create FormData for file upload
+            const formData = new FormData();
+            formData.append("title", addTaskModal.title);
+            formData.append("assignedTo", addTaskModal.assignedTo);
+            formData.append("simulator", addTaskModal.simulator);
+            formData.append("category", addTaskModal.category);
+            formData.append("subcategory", addTaskModal.subcategory);
+            formData.append("extraDetail", addTaskModal.extraDetail);
+            formData.append("status", "da definire");
+
+            // Add images to FormData
+            addTaskModal.images.forEach((image) => {
+                formData.append("images", image);
+            });
+
             const response = await fetch(`${API}/api/tasks`, {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
+                    // Don't set Content-Type for FormData, let browser set it
                 },
-                body: JSON.stringify({
-                    title: addTaskModal.title,
-                    assignedTo: addTaskModal.assignedTo,
-                    simulator: addTaskModal.simulator,
-                    category: addTaskModal.category,
-                    subcategory: addTaskModal.subcategory,
-                    extraDetail: addTaskModal.extraDetail,
-                    date: null, // Set to null for "da definire" tasks
-                    time: null, // Set to null for "da definire" tasks
-                    status: "da definire", // Set status to "da definire"
-                }),
+                body: formData,
             });
 
             if (response.ok) {
@@ -1729,6 +1761,40 @@ export default function Dashboard() {
                             </p>
                         </div>
 
+                        {/* Display task images if they exist */}
+                        {reassignModal.task?.images &&
+                            reassignModal.task.images.length > 0 && (
+                                <div className="mb-4">
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {reassignModal.task.images.map(
+                                            (image, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="relative"
+                                                >
+                                                    <img
+                                                        src={`${API}/uploads/task-images/${image.filename}`}
+                                                        alt={`Task image ${
+                                                            index + 1
+                                                        }`}
+                                                        className="w-full h-24 object-cover rounded-md border cursor-pointer"
+                                                        onClick={() =>
+                                                            window.open(
+                                                                `${API}/uploads/task-images/${image.filename}`,
+                                                                "_blank"
+                                                            )
+                                                        }
+                                                    />
+                                                    <div className="text-xs text-gray-500 mt-1 truncate">
+                                                        {image.originalname}
+                                                    </div>
+                                                </div>
+                                            )
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
                         <div className="separator"></div>
 
                         <div className="space-y-4">
@@ -2047,6 +2113,44 @@ export default function Dashboard() {
                                     disabled
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600 cursor-not-allowed"
                                 />
+                            </div>
+
+                            {/* Image upload section */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Immagine
+                                </label>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageSelection}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                                {addTaskModal.images.length > 0 && (
+                                    <div className="mt-2 space-y-2">
+                                        {addTaskModal.images.map(
+                                            (image, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="flex items-center justify-between bg-gray-50 p-2 rounded"
+                                                >
+                                                    <span className="text-sm text-gray-600 truncate">
+                                                        {image.name}
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            removeImage(index)
+                                                        }
+                                                        className="text-red-600 hover:text-red-800 text-sm"
+                                                    >
+                                                        Rimuovi
+                                                    </button>
+                                                </div>
+                                            )
+                                        )}
+                                    </div>
+                                )}
                             </div>
 
                             <div className="flex justify-end space-x-3 mt-6">

@@ -1,0 +1,916 @@
+{
+  "2025-08-01": {
+    "Nicolo": {
+      "shift": "R"
+    },
+    "Andrea": {
+      "shift": "R"
+    },
+    "Francesco": {
+      "shift": "R"
+    },
+    "Thomas": {
+      "shift": "R"
+    },
+    "Mario": {
+      "shift": "OP"
+    },
+    "Luca": {
+      "shift": "ON"
+    },
+    "Simone": {
+      "shift": "OP"
+    },
+    "Gianluca": {
+      "shift": "O"
+    },
+    "Sara": {
+      "shift": "R"
+    },
+    "Jamal": {
+      "shift": "M"
+    }
+  },
+  "2025-08-02": {
+    "Nicolo": {
+      "shift": "R"
+    },
+    "Andrea": {
+      "shift": "R"
+    },
+    "Francesco": {
+      "shift": "R"
+    },
+    "Thomas": {
+      "shift": "R"
+    },
+    "Mario": {
+      "shift": "R"
+    },
+    "Luca": {
+      "shift": "R"
+    },
+    "Simone": {
+      "shift": "R"
+    },
+    "Gianluca": {
+      "shift": "R"
+    },
+    "Sara": {
+      "shift": "R"
+    },
+    "Jamal": {
+      "shift": "M"
+    }
+  },
+  "2025-08-03": {
+    "Nicolo": {
+      "shift": "R"
+    },
+    "Andrea": {
+      "shift": "R"
+    },
+    "Francesco": {
+      "shift": "R"
+    },
+    "Thomas": {
+      "shift": "R"
+    },
+    "Mario": {
+      "shift": "R"
+    },
+    "Luca": {
+      "shift": "R"
+    },
+    "Simone": {
+      "shift": "R"
+    },
+    "Gianluca": {
+      "shift": "R"
+    },
+    "Sara": {
+      "shift": "R"
+    },
+    "Jamal": {
+      "shift": "M"
+    }
+  },
+  "2025-08-04": {
+    "Nicolo": {
+      "shift": "R"
+    },
+    "Andrea": {
+      "shift": "R"
+    },
+    "Francesco": {
+      "shift": "R"
+    },
+    "Thomas": {
+      "shift": "R"
+    },
+    "Mario": {
+      "shift": "ON"
+    },
+    "Luca": {
+      "shift": "OP"
+    },
+    "Simone": {
+      "shift": "O"
+    },
+    "Gianluca": {
+      "shift": "ON"
+    },
+    "Sara": {
+      "shift": "R"
+    },
+    "Jamal": {
+      "shift": "M"
+    }
+  },
+  "2025-08-05": {
+    "Nicolo": {
+      "shift": "N"
+    },
+    "Andrea": {
+      "shift": "N"
+    },
+    "Francesco": {
+      "shift": "N"
+    },
+    "Thomas": {
+      "shift": "N"
+    },
+    "Mario": {
+      "shift": "ON"
+    },
+    "Luca": {
+      "shift": "OP"
+    },
+    "Simone": {
+      "shift": "O"
+    },
+    "Gianluca": {
+      "shift": "ON"
+    },
+    "Sara": {
+      "shift": "N"
+    },
+    "Jamal": {
+      "shift": "M"
+    }
+  },
+  "2025-08-06": {
+    "Nicolo": {
+      "shift": "N"
+    },
+    "Andrea": {
+      "shift": "N"
+    },
+    "Francesco": {
+      "shift": "N"
+    },
+    "Thomas": {
+      "shift": "N"
+    },
+    "Mario": {
+      "shift": "ON"
+    },
+    "Luca": {
+      "shift": "OP"
+    },
+    "Simone": {
+      "shift": "O"
+    },
+    "Gianluca": {
+      "shift": "ON"
+    },
+    "Sara": {
+      "shift": "N"
+    }
+  },
+  "2025-08-07": {
+    "Nicolo": {
+      "shift": "N"
+    },
+    "Andrea": {
+      "shift": "N"
+    },
+    "Francesco": {
+      "shift": "N"
+    },
+    "Thomas": {
+      "shift": "N"
+    },
+    "Mario": {
+      "shift": "ON"
+    },
+    "Luca": {
+      "shift": "OP"
+    },
+    "Simone": {
+      "shift": "O"
+    },
+    "Gianluca": {
+      "shift": "ON"
+    },
+    "Sara": {
+      "shift": "N"
+    }
+  },
+  "2025-08-08": {
+    "Nicolo": {
+      "shift": "N"
+    },
+    "Andrea": {
+      "shift": "N"
+    },
+    "Francesco": {
+      "shift": "N"
+    },
+    "Thomas": {
+      "shift": "N"
+    },
+    "Mario": {
+      "shift": "ON"
+    },
+    "Luca": {
+      "shift": "OP"
+    },
+    "Simone": {
+      "shift": "O"
+    },
+    "Gianluca": {
+      "shift": "ON"
+    },
+    "Sara": {
+      "shift": "N"
+    }
+  },
+  "2025-08-09": {
+    "Nicolo": {
+      "shift": "R"
+    },
+    "Andrea": {
+      "shift": "R"
+    },
+    "Francesco": {
+      "shift": "R"
+    },
+    "Thomas": {
+      "shift": "R"
+    },
+    "Mario": {
+      "shift": "R"
+    },
+    "Luca": {
+      "shift": "R"
+    },
+    "Simone": {
+      "shift": "R"
+    },
+    "Gianluca": {
+      "shift": "R"
+    },
+    "Sara": {
+      "shift": "R"
+    }
+  },
+  "2025-08-10": {
+    "Nicolo": {
+      "shift": "R"
+    },
+    "Andrea": {
+      "shift": "R"
+    },
+    "Francesco": {
+      "shift": "R"
+    },
+    "Thomas": {
+      "shift": "R"
+    },
+    "Mario": {
+      "shift": "R"
+    },
+    "Luca": {
+      "shift": "R"
+    },
+    "Simone": {
+      "shift": "R"
+    },
+    "Gianluca": {
+      "shift": "R"
+    },
+    "Sara": {
+      "shift": "R"
+    }
+  },
+  "2025-08-11": {
+    "Nicolo": {
+      "shift": "R"
+    },
+    "Andrea": {
+      "shift": "R"
+    },
+    "Francesco": {
+      "shift": "R"
+    },
+    "Thomas": {
+      "shift": "R"
+    },
+    "Mario": {
+      "shift": "OP"
+    },
+    "Luca": {
+      "shift": "O"
+    },
+    "Simone": {
+      "shift": "ON"
+    },
+    "Gianluca": {
+      "shift": "OP"
+    },
+    "Sara": {
+      "shift": "R"
+    }
+  },
+  "2025-08-12": {
+    "Nicolo": {
+      "shift": "R"
+    },
+    "Andrea": {
+      "shift": "R"
+    },
+    "Francesco": {
+      "shift": "R"
+    },
+    "Thomas": {
+      "shift": "R"
+    },
+    "Mario": {
+      "shift": "OP"
+    },
+    "Luca": {
+      "shift": "O"
+    },
+    "Simone": {
+      "shift": "ON"
+    },
+    "Gianluca": {
+      "shift": "OP"
+    },
+    "Sara": {
+      "shift": "R"
+    }
+  },
+  "2025-08-13": {
+    "Nicolo": {
+      "shift": "D"
+    },
+    "Andrea": {
+      "shift": "D"
+    },
+    "Francesco": {
+      "shift": "D"
+    },
+    "Thomas": {
+      "shift": "D"
+    },
+    "Mario": {
+      "shift": "OP"
+    },
+    "Luca": {
+      "shift": "O"
+    },
+    "Simone": {
+      "shift": "ON"
+    },
+    "Gianluca": {
+      "shift": "OP"
+    },
+    "Sara": {
+      "shift": "D"
+    }
+  },
+  "2025-08-14": {
+    "Nicolo": {
+      "shift": "D"
+    },
+    "Andrea": {
+      "shift": "D"
+    },
+    "Francesco": {
+      "shift": "D"
+    },
+    "Thomas": {
+      "shift": "D"
+    },
+    "Mario": {
+      "shift": "OP"
+    },
+    "Luca": {
+      "shift": "O"
+    },
+    "Simone": {
+      "shift": "ON"
+    },
+    "Gianluca": {
+      "shift": "OP"
+    },
+    "Sara": {
+      "shift": "D"
+    }
+  },
+  "2025-08-15": {
+    "Nicolo": {
+      "shift": "D"
+    },
+    "Andrea": {
+      "shift": "D"
+    },
+    "Francesco": {
+      "shift": "D"
+    },
+    "Thomas": {
+      "shift": "D"
+    },
+    "Mario": {
+      "shift": "OP"
+    },
+    "Luca": {
+      "shift": "O"
+    },
+    "Simone": {
+      "shift": "ON"
+    },
+    "Gianluca": {
+      "shift": "OP"
+    },
+    "Sara": {
+      "shift": "D"
+    }
+  },
+  "2025-08-16": {
+    "Nicolo": {
+      "shift": "D"
+    },
+    "Andrea": {
+      "shift": "D"
+    },
+    "Francesco": {
+      "shift": "D"
+    },
+    "Thomas": {
+      "shift": "D"
+    },
+    "Mario": {
+      "shift": "R"
+    },
+    "Luca": {
+      "shift": "R"
+    },
+    "Simone": {
+      "shift": "R"
+    },
+    "Gianluca": {
+      "shift": "R"
+    },
+    "Sara": {
+      "shift": "D"
+    }
+  },
+  "2025-08-17": {
+    "Nicolo": {
+      "shift": "R"
+    },
+    "Andrea": {
+      "shift": "R"
+    },
+    "Francesco": {
+      "shift": "R"
+    },
+    "Thomas": {
+      "shift": "R"
+    },
+    "Mario": {
+      "shift": "R"
+    },
+    "Luca": {
+      "shift": "R"
+    },
+    "Simone": {
+      "shift": "R"
+    },
+    "Gianluca": {
+      "shift": "R"
+    },
+    "Sara": {
+      "shift": "R"
+    }
+  },
+  "2025-08-18": {
+    "Nicolo": {
+      "shift": "R"
+    },
+    "Andrea": {
+      "shift": "R"
+    },
+    "Francesco": {
+      "shift": "R"
+    },
+    "Thomas": {
+      "shift": "R"
+    },
+    "Mario": {
+      "shift": "O"
+    },
+    "Luca": {
+      "shift": "ON"
+    },
+    "Simone": {
+      "shift": "OP"
+    },
+    "Gianluca": {
+      "shift": "ON"
+    },
+    "Sara": {
+      "shift": "R"
+    }
+  },
+  "2025-08-19": {
+    "Nicolo": {
+      "shift": "R"
+    },
+    "Andrea": {
+      "shift": "R"
+    },
+    "Francesco": {
+      "shift": "R"
+    },
+    "Thomas": {
+      "shift": "R"
+    },
+    "Mario": {
+      "shift": "O"
+    },
+    "Luca": {
+      "shift": "ON"
+    },
+    "Simone": {
+      "shift": "OP"
+    },
+    "Gianluca": {
+      "shift": "ON"
+    },
+    "Sara": {
+      "shift": "R"
+    }
+  },
+  "2025-08-20": {
+    "Nicolo": {
+      "shift": "R"
+    },
+    "Andrea": {
+      "shift": "R"
+    },
+    "Francesco": {
+      "shift": "R"
+    },
+    "Thomas": {
+      "shift": "R"
+    },
+    "Mario": {
+      "shift": "O"
+    },
+    "Luca": {
+      "shift": "ON"
+    },
+    "Simone": {
+      "shift": "OP"
+    },
+    "Gianluca": {
+      "shift": "ON"
+    },
+    "Sara": {
+      "shift": "R"
+    }
+  },
+  "2025-08-21": {
+    "Nicolo": {
+      "shift": "N"
+    },
+    "Andrea": {
+      "shift": "N"
+    },
+    "Francesco": {
+      "shift": "N"
+    },
+    "Thomas": {
+      "shift": "N"
+    },
+    "Mario": {
+      "shift": "O"
+    },
+    "Luca": {
+      "shift": "ON"
+    },
+    "Simone": {
+      "shift": "OP"
+    },
+    "Gianluca": {
+      "shift": "ON"
+    },
+    "Sara": {
+      "shift": "N"
+    }
+  },
+  "2025-08-22": {
+    "Nicolo": {
+      "shift": "N"
+    },
+    "Andrea": {
+      "shift": "N"
+    },
+    "Francesco": {
+      "shift": "N"
+    },
+    "Thomas": {
+      "shift": "N"
+    },
+    "Mario": {
+      "shift": "O"
+    },
+    "Luca": {
+      "shift": "ON"
+    },
+    "Simone": {
+      "shift": "OP"
+    },
+    "Gianluca": {
+      "shift": "ON"
+    },
+    "Sara": {
+      "shift": "N"
+    }
+  },
+  "2025-08-23": {
+    "Nicolo": {
+      "shift": "N"
+    },
+    "Andrea": {
+      "shift": "N"
+    },
+    "Francesco": {
+      "shift": "N"
+    },
+    "Thomas": {
+      "shift": "N"
+    },
+    "Mario": {
+      "shift": "R"
+    },
+    "Luca": {
+      "shift": "R"
+    },
+    "Simone": {
+      "shift": "R"
+    },
+    "Gianluca": {
+      "shift": "R"
+    },
+    "Sara": {
+      "shift": "N"
+    }
+  },
+  "2025-08-24": {
+    "Nicolo": {
+      "shift": "N"
+    },
+    "Andrea": {
+      "shift": "N"
+    },
+    "Francesco": {
+      "shift": "N"
+    },
+    "Thomas": {
+      "shift": "N"
+    },
+    "Mario": {
+      "shift": "R"
+    },
+    "Luca": {
+      "shift": "R"
+    },
+    "Simone": {
+      "shift": "R"
+    },
+    "Gianluca": {
+      "shift": "R"
+    },
+    "Sara": {
+      "shift": "N"
+    }
+  },
+  "2025-08-25": {
+    "Nicolo": {
+      "shift": "R"
+    },
+    "Andrea": {
+      "shift": "R"
+    },
+    "Francesco": {
+      "shift": "R"
+    },
+    "Thomas": {
+      "shift": "R"
+    },
+    "Mario": {
+      "shift": "ON"
+    },
+    "Luca": {
+      "shift": "OP"
+    },
+    "Simone": {
+      "shift": "ON"
+    },
+    "Gianluca": {
+      "shift": "OP"
+    },
+    "Sara": {
+      "shift": "R"
+    }
+  },
+  "2025-08-26": {
+    "Nicolo": {
+      "shift": "R"
+    },
+    "Andrea": {
+      "shift": "R"
+    },
+    "Francesco": {
+      "shift": "R"
+    },
+    "Thomas": {
+      "shift": "R"
+    },
+    "Mario": {
+      "shift": "ON"
+    },
+    "Luca": {
+      "shift": "OP"
+    },
+    "Simone": {
+      "shift": "ON"
+    },
+    "Gianluca": {
+      "shift": "OP"
+    },
+    "Sara": {
+      "shift": "R"
+    }
+  },
+  "2025-08-27": {
+    "Nicolo": {
+      "shift": "R"
+    },
+    "Andrea": {
+      "shift": "R"
+    },
+    "Francesco": {
+      "shift": "R"
+    },
+    "Thomas": {
+      "shift": "R"
+    },
+    "Mario": {
+      "shift": "ON"
+    },
+    "Luca": {
+      "shift": "OP"
+    },
+    "Simone": {
+      "shift": "ON"
+    },
+    "Gianluca": {
+      "shift": "OP"
+    },
+    "Sara": {
+      "shift": "R"
+    }
+  },
+  "2025-08-28": {
+    "Nicolo": {
+      "shift": "R"
+    },
+    "Andrea": {
+      "shift": "R"
+    },
+    "Francesco": {
+      "shift": "R"
+    },
+    "Thomas": {
+      "shift": "R"
+    },
+    "Mario": {
+      "shift": "ON"
+    },
+    "Luca": {
+      "shift": "OP"
+    },
+    "Simone": {
+      "shift": "ON"
+    },
+    "Gianluca": {
+      "shift": "OP"
+    },
+    "Sara": {
+      "shift": "R"
+    }
+  },
+  "2025-08-29": {
+    "Nicolo": {
+      "shift": "D"
+    },
+    "Andrea": {
+      "shift": "D"
+    },
+    "Francesco": {
+      "shift": "D"
+    },
+    "Thomas": {
+      "shift": "D"
+    },
+    "Mario": {
+      "shift": "ON"
+    },
+    "Luca": {
+      "shift": "OP"
+    },
+    "Simone": {
+      "shift": "ON"
+    },
+    "Gianluca": {
+      "shift": "OP"
+    },
+    "Sara": {
+      "shift": "D"
+    }
+  },
+  "2025-08-30": {
+    "Nicolo": {
+      "shift": "D"
+    },
+    "Andrea": {
+      "shift": "D"
+    },
+    "Francesco": {
+      "shift": "D"
+    },
+    "Thomas": {
+      "shift": "D"
+    },
+    "Mario": {
+      "shift": "R"
+    },
+    "Luca": {
+      "shift": "R"
+    },
+    "Simone": {
+      "shift": "R"
+    },
+    "Gianluca": {
+      "shift": "R"
+    },
+    "Sara": {
+      "shift": "D"
+    }
+  },
+  "2025-08-31": {
+    "Nicolo": {
+      "shift": "D"
+    },
+    "Andrea": {
+      "shift": "D"
+    },
+    "Francesco": {
+      "shift": "D"
+    },
+    "Thomas": {
+      "shift": "D"
+    },
+    "Mario": {
+      "shift": "R"
+    },
+    "Luca": {
+      "shift": "R"
+    },
+    "Simone": {
+      "shift": "R"
+    },
+    "Gianluca": {
+      "shift": "R"
+    },
+    "Sara": {
+      "shift": "D"
+    }
+  }
+}

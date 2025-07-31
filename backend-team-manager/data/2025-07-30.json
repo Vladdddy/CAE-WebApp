@@ -1,0 +1,57 @@
+[
+  {
+    "text": "At the end of the training I realized that the EMM alarm was sounding, I tried to reset the error from IOS but it didn't work. \nI checked the displays of the control heads inside the cabinet and found the far-right DRIVER in fault (0). \nDisconnected and reconnected the connector with the purple and black wires on the right side of the DRIVER to reset the error and restored the motion system before the next session.\n",
+    "author": "Fabrizio",
+    "category": "troubleshooting",
+    "subcategory": "HW",
+    "extraDetail": "MOTION",
+    "simulator": "169",
+    "date": "2025-07-30",
+    "time": "10:00",
+    "title": "A169 EMM Drive fault 0"
+  },
+  {
+    "text": "performed Skybound and Parsing update, Simone tool update.",
+    "author": "Aharon",
+    "category": "routine task",
+    "subcategory": "",
+    "extraDetail": "",
+    "simulator": "109FFS",
+    "date": "2025-07-30",
+    "time": "15:00",
+    "title": "109 Skybound and Parsing"
+  },
+  {
+    "text": "performed BCKs from in use to hot spare\nCOMMS\nSOUND\nMCL\nFSS\nRADAR\nMISSION\n\nupdate Trim.one tool \n",
+    "author": "Aharon",
+    "category": "routine task",
+    "subcategory": "Backup",
+    "extraDetail": "",
+    "simulator": "189",
+    "date": "2025-07-30",
+    "time": "17:00",
+    "title": "PC backup"
+  },
+  {
+    "text": "performed backup set C for 189 that remained, which included: radar, mission, flight.qtgt, and mif. updated tool\n\n\n",
+    "author": "Leonardo",
+    "category": "routine task",
+    "subcategory": "Backup",
+    "extraDetail": "",
+    "simulator": "189",
+    "date": "2025-07-30",
+    "time": "02:00",
+    "title": "Set C Backup "
+  },
+  {
+    "text": "Modified dimensions of white internal part of \"I\" test button since the last printed needed to be trimmed with a cutter to fit in the button. Created two new variants of the aforementioned part with different heights (0.75mm and 1mm) to test for correct light brightness. Printed",
+    "author": "Luca T.",
+    "category": "others",
+    "subcategory": "Part test",
+    "extraDetail": "",
+    "simulator": "Others",
+    "date": "2025-07-31",
+    "time": "05:30",
+    "title": "MCDU \"I\" test button variants."
+  }
+]

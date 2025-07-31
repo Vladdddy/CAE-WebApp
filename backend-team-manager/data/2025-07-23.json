@@ -1,14 +1,122 @@
 [
   {
-    "text": "trytsry",
+    "text": "IO3 crash, reboot and reload",
     "author": "Gianluca",
+    "category": "troubleshooting",
+    "subcategory": "SW",
+    "extraDetail": "AVIONIC",
+    "simulator": "109FFS",
+    "date": "2025-07-23",
+    "time": "10:00",
+    "duration": "20 min",
+    "title": "Reset CPPDM"
+  },
+  {
+    "text": "turned off/on monitor",
+    "author": "Gianluca",
+    "category": "troubleshooting",
+    "subcategory": "HW",
+    "extraDetail": "IOS",
+    "simulator": "169",
+    "date": "2025-07-23",
+    "time": "10:30",
+    "duration": "5 min",
+    "title": "reset touch screen"
+  },
+  {
+    "text": "Visual PM\nneeded hard touch up on all four \"centers\" projectors. (BCR-BCL/TCR-TCL).\nRaised up brightness to keep homogeneity.\n\nFS40 barco brightness file uploaded in repository.",
+    "author": "Jonathan",
+    "category": "routine task",
+    "subcategory": "PM",
+    "extraDetail": "",
+    "simulator": "169",
+    "date": "2025-07-23",
+    "time": "21:00",
+    "duration": "1h",
+    "title": "Visual PM"
+  },
+  {
+    "text": "Found broken panel \"FM tactical communication system\", It already had a broken switch. The panel doesn't turn on. Logbook updated.",
+    "author": "Silvia",
+    "category": "troubleshooting",
+    "subcategory": "HW",
+    "extraDetail": "AVIONIC",
+    "simulator": "139#3",
+    "date": "2025-07-23",
+    "time": "23:00",
+    "duration": "00:10",
+    "title": "Check the switch on the broken panel and fill out the logbook"
+  },
+  {
+    "text": "During MR found IOS crashed, rebooted PC to solve.\nNo intercom in the headsets: COMM pc rebooted to solve",
+    "author": "Jonathan",
+    "category": "troubleshooting",
+    "subcategory": "SW",
+    "extraDetail": "IOS",
+    "simulator": "189",
+    "date": "2025-07-23",
+    "time": "02:30",
+    "duration": "1h30",
+    "title": "Morning Readiness and Flight Check"
+  },
+  {
+    "text": "nothing to report",
+    "author": "Jonathan",
+    "category": "routine task",
+    "subcategory": "MR",
+    "extraDetail": "",
+    "simulator": "169",
+    "date": "2025-07-23",
+    "time": "01:00",
+    "duration": "1",
+    "title": "Morning Readiness and Flight Check"
+  },
+  {
+    "text": "iniziata creazione del nuovo magazzino per le viti con le nuove cassettiere",
+    "author": "Aharon",
     "category": "others",
-    "subcategory": "Remote connection with support",
+    "subcategory": "",
+    "extraDetail": "",
+    "simulator": "Others",
+    "date": "2025-07-23",
+    "time": "01:00",
+    "duration": "04:00",
+    "title": "magazzino viti lab"
+  },
+  {
+    "text": "Performed PM",
+    "author": "Silvia",
+    "category": "routine task",
+    "subcategory": "PM",
+    "extraDetail": "",
+    "simulator": "139#3",
+    "date": "2025-07-23",
+    "time": "23:00",
+    "duration": "00:15",
+    "title": "Inspect and clean the motion actuator and base"
+  },
+  {
+    "text": "After performing the backup, I turned the PCs back on and reloaded the session from Launchpad without any issues. I attempted to place the Oil Rig, but it didn’t appear either on the screen or on the map. I tried performing a total reset, but the simulator was stuck in reposition mode with the cockpit powered on (even though I hadn’t turned it on yet and engines and batteries were off). I attempted a full reload, but after reloading the session the IOS screens were no longer working. I tried reloading the Instructor + IOS, but we found the IOS PC was stuck. After rebooting it it worked, and I was able to reposition the entity. However, when I tried to activate the control loading, the errors 'controls abort request' and '24V safety loop relay disagree at CTL-1CPAD3U4' appeared. I tried resetting both from the IOS screen and from the MCL logic without success, and also tried power cycling the CPAD, again without success. I unloaded the MCL node, rebooted the PC, reloaded node, and it all worked",
+    "author": "Silvia",
+    "category": "routine task",
+    "subcategory": "MR",
+    "extraDetail": "",
+    "simulator": "139#3",
+    "date": "2025-07-23",
+    "time": "01:00",
+    "duration": "01:30",
+    "title": "MR Issues"
+  },
+  {
+    "text": "While loading configuration, Interfaces abnormally loaded. Rebooted CPPDM to solve.\nCleaned Pads under sim and HPU, noticed a small oil leackage under jack 3.",
+    "author": "Silvia",
+    "category": "routine task",
+    "subcategory": "MR",
     "extraDetail": "",
     "simulator": "139#1",
     "date": "2025-07-23",
-    "time": "02:00",
-    "duration": "3",
-    "title": "thyy"
+    "time": "03:00",
+    "duration": "01:00",
+    "title": "MR issues"
   }
 ]

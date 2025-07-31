@@ -1,63 +1,5 @@
 {
   "taskNotes": {
-    "2": [
-      {
-        "text": "Sara ha modificato la task",
-        "author": "SYSTEM",
-        "timestamp": "2025-07-25T14:55:28.595Z",
-        "isSystem": true,
-        "isSimple": true
-      },
-      {
-        "text": "Sara ha modificato la task",
-        "author": "SYSTEM",
-        "timestamp": "2025-07-28T10:14:41.121Z",
-        "isSystem": true,
-        "isSimple": true
-      },
-      {
-        "text": "Sara ha modificato la task",
-        "author": "SYSTEM",
-        "timestamp": "2025-07-28T10:14:41.999Z",
-        "isSystem": true,
-        "isSimple": true
-      },
-      {
-        "text": "Sara ha modificato la task",
-        "author": "SYSTEM",
-        "timestamp": "2025-07-28T10:14:43.404Z",
-        "isSystem": true,
-        "isSimple": true
-      },
-      {
-        "text": "Sara ha modificato la task",
-        "author": "SYSTEM",
-        "timestamp": "2025-07-28T10:14:44.259Z",
-        "isSystem": true,
-        "isSimple": true
-      },
-      {
-        "text": "Sara ha modificato la task",
-        "author": "SYSTEM",
-        "timestamp": "2025-07-28T10:14:45.705Z",
-        "isSystem": true,
-        "isSimple": true
-      },
-      {
-        "text": "Sara ha modificato la task",
-        "author": "SYSTEM",
-        "timestamp": "2025-07-28T10:14:46.956Z",
-        "isSystem": true,
-        "isSimple": true
-      },
-      {
-        "text": "Sara ha modificato la task",
-        "author": "SYSTEM",
-        "timestamp": "2025-07-28T10:56:03.464Z",
-        "isSystem": true,
-        "isSimple": true
-      }
-    ],
     "50": [
       {
         "text": "sadsdasd",
@@ -78,325 +20,692 @@
         "updatedAt": "2025-07-21T15:20:22.791Z"
       }
     ],
-    "66": [
-      {
-        "text": "prova nota",
-        "author": "Gianluca",
-        "timestamp": "2025-07-15T07:43:51.716Z",
-        "updatedAt": "2025-07-22T13:14:40.237Z"
-      }
-    ],
-    "73": [
-      {
-        "text": "Sara ha modificato la task",
-        "author": "SYSTEM",
-        "timestamp": "2025-07-25T14:50:14.512Z",
-        "isSystem": true,
-        "isSimple": true
-      },
-      {
-        "text": "Sara ha modificato la task",
-        "author": "SYSTEM",
-        "timestamp": "2025-07-25T14:55:58.886Z",
-        "isSystem": true,
-        "isSimple": true
-      },
-      {
-        "text": "fsdfs",
-        "author": "Sara",
-        "timestamp": "2025-07-25T15:01:03.124Z"
-      },
-      {
-        "text": "Sara ha modificato la task",
-        "author": "SYSTEM",
-        "timestamp": "2025-07-25T15:06:42.571Z",
-        "isSystem": true,
-        "isSimple": true
-      },
-      {
-        "text": "Sara ha modificato la task",
-        "author": "SYSTEM",
-        "timestamp": "2025-07-25T15:06:55.421Z",
-        "isSystem": true,
-        "isSimple": true
-      },
-      {
-        "text": "Sara ha modificato la task",
-        "author": "SYSTEM",
-        "timestamp": "2025-07-25T15:12:15.460Z",
-        "isSystem": true,
-        "isSimple": true
-      }
-    ],
-    "74": [
-      {
-        "text": "ciao",
-        "author": "Gianluca",
-        "timestamp": "2025-07-22T11:21:09.203Z"
-      },
-      {
-        "text": "ghfg",
-        "author": "Gianluca",
-        "timestamp": "2025-07-25T12:22:36.243Z"
-      }
-    ],
     "75": [
       {
-        "text": "uiuiiuuiuio",
-        "author": "Gianluca",
-        "timestamp": "2025-07-29T07:41:28.259Z"
+        "text": "posticipato",
+        "author": "Marco Prella",
+        "timestamp": "2025-07-23T07:13:35.138Z"
+      },
+      {
+        "text": "Performed backup, updated TrimOne",
+        "author": "Silvia",
+        "timestamp": "2025-07-24T02:21:55.917Z",
+        "updatedAt": "2025-07-24T02:23:12.721Z"
       }
     ],
-    "81": [
+    "76": [
       {
-        "text": "fngfn",
+        "text": "completato stampa",
         "author": "Gianluca",
-        "timestamp": "2025-07-29T07:47:54.618Z"
+        "timestamp": "2025-07-22T13:28:12.701Z"
+      }
+    ],
+    "80": [
+      {
+        "text": "in corso, manca set c",
+        "author": "Marco Prella",
+        "timestamp": "2025-07-23T07:13:49.977Z"
       }
     ],
     "83": [
       {
-        "text": "Sara ha modificato la task",
-        "author": "SYSTEM",
-        "timestamp": "2025-07-25T14:34:43.083Z",
-        "isSystem": true
-      },
-      {
-        "text": "Sara ha modificato la task",
-        "author": "SYSTEM",
-        "timestamp": "2025-07-25T14:35:25.862Z",
-        "isSystem": true
-      },
-      {
-        "text": "Sara ha modificato la task",
-        "author": "SYSTEM",
-        "timestamp": "2025-07-25T14:35:34.959Z",
-        "isSystem": true
-      },
-      {
-        "text": "[ Sara ha modificato la task ]",
-        "author": "SYSTEM",
-        "timestamp": "2025-07-25T14:39:01.331Z",
-        "isSystem": true
-      },
-      {
-        "text": "[ Sara ha modificato la task ]",
-        "author": "SYSTEM",
-        "timestamp": "2025-07-25T14:39:37.157Z",
-        "isSystem": true
-      },
-      {
-        "text": "[ Sara ha modificato la task ]",
-        "author": "SYSTEM",
-        "timestamp": "2025-07-25T14:39:38.281Z",
-        "isSystem": true
-      },
-      {
-        "text": "[ Sara ha modificato la task ]",
-        "author": "SYSTEM",
-        "timestamp": "2025-07-25T14:44:21.380Z",
-        "isSystem": true
-      },
-      {
-        "text": "Sara ha modificato la task",
-        "author": "SYSTEM",
-        "timestamp": "2025-07-25T15:00:55.505Z",
-        "isSystem": true,
-        "isSimple": true
-      },
-      {
-        "text": "Sara ha modificato la task",
-        "author": "SYSTEM",
-        "timestamp": "2025-07-25T15:13:21.292Z",
-        "isSystem": true,
-        "isSimple": true
+        "text": "Supported connection from 03:00 to 04:00, all good",
+        "author": "Silvia",
+        "timestamp": "2025-07-24T02:23:44.973Z"
       }
     ],
     "85": [
       {
-        "text": "Sara ha modificato la task",
+        "text": "Performed backup, added time of execution details on TrimOne",
+        "author": "Silvia",
+        "timestamp": "2025-07-24T02:22:52.657Z"
+      }
+    ],
+    "102": [
+      {
+        "text": "Michele ha modificato la task",
         "author": "SYSTEM",
-        "timestamp": "2025-07-25T14:56:14.440Z",
+        "timestamp": "2025-07-28T18:54:17.034Z",
         "isSystem": true,
         "isSimple": true
       },
       {
-        "text": "Sara ha modificato la task",
+        "text": "Michele ha modificato la task",
         "author": "SYSTEM",
-        "timestamp": "2025-07-25T15:00:48.232Z",
+        "timestamp": "2025-07-28T18:54:19.427Z",
         "isSystem": true,
         "isSimple": true
       },
       {
-        "text": "Sara ha modificato la task",
+        "text": "Michele ha modificato la task",
         "author": "SYSTEM",
-        "timestamp": "2025-07-25T15:12:26.097Z",
+        "timestamp": "2025-07-28T18:54:20.320Z",
         "isSystem": true,
         "isSimple": true
       },
       {
-        "text": "Sara ha modificato la task",
+        "text": "Michele ha modificato la task",
         "author": "SYSTEM",
-        "timestamp": "2025-07-25T15:12:39.259Z",
+        "timestamp": "2025-07-28T18:54:22.440Z",
         "isSystem": true,
         "isSimple": true
       },
       {
-        "text": "Sara ha modificato la task",
+        "text": "Michele ha modificato la task",
         "author": "SYSTEM",
-        "timestamp": "2025-07-25T15:13:49.063Z",
+        "timestamp": "2025-07-28T18:54:23.262Z",
         "isSystem": true,
         "isSimple": true
       },
       {
-        "text": "Sara ha modificato la task",
+        "text": "Michele ha modificato la task",
         "author": "SYSTEM",
-        "timestamp": "2025-07-25T15:16:27.544Z",
+        "timestamp": "2025-07-28T18:54:24.055Z",
         "isSystem": true,
         "isSimple": true
       },
       {
-        "text": "Sara ha modificato la task",
+        "text": "Michele ha modificato la task",
         "author": "SYSTEM",
-        "timestamp": "2025-07-28T10:13:25.939Z",
+        "timestamp": "2025-07-28T18:54:25.043Z",
         "isSystem": true,
         "isSimple": true
       },
       {
-        "text": "Sara ha modificato la task",
+        "text": "Michele ha modificato la task",
         "author": "SYSTEM",
-        "timestamp": "2025-07-28T10:13:26.729Z",
+        "timestamp": "2025-07-28T18:54:26.219Z",
         "isSystem": true,
         "isSimple": true
       },
       {
-        "text": "Sara ha modificato la task",
+        "text": "Michele ha modificato la task",
         "author": "SYSTEM",
-        "timestamp": "2025-07-28T10:13:30.636Z",
+        "timestamp": "2025-07-28T18:54:32.583Z",
         "isSystem": true,
         "isSimple": true
       },
       {
-        "text": "Sara ha modificato la task",
+        "text": "Michele ha modificato la task",
         "author": "SYSTEM",
-        "timestamp": "2025-07-28T10:13:31.582Z",
+        "timestamp": "2025-07-28T18:54:33.596Z",
         "isSystem": true,
         "isSimple": true
       },
       {
-        "text": "Sara ha modificato la task",
+        "text": "Michele ha modificato la task",
         "author": "SYSTEM",
-        "timestamp": "2025-07-28T10:13:32.111Z",
+        "timestamp": "2025-07-28T18:54:34.458Z",
+        "isSystem": true,
+        "isSimple": true
+      }
+    ],
+    "103": [
+      {
+        "text": "Daniele ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-28T20:11:59.165Z",
         "isSystem": true,
         "isSimple": true
       },
       {
-        "text": "Sara ha modificato la task",
+        "text": "Daniele ha modificato la task",
         "author": "SYSTEM",
-        "timestamp": "2025-07-28T10:13:32.609Z",
+        "timestamp": "2025-07-28T20:12:01.652Z",
         "isSystem": true,
         "isSimple": true
       },
       {
-        "text": "Sara ha modificato la task",
+        "text": "Daniele ha modificato la task",
         "author": "SYSTEM",
-        "timestamp": "2025-07-28T10:15:19.524Z",
+        "timestamp": "2025-07-29T03:20:14.071Z",
         "isSystem": true,
         "isSimple": true
       },
       {
-        "text": "Sara ha modificato la task",
+        "text": "Daniele ha modificato la task",
         "author": "SYSTEM",
-        "timestamp": "2025-07-28T10:15:25.195Z",
+        "timestamp": "2025-07-29T03:20:15.265Z",
+        "isSystem": true,
+        "isSimple": true
+      }
+    ],
+    "104": [
+      {
+        "text": "Leonardo ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-30T02:26:28.343Z",
         "isSystem": true,
         "isSimple": true
       },
       {
-        "text": "Sara ha modificato la task",
+        "text": "Leonardo ha modificato la task",
         "author": "SYSTEM",
-        "timestamp": "2025-07-28T10:15:25.994Z",
+        "timestamp": "2025-07-30T02:26:30.046Z",
         "isSystem": true,
         "isSimple": true
       },
       {
-        "text": "Sara ha modificato la task",
+        "text": "performed BCKs , update Trim.one tool",
+        "author": "Leonardo",
+        "timestamp": "2025-07-30T02:27:03.404Z"
+      }
+    ],
+    "105": [
+      {
+        "text": "Luca T. ha modificato la task",
         "author": "SYSTEM",
-        "timestamp": "2025-07-28T10:15:26.344Z",
+        "timestamp": "2025-07-30T02:23:09.197Z",
         "isSystem": true,
         "isSimple": true
       },
       {
-        "text": "Sara ha modificato la task",
+        "text": "BCKs performed. After powering on OPS PC, found old processes still on (green) even with simulation unloaded. Performed a package sync but LP2 stuck with “Updating Packages” on all nodes. Closed and re-opened LP2, checked relative services and restarted them all but same situation observed. Loaded simulation but “Host” PC abnormally loaded. Unloaded node, rebooted PC and reloaded to solve Host Pc issue, but still mixed processes are present. Synchronized packages again and some processes were updated and cleared. Testes sim and it works fine. Found an issue on TrimOne: after changing date and active set on relevant simulator, PCs with set “C” ready to be updated turned red as they were supposed to. Closed set “C” of OPS but when re-opened the tool, DB wasn’t red and no backup of OPS was recorded. While trying to modify again dates and active set, tool stuck and when opened again, no BKP was visible on A139#3. Tool partially updated. Set \"C\" of both PCs performed. Active sets are \"B\".",
+        "author": "Luca T.",
+        "timestamp": "2025-07-30T04:23:25.713Z",
+        "updatedAt": "2025-07-30T04:27:04.658Z"
+      }
+    ],
+    "107": [
+      {
+        "text": "Daniele ha modificato la task",
         "author": "SYSTEM",
-        "timestamp": "2025-07-28T10:15:26.499Z",
+        "timestamp": "2025-07-28T18:54:15.615Z",
         "isSystem": true,
         "isSimple": true
       },
       {
-        "text": "Sara ha modificato la task",
+        "text": "Daniele ha modificato la task",
         "author": "SYSTEM",
-        "timestamp": "2025-07-28T10:15:26.675Z",
+        "timestamp": "2025-07-28T18:54:17.228Z",
         "isSystem": true,
         "isSimple": true
       },
       {
-        "text": "Sara ha modificato la task",
+        "text": "Daniele ha modificato la task",
         "author": "SYSTEM",
-        "timestamp": "2025-07-28T10:15:27.816Z",
+        "timestamp": "2025-07-28T18:54:18.423Z",
         "isSystem": true,
         "isSimple": true
       },
       {
-        "text": "Sara ha modificato la task",
+        "text": "Daniele ha modificato la task",
         "author": "SYSTEM",
-        "timestamp": "2025-07-28T10:56:19.279Z",
+        "timestamp": "2025-07-28T18:54:21.409Z",
         "isSystem": true,
         "isSimple": true
       },
       {
-        "text": "Sara ha modificato la task",
+        "text": "Daniele ha modificato la task",
         "author": "SYSTEM",
-        "timestamp": "2025-07-28T11:00:57.173Z",
+        "timestamp": "2025-07-28T18:54:24.142Z",
         "isSystem": true,
         "isSimple": true
       },
       {
-        "text": "Sara ha modificato la task",
+        "text": "test",
+        "author": "Gianluca",
+        "timestamp": "2025-07-28T20:15:04.074Z"
+      },
+      {
+        "text": "Daniele ha modificato la task",
         "author": "SYSTEM",
-        "timestamp": "2025-07-28T11:02:46.923Z",
+        "timestamp": "2025-07-29T03:20:02.875Z",
         "isSystem": true,
         "isSimple": true
       },
       {
-        "text": "Sara ha modificato la task",
+        "text": "Daniele ha modificato la task",
         "author": "SYSTEM",
-        "timestamp": "2025-07-28T11:02:47.063Z",
+        "timestamp": "2025-07-29T03:20:04.846Z",
+        "isSystem": true,
+        "isSimple": true
+      }
+    ],
+    "108": [
+      {
+        "text": "Leonardo ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-29T01:33:45.816Z",
         "isSystem": true,
         "isSimple": true
       },
       {
-        "text": "Sara ha modificato la task",
+        "text": "Leonardo ha modificato la task",
         "author": "SYSTEM",
-        "timestamp": "2025-07-28T11:02:47.861Z",
+        "timestamp": "2025-07-29T01:33:47.131Z",
+        "isSystem": true,
+        "isSimple": true
+      }
+    ],
+    "109": [
+      {
+        "text": "Fabrizio ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-28T13:10:50.220Z",
+        "isSystem": true,
+        "isSimple": true
+      }
+    ],
+    "110": [
+      {
+        "text": "Massimo ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-28T13:10:39.366Z",
+        "isSystem": true,
+        "isSimple": true
+      }
+    ],
+    "111": [
+      {
+        "text": "Aharon ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-29T16:21:55.784Z",
+        "isSystem": true,
+        "isSimple": true
+      }
+    ],
+    "112": [
+      {
+        "text": "Aharon ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-30T16:46:00.425Z",
+        "isSystem": true,
+        "isSimple": true
+      }
+    ],
+    "113": [
+      {
+        "text": "Fabrizio ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-30T16:45:49.290Z",
         "isSystem": true,
         "isSimple": true
       },
       {
-        "text": "Sara ha modificato la task",
+        "text": "Fabrizio ha modificato la task",
         "author": "SYSTEM",
-        "timestamp": "2025-07-28T11:03:12.494Z",
+        "timestamp": "2025-07-30T16:45:56.018Z",
         "isSystem": true,
         "isSimple": true
       },
       {
-        "text": "sas",
-        "author": "Sara",
-        "timestamp": "2025-07-28T11:03:19.334Z"
+        "text": "Fabrizio ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-30T16:45:58.686Z",
+        "isSystem": true,
+        "isSimple": true
       },
       {
-        "text": "Sara ha modificato la task",
+        "text": "Fabrizio ha modificato la task",
         "author": "SYSTEM",
-        "timestamp": "2025-07-28T11:05:40.096Z",
+        "timestamp": "2025-07-30T16:46:03.681Z",
+        "isSystem": true,
+        "isSimple": true
+      }
+    ],
+    "116": [
+      {
+        "text": "Visual:\nBrightness : OK - file excel in FS40 folder\nGeometry Touch Up CR-CL-C",
+        "author": "Jonathan",
+        "timestamp": "2025-07-29T19:31:11.350Z",
+        "updatedAt": "2025-07-29T19:31:50.645Z"
+      },
+      {
+        "text": "Jonathan ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-30T00:17:47.490Z",
+        "isSystem": true,
+        "isSimple": true
+      },
+      {
+        "text": "Jonathan ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-30T00:17:55.025Z",
+        "isSystem": true,
+        "isSimple": true
+      }
+    ],
+    "117": [
+      {
+        "text": "Jonathan ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-30T02:27:21.734Z",
+        "isSystem": true,
+        "isSimple": true
+      },
+      {
+        "text": "Jonathan ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-30T02:27:23.310Z",
+        "isSystem": true,
+        "isSimple": true
+      }
+    ],
+    "118": [
+      {
+        "text": "Leonardo ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-30T02:25:30.638Z",
+        "isSystem": true,
+        "isSimple": true
+      },
+      {
+        "text": "Leonardo ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-30T02:25:31.839Z",
+        "isSystem": true,
+        "isSimple": true
+      },
+      {
+        "text": "found interface not working correctly , rebooted cppdms to solve",
+        "author": "Leonardo",
+        "timestamp": "2025-07-30T02:26:08.123Z"
+      }
+    ],
+    "119": [
+      {
+        "text": "Jonathan ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-30T00:21:54.473Z",
+        "isSystem": true,
+        "isSimple": true
+      },
+      {
+        "text": "Jonathan ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-30T00:21:55.532Z",
+        "isSystem": true,
+        "isSimple": true
+      }
+    ],
+    "120": [
+      {
+        "text": "Jonathan ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-30T02:27:29.625Z",
+        "isSystem": true,
+        "isSimple": true
+      },
+      {
+        "text": "Jonathan ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-30T02:27:30.857Z",
+        "isSystem": true,
+        "isSimple": true
+      }
+    ],
+    "121": [
+      {
+        "text": "Luca T. ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-29T19:20:14.935Z",
+        "isSystem": true,
+        "isSimple": true
+      },
+      {
+        "text": "Luca T. ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-29T19:20:18.422Z",
+        "isSystem": true,
+        "isSimple": true
+      },
+      {
+        "text": "During simulation unloading, GRA5 crashed (red crossed). Rebooted PC to solve.",
+        "author": "Luca T.",
+        "timestamp": "2025-07-29T19:21:11.697Z"
+      }
+    ],
+    "122": [
+      {
+        "text": "Cleaned and degreased the actuator. I placed a white paper pad around the actuator to see where the oil spill originates.\n\nThe drain tube was found a little bit clogged (just Oil). Blown with air to unclog.",
+        "author": "Jonathan",
+        "timestamp": "2025-07-30T00:21:36.120Z",
+        "updatedAt": "2025-07-30T02:27:00.547Z"
+      },
+      {
+        "text": "Jonathan ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-30T00:21:41.528Z",
+        "isSystem": true,
+        "isSimple": true
+      },
+      {
+        "text": "Jonathan ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-30T02:21:29.599Z",
+        "isSystem": true,
+        "isSimple": true
+      }
+    ],
+    "123": [
+      {
+        "text": "Jonathan ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-30T19:21:11.830Z",
+        "isSystem": true,
+        "isSimple": true
+      },
+      {
+        "text": "Jonathan ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-31T03:04:09.654Z",
+        "isSystem": true,
+        "isSimple": true
+      },
+      {
+        "text": "Jonathan ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-31T03:04:10.630Z",
+        "isSystem": true,
+        "isSimple": true
+      },
+      {
+        "text": "Jonathan ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-31T03:04:11.885Z",
+        "isSystem": true,
+        "isSimple": true
+      }
+    ],
+    "124": [
+      {
+        "text": "Leonardo ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-30T19:29:19.155Z",
+        "isSystem": true,
+        "isSimple": true
+      },
+      {
+        "text": "Leonardo ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-30T22:40:19.979Z",
+        "isSystem": true,
+        "isSimple": true
+      }
+    ],
+    "125": [
+      {
+        "text": "Leonardo ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-30T19:29:23.963Z",
+        "isSystem": true,
+        "isSimple": true
+      },
+      {
+        "text": "Leonardo ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-30T22:40:22.772Z",
+        "isSystem": true,
+        "isSimple": true
+      }
+    ],
+    "126": [
+      {
+        "text": "Leonardo ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-30T19:29:26.567Z",
+        "isSystem": true,
+        "isSimple": true
+      },
+      {
+        "text": "Leonardo ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-30T22:40:25.487Z",
+        "isSystem": true,
+        "isSimple": true
+      }
+    ],
+    "127": [
+      {
+        "text": "Jonathan ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-31T03:04:15.640Z",
+        "isSystem": true,
+        "isSimple": true
+      },
+      {
+        "text": "Jonathan ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-31T03:04:16.575Z",
+        "isSystem": true,
+        "isSimple": true
+      }
+    ],
+    "128": [
+      {
+        "text": "Luca T. ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-30T23:26:02.993Z",
+        "isSystem": true,
+        "isSimple": true
+      },
+      {
+        "text": "Luca T. ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-30T23:26:04.485Z",
+        "isSystem": true,
+        "isSimple": true
+      },
+      {
+        "text": "Performed visual PM:\n- Performed geometry null of TCR, TCL, BCR, BCL channels. Small corrections on remaining channels.\n- Brightness ok, form filled.\n- Colours ok.",
+        "author": "Luca T.",
+        "timestamp": "2025-07-30T23:28:37.094Z"
+      }
+    ],
+    "129": [
+      {
+        "text": "Leonardo ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-31T03:04:13.443Z",
+        "isSystem": true,
+        "isSimple": true
+      },
+      {
+        "text": "Leonardo ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-31T03:04:14.356Z",
+        "isSystem": true,
+        "isSimple": true
+      }
+    ],
+    "130": [
+      {
+        "text": "Jonathan ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-31T03:03:59.891Z",
+        "isSystem": true,
+        "isSimple": true
+      },
+      {
+        "text": "Jonathan ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-31T03:04:00.799Z",
+        "isSystem": true,
+        "isSimple": true
+      },
+      {
+        "text": "Found Recorder 1 Red cross. Recording on IOS was waiting for nodes.\nRebooted and reloaded simulation to solve.",
+        "author": "Jonathan",
+        "timestamp": "2025-07-31T04:56:48.080Z"
+      }
+    ],
+    "131": [
+      {
+        "text": "Luca T. ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-30T23:28:45.006Z",
+        "isSystem": true,
+        "isSimple": true
+      },
+      {
+        "text": "Luca T. ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-30T23:28:46.558Z",
+        "isSystem": true,
+        "isSimple": true
+      },
+      {
+        "text": "Debrief cockpit video slightly delayed respect to the rest of the recording. Issue known and tech log already filled.\nRemoved \"Bad Elf U/S\" tech log entry.",
+        "author": "Luca T.",
+        "timestamp": "2025-07-30T23:32:39.800Z"
+      }
+    ],
+    "132": [
+      {
+        "text": "Leonardo ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-31T03:04:26.324Z",
+        "isSystem": true,
+        "isSimple": true
+      },
+      {
+        "text": "Leonardo ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-31T03:04:28.043Z",
+        "isSystem": true,
+        "isSimple": true
+      },
+      {
+        "text": "during MR,  found PFD not functioning correctly, showing a blue screen. After reloading the 'avionic', 'display', and 'radar' nodes, the issue was resolved",
+        "author": "Leonardo",
+        "timestamp": "2025-07-31T03:08:21.819Z"
+      }
+    ],
+    "133": [
+      {
+        "text": "Luca T. ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-30T23:24:27.152Z",
+        "isSystem": true,
+        "isSimple": true
+      },
+      {
+        "text": "Luca T. ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-30T23:24:28.486Z",
+        "isSystem": true,
+        "isSimple": true
+      },
+      {
+        "text": "Tested both devices: plugged to data cable and tested with Bad Elf app. It connects to iPad normally and sends data in accordance with flight instruments.\nFilled IIR of both and left installed S/N: 520626.\nTech log updated.",
+        "author": "Luca T.",
+        "timestamp": "2025-07-30T23:25:46.753Z",
+        "updatedAt": "2025-07-30T23:33:36.079Z"
+      }
+    ],
+    "134": [
+      {
+        "text": "Leonardo ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-30T19:20:54.334Z",
+        "isSystem": true,
+        "isSimple": true
+      },
+      {
+        "text": "Leonardo ha modificato la task",
+        "author": "SYSTEM",
+        "timestamp": "2025-07-30T19:21:03.410Z",
         "isSystem": true,
         "isSimple": true
       }
@@ -434,13 +743,6 @@
         "text": "PROVAA",
         "author": "Gianluca",
         "timestamp": "2025-07-18T11:10:52.951Z"
-      }
-    ],
-    "logbook_20250725_1400_Sara_ghhgfsh_109FFS_routinet_uyhba": [
-      {
-        "text": "hgfhgfhf",
-        "author": "Gianluca",
-        "timestamp": "2025-07-25T07:24:51.427Z"
       }
     ]
   }
