@@ -1,22 +1,15 @@
-# 🏔️ Sportesta Noleggi – Gestione Noleggio Attrezzature
+Team Tech Manager è una web app per la gestione dei turni, dei task e del logbook di un team tecnico. Il progetto è suddiviso in due parti principali:
 
-Applicazione web per la gestione dei noleggi sportivi (sci, snowboard, ciaspole e abbigliamento).  
-Progettata per semplificare il flusso di lavoro del personale, rendere più rapida la registrazione dei clienti e la stampa delle ricevute, oltre a mantenere un archivio ordinato dei noleggi passati.
+- **backend-team-manager/**: backend Node.js/Express per la gestione di API, autenticazione, dati e file.
+- **team-tech-manager/**: frontend React per l'interfaccia utente.
 
----
+## Dipendenze principali
 
-## 🔧 Funzionalità principali
+- **Backend**: Express, dotenv, cors, JWT, multer (upload immagini)
+- **Frontend**: React, react-router-dom, html2pdf.js, xlsx, Tailwind CSS
 
-- **📋 Homepage**: elenco dei noleggi attivi con date e scadenze evidenziate.  
-- **📂 Dettagli dinamici**: apertura in stile *accordion* con info cliente, attrezzatura e prezzi.  
-- **📝 Form intuitivo**: compilazione rapida di un nuovo noleggio, con ricevuta generata automaticamente.  
-- **📦 Archivio noleggi**: storico completo con possibilità di filtraggio.
+## Note
 
----
-
-## 💻 Tecnologie utilizzate
-
-- **React** (frontend SPA)
-- **Bootstrap** (stile)
-- **Express + Supabase** (API e Database – opzionale)
-- **Vercel + Render** (deploy)
+- Per la gestione delle immagini, i file vengono salvati nella cartella `uploads/` del backend.
+- I dati dei task, logbook e turni sono salvati in file JSON nella cartella `data/`.
+- Per la produzione, assicurati di configurare correttamente le variabili d'ambiente e la sicurezza.
