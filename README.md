@@ -1,4 +1,4 @@
-Team Tech Manager è una web app per la gestione dei turni, dei task e del logbook di un team tecnico. Il progetto è suddiviso in due parti principali:
+## CAE-WebApp è una web app per la gestione dei turni, dei task e del logbook di un team tecnico. Il progetto è suddiviso in due parti principali:
 
 - **backend-team-manager/**: backend Node.js/Express per la gestione di API, autenticazione, dati e file.
 - **team-tech-manager/**: frontend React per l'interfaccia utente.
