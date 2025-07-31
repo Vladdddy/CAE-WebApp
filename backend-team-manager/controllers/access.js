@@ -12,13 +12,13 @@ app.use(express.json());
 
 app.use(
     cors({
-        origin: "http://localhost:5000",
+        origin: process.env.REACT_APP_API_URL,
         credentials: true,
     })
 );
 
 app.listen(3000, () => {
-    console.log("Server running on http://localhost:3000");
+    console.log("Server is running on port 3000");
 });
 
 // Login check
