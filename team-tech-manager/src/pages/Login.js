@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Logo from "../assets/cae3.png";
+import Logo from "../assets/logo.png";
 import Modal from "../components/Modal";
 
 export default function Login() {
