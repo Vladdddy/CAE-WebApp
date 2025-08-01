@@ -570,14 +570,14 @@
     "id": 88,
     "title": "FM tactical communication system investigation",
     "description": "",
-    "assignedTo": "Gianluca",
+    "assignedTo": "Non assegnare",
     "simulator": "139#3",
     "category": "",
     "subcategory": "",
     "extraDetail": "",
-    "status": "da definire",
-    "date": null,
-    "time": null
+    "status": "completato",
+    "date": "2025-08-01",
+    "time": "08:00"
   },
   {
     "id": 89,
@@ -1137,5 +1137,47 @@
     "status": "completato",
     "date": "2025-07-30",
     "time": "23:00"
+  },
+  {
+    "id": 135,
+    "title": "rretertrdtdr",
+    "description": "",
+    "assignedTo": "Luca T.",
+    "simulator": "",
+    "category": "",
+    "subcategory": "",
+    "extraDetail": "",
+    "status": "riassegnato",
+    "date": "2025-07-31",
+    "time": "23:00",
+    "images": []
+  },
+  {
+    "id": 136,
+    "title": "Prova",
+    "description": "",
+    "assignedTo": "Gianluca",
+    "simulator": "",
+    "category": "",
+    "subcategory": "",
+    "extraDetail": "",
+    "status": "da definire",
+    "date": null,
+    "time": null,
+    "images": []
+  },
+  {
+    "id": 137,
+    "title": "fdayhfdah",
+    "description": "sdnsd",
+    "assignedTo": "Mario",
+    "simulator": "109FFS",
+    "category": "routine task",
+    "subcategory": "MR",
+    "extraDetail": "",
+    "status": "completato",
+    "date": "2025-08-01",
+    "time": "23:00",
+    "images": []
   }
 ]

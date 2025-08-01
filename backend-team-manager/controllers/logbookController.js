@@ -107,7 +107,46 @@ exports.getEntriesByDate = (req, res) => {
 
 exports.saveEntriesByDate = (req, res) => {
     const { date } = req.params;
-    const newEntries = req.body;
+
+    // Handle both FormData (with images) and regular JSON (without images)
+    let newEntries;
+    let images = [];
+
+    if (req.body.entries) {
+        // FormData submission - entries is a JSON string
+        try {
+            newEntries = JSON.parse(req.body.entries);
+        } catch (error) {
+            return res
+                .status(400)
+                .json({ error: "Invalid entries JSON format" });
+        }
+
+        // Handle uploaded images
+        images = req.files
+            ? req.files.map((file) => ({
+                  filename: file.filename,
+                  originalname: file.originalname,
+                  path: file.path,
+                  size: file.size,
+                  uploadDate: new Date().toISOString(),
+              }))
+            : [];
+    } else {
+        // Regular JSON submission - entries are directly in req.body
+        newEntries = req.body;
+    }
+
+    // If there are images, add them to the last entry (the newly created one)
+    if (images.length > 0 && newEntries.length > 0) {
+        // Add images to the last entry (assuming it's the newly created one)
+        const lastEntryIndex = newEntries.length - 1;
+        if (!newEntries[lastEntryIndex].images) {
+            newEntries[lastEntryIndex].images = [];
+        }
+        newEntries[lastEntryIndex].images.push(...images);
+    }
+
     const filePath = getFilePath(date);
 
     try {
@@ -143,6 +182,7 @@ exports.saveEntriesByDate = (req, res) => {
         res.status(200).json({
             message: "Entries salvate con successo",
             deletedNotes: keysToDelete.length,
+            imagesUploaded: images.length,
         });
     } catch (err) {
         console.error("Errore nel salvataggio:", err);

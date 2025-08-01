@@ -61,6 +61,7 @@ export default function Logbook() {
     const [formDate, setFormDate] = useState(date);
     const [formTime, setFormTime] = useState("08:00");
     const [editIndex, setEditIndex] = useState(null);
+    const [image, setImage] = useState(); // Image state for photo upload
 
     const [search, setSearch] = useState("");
     const [filterCategory, setFilterCategory] = useState("");
@@ -551,6 +552,7 @@ export default function Logbook() {
                             originalEntry: entry,
                             originalText: entry.text,
                             notes: entryNotes,
+                            images: entry.images || [], // Include images from the entry
                         });
                     });
                 }
@@ -1333,16 +1335,40 @@ export default function Logbook() {
         setShowFilterResults(false);
         setFilteredEntries(entries);
     };
-    const saveEntries = async (newEntries, isNewEntry = false) => {
+    const saveEntries = async (
+        newEntries,
+        isNewEntry = false,
+        imageFile = null
+    ) => {
         const token = localStorage.getItem("authToken");
-        await fetch(`${API}/api/logbook/${date}`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(newEntries),
-        });
+
+        let response;
+        if (imageFile) {
+            // Create FormData to handle file uploads
+            const formData = new FormData();
+            formData.append("entries", JSON.stringify(newEntries));
+            formData.append("images", imageFile);
+
+            response = await fetch(`${API}/api/logbook/${date}`, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    // Don't set Content-Type header - let the browser set it with boundary for FormData
+                },
+                body: formData,
+            });
+        } else {
+            // Regular JSON submission when no image
+            response = await fetch(`${API}/api/logbook/${date}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(newEntries),
+            });
+        }
+
         // Apply the same date override logic as in other places
         // to ensure entries have the correct date field matching the filename
         const correctedEntries = newEntries.map((e) => ({ ...e, date: date }));
@@ -1390,6 +1416,7 @@ export default function Logbook() {
         setFormDate(date);
         setFormTime("08:00");
         setEditIndex(null);
+        setImage(null); // Clear the image state
     };
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -1420,7 +1447,7 @@ export default function Logbook() {
             newEntries.push(entry);
         }
 
-        await saveEntries(newEntries, isNewEntry);
+        await saveEntries(newEntries, isNewEntry, image);
     };
 
     const handleDelete = async (index) => {
@@ -1440,6 +1467,7 @@ export default function Logbook() {
         setFormDate(entry.date);
         setFormTime(entry.time);
         setEditIndex(index);
+        setImage(null); // Reset image when editing (can't pre-fill file input)
     };
 
     const openTaskDetails = (task) => {
@@ -2185,12 +2213,22 @@ export default function Logbook() {
     const renderTaskCard = (task) => (
         <div
             key={task.id}
-            className="task-card-small p-2 rounded-xl border bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
+            className="task-card-small p-2 rounded-xl border cursor-pointer transition-colors"
             style={{
+                backgroundColor:
+                    task.type === "logbook-entry" ? "#eff6ff" : "#f9fafb",
                 border:
                     task.type === "logbook-entry"
                         ? `1px solid ${getCategoryBorderColor(task.category)}`
                         : `1px solid ${getBorderColor(task.status)}`,
+            }}
+            onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor =
+                    task.type === "logbook-entry" ? "#dbeafe" : "#f3f4f6";
+            }}
+            onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor =
+                    task.type === "logbook-entry" ? "#eff6ff" : "#f9fafb";
             }}
             onClick={() => openTaskDetails(task)}
         >
@@ -2648,6 +2686,9 @@ export default function Logbook() {
                                                                                   type: "logbook-entry",
                                                                                   originalEntry:
                                                                                       entry,
+                                                                                  images:
+                                                                                      entry.images ||
+                                                                                      [], // Include images from the entry
                                                                               };
 
                                                                     if (
@@ -2948,6 +2989,7 @@ export default function Logbook() {
                                                         entrySimulator,
                                                     originalEntry: entry,
                                                     notes: entryNotes,
+                                                    images: entry.images || [], // Include images from the entry
                                                 });
                                             });
 
@@ -3424,6 +3466,64 @@ export default function Logbook() {
                                                     />
                                                 </div>
                                             </div>
+                                            <label
+                                                htmlFor=""
+                                                className="text-xs text-gray-500"
+                                            >
+                                                Immagine
+                                            </label>
+                                            <label
+                                                htmlFor="logbook-image"
+                                                className={`inline-flex items-center justify-center w-24 h-24 rounded-lg border-dashed border-2 transition ${
+                                                    image
+                                                        ? "border-green-300 bg-green-100 text-green-600 hover:bg-green-200"
+                                                        : "border-blue-200 text-blue-600 hover:bg-blue-100"
+                                                } cursor-pointer`}
+                                            >
+                                                {image ? (
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        className="h-6 w-6"
+                                                        viewBox="0 0 20 20"
+                                                        fill="currentColor"
+                                                    >
+                                                        <path
+                                                            fillRule="evenodd"
+                                                            d="M16.707 5.293a1 1 0 00-1.414 0L9 11.586 6.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l7-7a1 1 0 000-1.414z"
+                                                            clipRule="evenodd"
+                                                        />
+                                                    </svg>
+                                                ) : (
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        className="h-6 w-6"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        stroke="currentColor"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth={2}
+                                                            d="M12 4v16m8-8H4"
+                                                        />
+                                                    </svg>
+                                                )}
+                                            </label>
+                                            <input
+                                                type="file"
+                                                id="logbook-image"
+                                                accept="image/*"
+                                                onChange={(e) =>
+                                                    setImage(e.target.files[0])
+                                                }
+                                                className="hidden"
+                                            />
+                                            {image && (
+                                                <div className="flex items-center gap-1 mb-2 text-green-600 text-sm">
+                                                    <span>{image.name}</span>
+                                                </div>
+                                            )}
                                             <button
                                                 type="submit"
                                                 className="aggiungi-btn bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"

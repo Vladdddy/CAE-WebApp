@@ -10,7 +10,7 @@
       "shift": "R"
     },
     "Leonardo": {
-      "shift": "R"
+      "shift": "F"
     },
     "Aharon": {
       "shift": "D"
@@ -19,13 +19,13 @@
       "shift": "N"
     },
     "Marco Polo": {
-      "shift": "N"
+      "shift": "F"
     },
     "Fabrizio": {
       "shift": "R"
     },
     "Massimo": {
-      "shift": ""
+      "shift": "F"
     },
     "Michele": {
       "shift": "R"
@@ -37,7 +37,7 @@
       "shift": "O"
     },
     "Jonathan": {
-      "shift": "N"
+      "shift": "F"
     },
     "Gianluca": {
       "shift": "OP"
@@ -54,7 +54,7 @@
       "shift": "D"
     },
     "Leonardo": {
-      "shift": "R"
+      "shift": "F"
     },
     "Aharon": {
       "shift": "R"
@@ -63,13 +63,13 @@
       "shift": "R"
     },
     "Marco Polo": {
-      "shift": "N"
+      "shift": "F"
     },
     "Fabrizio": {
       "shift": "R"
     },
     "Massimo": {
-      "shift": "N"
+      "shift": "F"
     },
     "Michele": {
       "shift": "D"
@@ -78,7 +78,7 @@
       "shift": "F"
     },
     "Jonathan": {
-      "shift": "R"
+      "shift": "F"
     }
   },
   "2025-08-03": {
@@ -92,7 +92,7 @@
       "shift": "D"
     },
     "Leonardo": {
-      "shift": "R"
+      "shift": "F"
     },
     "Aharon": {
       "shift": "R"
@@ -101,13 +101,13 @@
       "shift": "R"
     },
     "Marco Polo": {
-      "shift": "N"
+      "shift": "F"
     },
     "Fabrizio": {
       "shift": "R"
     },
     "Massimo": {
-      "shift": "N"
+      "shift": "F"
     },
     "Michele": {
       "shift": "D"
@@ -116,7 +116,10 @@
       "shift": "F"
     },
     "Jonathan": {
-      "shift": "R"
+      "shift": "F"
+    },
+    "Gianluca": {
+      "note": "c bmnv"
     }
   },
   "2025-08-04": {
@@ -130,7 +133,7 @@
       "shift": "D"
     },
     "Leonardo": {
-      "shift": "D"
+      "shift": "F"
     },
     "Aharon": {
       "shift": "R"
@@ -139,13 +142,13 @@
       "shift": "R"
     },
     "Marco Polo": {
-      "shift": "R"
+      "shift": "F"
     },
     "Fabrizio": {
       "shift": "N"
     },
     "Massimo": {
-      "shift": "N"
+      "shift": "F"
     },
     "Michele": {
       "shift": "D"
@@ -160,7 +163,7 @@
       "shift": "OP"
     },
     "Jonathan": {
-      "shift": "R"
+      "shift": "F"
     }
   },
   "2025-08-05": {
@@ -174,7 +177,7 @@
       "shift": "D"
     },
     "Leonardo": {
-      "shift": "D"
+      "shift": "F"
     },
     "Aharon": {
       "shift": "R"
@@ -183,13 +186,13 @@
       "shift": "R"
     },
     "Marco Polo": {
-      "shift": "R"
+      "shift": "F"
     },
     "Fabrizio": {
       "shift": "N"
     },
     "Massimo": {
-      "shift": "N"
+      "shift": "F"
     },
     "Michele": {
       "shift": "D"
@@ -204,7 +207,7 @@
       "shift": "OP"
     },
     "Jonathan": {
-      "shift": "R"
+      "shift": "F"
     }
   },
   "2025-08-06": {
@@ -218,7 +221,7 @@
       "shift": "R"
     },
     "Leonardo": {
-      "shift": "D"
+      "shift": "F"
     },
     "Aharon": {
       "shift": "N"
@@ -227,13 +230,13 @@
       "shift": "N"
     },
     "Marco Polo": {
-      "shift": "R"
+      "shift": "F"
     },
     "Fabrizio": {
       "shift": "N"
     },
     "Massimo": {
-      "shift": "R"
+      "shift": "F"
     },
     "Michele": {
       "shift": "R"
@@ -262,7 +265,7 @@
       "shift": "R"
     },
     "Leonardo": {
-      "shift": "D"
+      "shift": "F"
     },
     "Aharon": {
       "shift": "N"
@@ -271,13 +274,13 @@
       "shift": "N"
     },
     "Marco Polo": {
-      "shift": "R"
+      "shift": "F"
     },
     "Fabrizio": {
       "shift": "N"
     },
     "Massimo": {
-      "shift": "R"
+      "shift": "F"
     },
     "Michele": {
       "shift": "R"
@@ -306,7 +309,7 @@
       "shift": "R"
     },
     "Leonardo": {
-      "shift": "R"
+      "shift": "F"
     },
     "Aharon": {
       "shift": "N"
@@ -315,13 +318,13 @@
       "shift": "N"
     },
     "Marco Polo": {
-      "shift": "D"
+      "shift": "F"
     },
     "Fabrizio": {
       "shift": "R"
     },
     "Massimo": {
-      "shift": ""
+      "shift": "F"
     },
     "Michele": {
       "shift": "R"
@@ -350,7 +353,7 @@
       "shift": "R"
     },
     "Leonardo": {
-      "shift": "R"
+      "shift": "F"
     },
     "Aharon": {
       "shift": "N"
@@ -359,13 +362,13 @@
       "shift": "N"
     },
     "Marco Polo": {
-      "shift": "D"
+      "shift": "F"
     },
     "Fabrizio": {
       "shift": "R"
     },
     "Massimo": {
-      "shift": "D"
+      "shift": "F"
     },
     "Michele": {
       "shift": "R"
@@ -388,7 +391,7 @@
       "shift": "N"
     },
     "Leonardo": {
-      "shift": "R"
+      "shift": "F"
     },
     "Aharon": {
       "shift": "R"
@@ -397,13 +400,13 @@
       "shift": "R"
     },
     "Marco Polo": {
-      "shift": "D"
+      "shift": "F"
     },
     "Fabrizio": {
       "shift": "R"
     },
     "Massimo": {
-      "shift": "D"
+      "shift": "F"
     },
     "Michele": {
       "shift": "N"
@@ -412,7 +415,7 @@
       "shift": "N"
     },
     "Jonathan": {
-      "shift": "R"
+      "shift": "F"
     }
   },
   "2025-08-11": {
@@ -426,7 +429,7 @@
       "shift": "N"
     },
     "Leonardo": {
-      "shift": "R"
+      "shift": "F"
     },
     "Aharon": {
       "shift": "R"
@@ -435,13 +438,13 @@
       "shift": "R"
     },
     "Marco Polo": {
-      "shift": "D"
+      "shift": "F"
     },
     "Fabrizio": {
       "shift": "R"
     },
     "Massimo": {
-      "shift": "D"
+      "shift": "F"
     },
     "Michele": {
       "shift": "N"
@@ -456,7 +459,7 @@
       "shift": "F"
     },
     "Jonathan": {
-      "shift": "R"
+      "shift": "F"
     }
   },
   "2025-08-12": {
@@ -470,7 +473,7 @@
       "shift": "N"
     },
     "Leonardo": {
-      "shift": "N"
+      "shift": "F"
     },
     "Aharon": {
       "shift": "R"
@@ -479,13 +482,13 @@
       "shift": "R"
     },
     "Marco Polo": {
-      "shift": "R"
+      "shift": "F"
     },
     "Fabrizio": {
       "shift": "D"
     },
     "Massimo": {
-      "shift": "D"
+      "shift": "F"
     },
     "Michele": {
       "shift": "N"
@@ -500,7 +503,7 @@
       "shift": "F"
     },
     "Jonathan": {
-      "shift": "R"
+      "shift": "F"
     }
   },
   "2025-08-13": {
@@ -514,7 +517,7 @@
       "shift": "N"
     },
     "Leonardo": {
-      "shift": "N"
+      "shift": "F"
     },
     "Aharon": {
       "shift": "R"
@@ -523,13 +526,13 @@
       "shift": "R"
     },
     "Marco Polo": {
-      "shift": "R"
+      "shift": "F"
     },
     "Fabrizio": {
       "shift": "D"
     },
     "Massimo": {
-      "shift": ""
+      "shift": "F"
     },
     "Michele": {
       "shift": "N"
@@ -544,7 +547,7 @@
       "shift": "F"
     },
     "Jonathan": {
-      "shift": "R"
+      "shift": "F"
     }
   },
   "2025-08-14": {
@@ -558,7 +561,7 @@
       "shift": "R"
     },
     "Leonardo": {
-      "shift": "N"
+      "shift": "F"
     },
     "Aharon": {
       "shift": "N"
@@ -567,13 +570,13 @@
       "shift": "N"
     },
     "Marco Polo": {
-      "shift": "R"
+      "shift": "F"
     },
     "Fabrizio": {
       "shift": "D"
     },
     "Massimo": {
-      "shift": "R"
+      "shift": "F"
     },
     "Michele": {
       "shift": "R"
